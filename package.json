@@ -2,6 +2,7 @@
   "name": "map",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@deck.gl/core": "^8.3.6",
     "@deck.gl/layers": "^8.3.6",
