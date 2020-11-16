@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView} from '@deck.gl/core';
 import ReactMapGL from 'react-map-gl';
@@ -17,7 +18,7 @@ const DATA_URL = {
     CONTINENTS: `${process.env.PUBLIC_URL}/geojson/world50m.json`
 }
 
-// const view = new GlobeView({id: 'globe', controller: false, resolution:1});
+const viewGlobe = new GlobeView({id: 'globe', controller: false, resolution:1});
 const view = new MapView({repeat: true});
 
 const Map = () => { 
@@ -31,9 +32,18 @@ const Map = () => {
     const mapFn = useSelector(state => state.currentMapFn);
     const use3D = useSelector(state => state.use3D);
 
+    const [globalMap, setGlobalMap] = useState(false);
+
     const GetFillColor = (f, bins) => bins.hasOwnProperty("bins") ? mapFn(dataFn(f, 'cases', currDateIndex, 7), bins.breaks, colorScale) : [0,0,0]
     const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f, 'cases', currDateIndex, 7)*1000 : 0
-    
+
+    const logViewState = (viewstate) => {
+        if (viewstate.viewState.zoom < 3 && !globalMap) {
+            setGlobalMap(true) 
+        } else if (viewstate.viewState.zoom > 3 && globalMap) {
+            setGlobalMap(false)
+        }
+    }
     const Layers = [
         new GeoJsonLayer({
             id: 'base continents',
@@ -64,6 +74,12 @@ const Map = () => {
                 getFillColor: currDateIndex,
                 getElevation: currDateIndex,
             },
+            // onHover: f => {
+            //     try {
+            //         console.log(dataFn(f.object, 'cases', currDateIndex, 7))
+            //         console.log(GetFillColor(f.object, bins))
+            //     } catch {}
+            // }
         }),
     ]
 
@@ -71,9 +87,10 @@ const Map = () => {
         <div id="mapContainer" style={{position:'fixed',left:0,top:0,width:'100%',height:'100%'}}>
             <DeckGL
             initialViewState={initialViewState}
+            // onViewStateChange={logViewState}
             controller={true}
             layers={Layers}
-            views={view} //enable this for globe view
+            views={globalMap ? viewGlobe : view} //enable this for globe view
             >
                 <ReactMapGL
                     reuseMaps
@@ -84,11 +101,7 @@ const Map = () => {
                 </ReactMapGL >
             </DeckGL>
         </div>
-        // <DeckGL viewState={viewState}
-        // layers={[layer]}
-        // getTooltip={({object}) => object && `${object.zipcode}\nPopulation: ${object.population}`} />;
-    )
- 
+    ) 
 }
 
 export default Map

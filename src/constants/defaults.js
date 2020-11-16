@@ -7,6 +7,7 @@ export const INITIAL_STATE = {
   bins: {},
   binMode: '',
   colorScale:  [
+    [240,240,240],
     [255,255,204],
     [255,237,160],
     [254,217,118],
@@ -29,7 +30,8 @@ export const INITIAL_STATE = {
   use3D: false,
   currentDataFn: (data, table, index, range) => (data[table][index]-data[table][index-range])/7/data.properties.population*100000,
   currentMapFn: (val, bins, colors) => {
-    for (let i=0; i<bins.length; i++) {
+    if (val == 0) return colors[0];
+    for (let i=1; i<bins.length; i++) {
       if (val < bins[i]) {
         return colors[i]
       }
