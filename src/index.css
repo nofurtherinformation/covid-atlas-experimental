@@ -1,0 +1,7 @@
+body {
+    background:black;
+}
+
+div#view-default-view, div#view-MapView {
+    z-index:500;
+}
