@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
 import { useSelector, useDispatch } from 'react-redux';
-import { setDate, setDateIndex } from '../actions';
+import { setDate, setDateIndex, incrementDate } from '../actions';
 // import { getParseCSV, getJson, mergeData, colIndex, getDataForBins } from './utils';
 
 const useStyles = makeStyles({
@@ -27,6 +27,8 @@ const DateSlider = () => {
     const dates = useSelector(state => state.dates);
     const currDate = useSelector(state => state.currDate);
     const currDateIndex = useSelector(state => state.currDateIndex);
+
+    const [timerId, setTimerId] = useState(null);
     
     const updateDateIndex = (val) => dispatch(setDateIndex(val));
     const updateDate = (val) => dispatch(setDate(dates[currentData][val]));
@@ -35,9 +37,22 @@ const DateSlider = () => {
         updateDate(newValue)
         updateDateIndex(newValue)
     };
+
+    const handlePlayPause = (timerId, rate, interval) => {
+        if (timerId === null) {
+            setTimerId(setInterval(o => dispatch(incrementDate(rate)), interval))
+        } else {
+            clearInterval(timerId);
+            setTimerId(null)
+        }
+    }
+
     if (dates[currentData] !== undefined) {
         return (
             <div className={classes.root}>
+                <button id="playPause" onClick={() => handlePlayPause(timerId, 1, 100)}>
+                    {timerId === null ? 'play' : 'pause'}
+                </button>
                 <h4 style={{textAlign:"center", color:"white"}}>{currDate}</h4>
                 <Slider 
                     value={currDateIndex} 

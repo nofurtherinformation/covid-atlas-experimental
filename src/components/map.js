@@ -4,6 +4,8 @@ import {MapView, _GlobeView as GlobeView} from '@deck.gl/core';
 import ReactMapGL from 'react-map-gl';
 import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers';
 import { useSelector, useDispatch } from 'react-redux';
+import { setDataSidebar } from '../actions';
+import { mapFn, dataFn } from '../utils';
 
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0bTFhaTZmbnRwaiJ9.VRNeNnyb96Eo-CorkJmIqg';
 
@@ -22,28 +24,22 @@ const viewGlobe = new GlobeView({id: 'globe', controller: false, resolution:1});
 const view = new MapView({repeat: true});
 
 const Map = () => { 
+    
+    const [hoverInfo, setHoverInfo] = useState(false);
+    const [globalMap, setGlobalMap] = useState(false);
 
     const storedData = useSelector(state => state.storedData);
     const currentData = useSelector(state => state.currentData);
     const currDateIndex = useSelector(state => state.currDateIndex);
     const bins = useSelector(state => state.bins);
     const colorScale = useSelector(state => state.colorScale);
-    const dataFn = useSelector(state => state.currentDataFn);
-    const mapFn = useSelector(state => state.currentMapFn);
     const use3D = useSelector(state => state.use3D);
+    const dataParams = useSelector(state => state.dataParams);
+    const dispatch = useDispatch();
 
-    const [globalMap, setGlobalMap] = useState(false);
-
-    const GetFillColor = (f, bins) => bins.hasOwnProperty("bins") ? mapFn(dataFn(f, 'cases', currDateIndex, 7), bins.breaks, colorScale) : [0,0,0]
-    const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f, 'cases', currDateIndex, 7)*1000 : 0
-
-    const logViewState = (viewstate) => {
-        if (viewstate.viewState.zoom < 3 && !globalMap) {
-            setGlobalMap(true) 
-        } else if (viewstate.viewState.zoom > 3 && globalMap) {
-            setGlobalMap(false)
-        }
-    }
+    const GetFillColor = (f, bins) => bins.hasOwnProperty("bins") ? mapFn(dataFn(f[dataParams.numerator], currDateIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale), bins.breaks, colorScale) : [0,0,0]
+    const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f[dataParams.numerator], currDateIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale)*1000 : 0
+    
     const Layers = [
         new GeoJsonLayer({
             id: 'base continents',
@@ -67,6 +63,7 @@ const Map = () => {
             filled: true,
             wireframe: false,
             extruded:use3D,
+            opacity: use3D ? 1 : 0.5,
             getFillColor: f => GetFillColor(f, bins),
             getElevation: f => GetHeight(f, bins),
             updateTriggers: {
@@ -74,12 +71,9 @@ const Map = () => {
                 getFillColor: currDateIndex,
                 getElevation: currDateIndex,
             },
-            // onHover: f => {
-            //     try {
-            //         console.log(dataFn(f.object, 'cases', currDateIndex, 7))
-            //         console.log(GetFillColor(f.object, bins))
-            //     } catch {}
-            // }
+            onHover: info => setHoverInfo(info),
+            onClick: info => dispatch(setDataSidebar(info.object)),
+            autoHighlight: true,
         }),
     ]
 
@@ -87,7 +81,6 @@ const Map = () => {
         <div id="mapContainer" style={{position:'fixed',left:0,top:0,width:'100%',height:'100%'}}>
             <DeckGL
             initialViewState={initialViewState}
-            // onViewStateChange={logViewState}
             controller={true}
             layers={Layers}
             views={globalMap ? viewGlobe : view} //enable this for globe view
@@ -99,6 +92,15 @@ const Map = () => {
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
                     >
                 </ReactMapGL >
+                {hoverInfo.object && (
+                <div style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: hoverInfo.x, top: hoverInfo.y, background: 'white', padding:'0 10px'}}>
+                    <h5>{`${hoverInfo.object.properties.NAME},${hoverInfo.object.properties.state_name}`}</h5>
+                    {`Cases: ${hoverInfo.object.cases.slice(-1,)[0]}`}<br/>
+                    {`Deaths: ${hoverInfo.object.deaths.slice(-1,)[0]}`}<br/>
+                    {`New Cases: ${hoverInfo.object.cases.slice(-1,)[0]-hoverInfo.object.cases.slice(-2,-1)[0]}`}<br/>
+                    {`New Deaths: ${hoverInfo.object.deaths.slice(-1,)[0]-hoverInfo.object.deaths.slice(-2,-1)[0]}`}<br/>
+                    </div>
+                )}
             </DeckGL>
         </div>
     ) 

@@ -25,17 +25,17 @@ export const INITIAL_STATE = {
   currentMethod: 'natural_breaks',
   currentOverlay: '',
   currentResource: '',
+  dataParams: {
+    numerator: 'cases',
+    nRange: 7,
+    denominator: 'properties',
+    dProperty: 'population',
+    dRange:null,
+    dIndex:null,
+    scale:100000,
+  },
   isCartogram: false,
   currentGeoid: '',
   use3D: false,
-  currentDataFn: (data, table, index, range) => (data[table][index]-data[table][index-range])/7/data.properties.population*100000,
-  currentMapFn: (val, bins, colors) => {
-    if (val == 0) return colors[0];
-    for (let i=1; i<bins.length; i++) {
-      if (val < bins[i]) {
-        return colors[i]
-      }
-    }
-    return [0,0,0]
-  }
+  sidebarData: {}
 };

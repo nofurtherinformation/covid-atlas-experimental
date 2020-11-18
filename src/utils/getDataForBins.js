@@ -1,10 +1,12 @@
-const getDataForBins = (fn, data, table, index, range) => {
+import dataFn from './dataFunction'
+
+const getDataForBins = (tableData, table, index, range, denomTable, denomProp, denomIndex, denomRange, scale) => {
     let t0 = performance.now()
     let rtn = [];
-    let n = data.length;
+    let n = tableData.length;
     while (n>0) {
         n--;
-        rtn.push(fn(data[n], table, index, range))
+        rtn.push(dataFn(tableData[n][table], index, range, tableData[n][denomTable], denomProp, denomIndex, denomRange, scale))
     }
     console.log(performance.now() - t0)
     return rtn;   

@@ -81,6 +81,33 @@ var reducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 use3D: !state.use3D
             }
+        case 'SET_DATA_SIDEBAR':
+            return {
+                ...state,
+                sidebarData: action.payload.data
+            }
+        case 'INCREMENT_DATE':
+            if (action.payload.index+state.currDateIndex > state.dates[state.currentData].length) {
+                return {
+                    ...state,
+                    currDateIndex:0
+                }
+            } else {
+                return {
+                    ...state,
+                    currDateIndex: state.currDateIndex + action.payload.index,
+                    currDate: state.dates[state.currentData][state.currDateIndex + action.payload.index]
+                }
+            }
+        case 'SET_VARIALBLE_PARAMS':
+            let paramObj = {
+                ...state.dataParams,
+                ...action.payload.params
+            }
+            return {
+                ...state,
+                dataParams: paramObj
+            }
         default:
             return state;
     }

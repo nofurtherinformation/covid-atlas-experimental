@@ -5,3 +5,50 @@ body {
 div#view-default-view, div#view-MapView {
     z-index:500;
 }
+
+#legend {
+    position: fixed;
+    bottom:150px;
+    left:50%;
+    width:20vw;
+    background:black;
+    transform: translateX(-50%);
+    padding:20px;
+    box-sizing: border-box;
+    border:1px solid white;
+}
+#legend h4 {
+    text-align: center;
+    padding:0 0 10px 0;
+    margin:0;
+    color:white;
+}
+
+#legend #binLabels, #legend #binBars {
+    width:100%;
+    display: flex;
+    box-sizing: border-box;
+
+}
+#legend #binBars .bin, #legend #binLabels .bin {
+    height:10px;
+    display: inline;
+    flex:1;
+    border:0;
+    margin:0;
+}
+
+#legend #binBars .bin:nth-of-type(1) {
+    transform: scaleX(0.35);
+}
+
+#legend #binLabels .bin {
+    flex:2;
+    color:white;
+    font-size:10px;
+    text-align: center;
+}
+
+#legend #binLabels .bin:nth-of-type(1) {
+    transform: translateX(-45%);
+}

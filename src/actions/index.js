@@ -1,3 +1,5 @@
+let timer = null;
+
 export const setGeoid = (geoid) => {
     return {
         type: 'SET_GEOID',
@@ -107,5 +109,32 @@ export const setBins = (bins, breaks) => {
 export const set3D = () => {
     return {
         type: 'SET_3D'
+    }
+}
+
+export const setDataSidebar = ( data ) => {
+    return {
+        type: 'SET_DATA_SIDEBAR',
+        payload: {
+            data
+        }
+    }
+}
+
+export const incrementDate = ( index ) => {
+    return {
+        type: 'INCREMENT_DATE',
+        payload: {
+            index
+        }
+    }
+}
+
+export const setVariableParams = ( params ) => {
+    return {
+        type: 'SET_VARIALBLE_PARAMS',
+        payload: {
+            params
+        }
     }
 }
