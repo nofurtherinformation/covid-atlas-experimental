@@ -96,6 +96,15 @@ export const setDateIndex = (index) => {
     }
 }
 
+export const setStartDateIndex = (index) => {
+    return {
+        type: 'SET_START_DATE_INDEX',
+        payload: {
+            index
+        }
+    }
+}
+
 export const setBins = (bins, breaks) => {
     return {
         type: 'SET_BINS',
@@ -132,9 +141,18 @@ export const incrementDate = ( index ) => {
 
 export const setVariableParams = ( params ) => {
     return {
-        type: 'SET_VARIALBLE_PARAMS',
+        type: 'SET_VARIABLE_PARAMS',
         payload: {
             params
+        }
+    }
+}
+
+export const setChartData = ( data ) => {
+    return {
+        type: 'SET_CHART_DATA',
+        payload: {
+            data
         }
     }
 }
