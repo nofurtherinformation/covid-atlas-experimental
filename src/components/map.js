@@ -35,10 +35,11 @@ const Map = () => {
     const colorScale = useSelector(state => state.colorScale);
     const use3D = useSelector(state => state.use3D);
     const dataParams = useSelector(state => state.dataParams);
+
     const dispatch = useDispatch();
 
-    const GetFillColor = (f, bins) => bins.hasOwnProperty("bins") ? mapFn(dataFn(f[dataParams.numerator], currDateIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale), bins.breaks, colorScale) : [0,0,0]
-    const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f[dataParams.numerator], currDateIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale)*1000 : 0
+    const GetFillColor = (f, bins) => bins.hasOwnProperty("bins") ? mapFn(dataFn(f[dataParams.numerator], dataParams.nProperty, currDateIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale), bins.breaks, colorScale) : [0,0,0]
+    const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f[dataParams.numerator], dataParams.nProperty, currDateIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale)*1000 : 0
     
     const Layers = [
         new GeoJsonLayer({
@@ -68,8 +69,8 @@ const Map = () => {
             getElevation: f => GetHeight(f, bins),
             updateTriggers: {
                 data: currentData,
-                getFillColor: currDateIndex,
-                getElevation: currDateIndex,
+                getFillColor: [currDateIndex,dataParams],
+                getElevation: [currDateIndex,dataParams],
             },
             onHover: info => setHoverInfo(info),
             onClick: info => dispatch(setDataSidebar(info.object)),

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setBins, set3D, setDataFunction } from './actions';
+import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setBins, set3D, setVariableParams } from './actions';
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
 import { getParseCSV, getJson, mergeData, colIndex, getDataForBins, dataFn } from './utils';
-import { Map, DateSlider, Legend } from './components';
+import { Map, DateSlider, Legend, VariablePanel } from './components';
 
 function App() {
   const storedData = useSelector(state => state.storedData);
@@ -94,10 +94,10 @@ function App() {
   useEffect(() => {
     if (currDateIndex != '') {
       if (binMode == 'dynamic') {
-        let nb = gda_proxy.custom_breaks(currentData, "natural_breaks", 8, null, getDataForBins(storedData[currentData], dataParams.numerator, currDateIndex, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale))
+        let nb = gda_proxy.custom_breaks(currentData, "natural_breaks", 8, null, getDataForBins(storedData[currentData], dataParams.numerator, dataParams.nProperty, currDateIndex, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale))
         dispatch(setBins(nb.bins, [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]))
       } else if (!bins.hasOwnProperty('bins')) {
-        let nb = gda_proxy.custom_breaks(currentData, "natural_breaks", 8, null, getDataForBins(storedData[currentData], dataParams.numerator, currDateIndex, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale))
+        let nb = gda_proxy.custom_breaks(currentData, "natural_breaks", 8, null, getDataForBins(storedData[currentData], dataParams.numerator, dataParams.nProperty, currDateIndex, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale))
         dispatch(setBins(nb.bins, [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]))
         
         // let t0 = performance.now()
@@ -110,15 +110,23 @@ function App() {
     } 
   },[currDateIndex])
 
+  useEffect(() => {
+    if (gda_proxy !== null){
+      let nb = gda_proxy.custom_breaks(currentData, "natural_breaks", 8, null, getDataForBins(storedData[currentData], dataParams.numerator, dataParams.nProperty, currDateIndex, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale))
+      dispatch(setBins(nb.bins, [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]))
+    }
+  }, [dataParams])
+
   return (
     <div className="App">
-      <header className="App-header" style={{position:'fixed', left: '20px', top:'20px', zIndex:10}}>
+      <header className="App-header" style={{position:'fixed', left: '30vw', top:'20px', zIndex:10}}>
         <h1 style={{color:"white"}}>Tech Demo</h1>
-        <button onClick={() => dispatch(set3D())}>3D</button>
+        <button onClick={() => console.log(Date.parse(columnNames[currentData]['cases'].slice(-1,)[0]))}>total count</button>
       </header>
       <Map />
       <Legend labels={bins.bins} title={currentData} colors={colorScale} />
       <DateSlider />
+      <VariablePanel columns={currentData && columnNames[currentData]} tables={currentData && Object.keys(storedData[currentData][0])} />
     </div>
   );
 }

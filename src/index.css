@@ -52,3 +52,21 @@ div#view-default-view, div#view-MapView {
 #legend #binLabels .bin:nth-of-type(1) {
     transform: translateX(-45%);
 }
+/* VARIABLE PANEL */
+#variable-panel {
+    position:fixed;
+    left:0;
+    top:0;
+    height:100vw;
+    background-color: lightgray;
+    box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
+    padding:20px;
+    box-sizing: border-box;
+    transition:250ms all;
+}
+
+#variable-panel button#showHideLeftPanel {
+    position:absolute;
+    left:100%;
+    top:0;
+}
