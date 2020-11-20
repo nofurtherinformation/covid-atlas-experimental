@@ -17,12 +17,12 @@ const Legend = ( props ) => {
     return (
         <div id='legend'>
             <Grid container spacing={2} id='legend-bins-container'>
-                <Grid item xs={4}>
-                    <h4>
+                <Grid item xs={6}>
+                    <h3>
                         {props.title !== undefined && props.title}
-                    </h4>
+                    </h3>
                 </Grid>
-                <Grid item xs={8}>
+                <Grid item xs={6}>
                     <div id="binBars">
                         {props.colors !== undefined && 
                             props.colors.map(color => <div className="bin color" key={`${color[0]}${color[1]}`}style={{backgroundColor:`rgb(${color[0]},${color[1]},${color[2]})`}}></div>)

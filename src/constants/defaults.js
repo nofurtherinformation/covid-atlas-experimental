@@ -22,7 +22,7 @@ export const INITIAL_STATE = {
   currDate: '',
   currDateIndex: '',
   startDateIndex: '',
-  currentVariable: '7-Day Average Daily New Confirmed Count per 100K Pop',
+  currentVariable: 'Confirmed Count per 100K Population',
   currentMethod: 'natural_breaks',
   currentOverlay: '',
   currentResource: '',

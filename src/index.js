@@ -5,12 +5,19 @@ import { createStore} from 'redux';
 import reducer from './reducers';
 import { Provider } from 'react-redux';
 import './index.css';
+import WebFont from 'webfontloader';
 
 const store = createStore(
   reducer,
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );
 
+
+WebFont.load({
+  google: {
+    families: ['Lato:300,400,700,900', 'Montserrat:400,600,800', 'Playfair Display:ital', 'sans-serif']
+  }
+});
 
 ReactDOM.render(
   // <React.StrictMode>

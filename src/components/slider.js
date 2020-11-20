@@ -37,7 +37,7 @@ const useStyles = makeStyles({
     },
     slider: {
         color:'white',
-        height:'100%',
+        height:'58%',
         '& > span.MuiSlider-rail': {
             display: 'none'
         },
@@ -50,6 +50,13 @@ const useStyles = makeStyles({
         },
         '& > span.MuiSlider-thumb.MuiSlider-active': {
             boxShadow: '0px 0px 10px rgba(200,200,200,0.5)'
+        }
+    },
+    playPauseButton: {
+        background:'none',
+        transform:'translateY(-100%)',
+        '& svg  > g': {
+            fill: "white"
         }
     }
   });
@@ -107,23 +114,52 @@ const DateSlider = () => {
             }    
         }
     }
+    function valuetext(value) {
+        return `${dates[currentData][value]}`;
+    }
 
     if (dates[currentData] !== undefined) {
         return (
             <Grid container spacing={2} className={classes.root} id="slider-container" style={{visibility: (dataParams.nType === 'time-series' ? 'visible' : 'hidden')}}>
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                     <h4 style={{textAlign:"center", color:"white"}}>{dates[currentData][dataParams.nIndex]||dates[currentData].slice(-1,)[0]}</h4>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={1}>
-                    <button id="playPause" onClick={() => handlePlayPause(timerId, 1, 100)}>
-                        {timerId === null ? 'play' : 'pause'}
-                    </button>
+                    <Button id="playPause" className={classes.playPauseButton} onClick={() => handlePlayPause(timerId, 1, 100)}>
+                        {timerId === null ? 
+                            <svg x="0px" y="0px" viewBox="0 0 100 100">
+                                <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
+                                    <g>
+                                        <path d="M74.4,58.7L40.7,92.2c-7.1,7.2-18.7,4.4-18.7-6.3V14c0-10.7,11.6-13.5,18.7-6.3l33.6,33.5
+                                            C79.1,46,79.1,53.8,74.4,58.7z M69.1,53.4c1.9-1.9,1.9-5,0-6.7L35.5,13c-2.1-2.1-6-3.2-6,1.1V86c0,4.3,3.9,3.2,6,1.1L69.1,53.4z"
+                                            />
+                                    </g>
+                                </g>
+                            </svg>
+                            : 
+                            <svg x="0px" y="0px" viewBox="0 0 100 100">
+                                <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
+                                    <g>
+                                        <path d="M22.4,0.6c3.4,0,6.8,0,10.3,0c6.5,0,11.8,5.3,11.8,11.8c0,25,0,50.1,0,75.2c0,6.5-5.3,11.8-11.8,11.8
+                                            c-3.4,0-6.8,0-10.3,0c-6.5,0-11.8-5.3-11.8-11.8c0-25.1,0-50.2,0-75.2C10.6,5.9,15.9,0.6,22.4,0.6z M22.4,6.5c3.4,0,6.8,0,10.3,0
+                                            c3.2,0,5.9,2.6,5.9,5.9c0,25,0,50.1,0,75.2c0,3.2-2.7,5.9-5.9,5.9c-3.4,0-6.8,0-10.3,0c-3.2,0-5.9-2.7-5.9-5.9
+                                            c0-25.1,0-50.2,0-75.2C16.5,9.1,19.2,6.5,22.4,6.5z M67.3,6.5c3.4,0,6.8,0,10.2,0s6,2.6,6,5.9c0,25,0,50.1,0,75.2
+                                            c0,3.2-2.7,5.9-6,5.9s-6.7,0-10.2,0c-3.3,0-5.9-2.7-5.9-5.9c0-25.1,0-50.2,0-75.2C61.4,9.1,64,6.5,67.3,6.5z M67.3,0.6
+                                            c3.4,0,6.8,0,10.2,0c6.5,0,11.8,5.3,11.8,11.8c0,25,0,50.1,0,75.2c0,6.5-5.3,11.8-11.8,11.8c-3.3,0-6.7,0-10.2,0
+                                            c-6.5,0-11.8-5.3-11.8-11.8c0-25.1,0-50.2,0-75.2C55.5,5.9,60.8,0.6,67.3,0.6z"/>
+                                    </g>
+                                </g>
+                            </svg>
+
+                        }
+                    </Button>
                 </Grid>
                 <Grid item xs={9}>
                     <Slider 
                         value={dataParams.nIndex} 
                         onChange={handleChange} 
-                        aria-labelledby="continuous-slider"
+                        getAriaValueText={valuetext}
+                        aria-labelledby="discrete-slider-always"
                         className={classes.slider}
                         min={startDateIndex}
                         step={1}
@@ -136,6 +172,7 @@ const DateSlider = () => {
                         color="primary"
                         aria-label="vertical outlined primary button group"
                         style={{float:'right'}}
+                        valueLabelDisplay="on"
                     >
                         <Button className={dataParams.nRange === null ? classes.buttonActive : classes.button} onClick={() => handleRangeButton(null)}>Total</Button>
                         <Button className={dataParams.nRange === 1 ?classes.buttonActive : classes.button} onClick={() => handleRangeButton(1)}>New Daily</Button>

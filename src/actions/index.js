@@ -156,3 +156,12 @@ export const setChartData = ( data ) => {
         }
     }
 }
+
+export const setVariableName = ( name ) => {
+    return {
+        type: 'SET_VARIABLE_NAME',
+        payload: {
+            name
+        }
+    }
+}

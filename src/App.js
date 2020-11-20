@@ -8,6 +8,7 @@ import { Map, DateSlider, Legend, VariablePanel, MainLineChart } from './compone
 function App() {
   const storedData = useSelector(state => state.storedData);
   const currentData = useSelector(state => state.currentData);
+  const currentVariable = useSelector(state => state.currentVariable);
   const columnNames = useSelector(state => state.cols);
   const dates = useSelector(state => state.dates);
   const bins = useSelector(state => state.bins);
@@ -205,7 +206,7 @@ function App() {
       <Map />
       <VariablePanel />
       <div id="bottom-drawer">
-        <Legend labels={bins.bins} title={currentData} colors={colorScale} />
+        <Legend labels={bins.bins} title={currentVariable} colors={colorScale} />
         <hr />
         <MainLineChart />
         <DateSlider />

@@ -137,6 +137,11 @@ var reducer = (state = INITIAL_STATE, action) => {
                     dataParams: paramObj 
                 }
             }
+        case 'SET_VARIABLE_NAME':
+            return {
+                ...state,
+                currentVariable: action.payload.name
+            }
         case 'SET_CHART_DATA':
             return {
                 ...state,

@@ -1,5 +1,6 @@
 body {
     background:black;
+    font-family: 'Lato', sans-serif;
 }
 
 div#view-default-view, div#view-MapView {
@@ -12,18 +13,62 @@ div#view-default-view, div#view-MapView {
     left:0;
     top:0;
     height:100vw;
-    background-color: lightgray;
+    background-color: #2b2b2b;
     box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
     padding:20px;
     box-sizing: border-box;
     transition:250ms all;
+    font: 'Lato', sans-serif;
+    color:white;
 }
 
 #variable-panel button#showHideLeftPanel {
     position:absolute;
-    left:100%;
-    top:0;
+    left:95%;
+    top:20px;
+    width:40px;
+    height:40px;
+    padding:0;
+    margin:0;
+    background-color: #2b2b2b;
+    box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
+    outline:none;
+    border:none;
+    cursor: pointer;
+    transition:500ms all;
 }
+
+#variable-panel button#showHideLeftPanel svg{
+    padding:0;
+    margin:0;
+    fill:white;
+    transform:rotate(0deg);
+    transition:500ms all;
+}
+
+#variable-panel button#showHideLeftPanel.hidden{
+    left:100%;
+}
+
+#variable-panel button#showHideLeftPanel.hidden svg{
+    transform:rotate(180deg);
+}
+
+#variable-panel button#showHideLeftPanel:after{
+    opacity:0;
+    font-weight:bold;
+    content: 'Variables';
+    color:white;
+    position: relative;
+    right:-50px;
+    top:-30px;
+    transition:500ms all;
+}
+
+#variable-panel button#showHideLeftPanel.hidden:after {
+    opacity:1;
+}
+
 /* bottom drawer */
 #bottom-drawer {
     position: fixed;
@@ -37,6 +82,8 @@ div#view-default-view, div#view-MapView {
     margin:0;
     max-width: 1024px;
     padding-bottom:220px;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.7);
+    border-radius:0.5vh 0.5vh 0 0;
 }
 #slider-container, #main-chart-container {
     width:100%;
@@ -46,7 +93,7 @@ div#view-default-view, div#view-MapView {
 }
 
 #slider-container {
-    bottom:150px;
+    bottom:72px;
     height:100px;
 }
 
@@ -56,8 +103,9 @@ div#view-default-view, div#view-MapView {
     margin:0;
     box-sizing: border-box;
 }
-#legend h4 {
-    text-align: center;
+#legend h3 {
+    text-align: left;
+    font-family:'Montserrat', sans-serif;
     padding:0 0 10px 0;
     margin:0;
     color:white;
