@@ -3,7 +3,7 @@ import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setD
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
 import { getParseCSV, getJson, mergeData, colIndex, getDataForBins, getDataForCharts, colLookup } from './utils';
-import { Map, DateSlider, Legend, VariablePanel, MainLineChart } from './components';
+import { Map, DateSlider, Legend, VariablePanel, MainLineChart, DataPanel } from './components';
 
 function App() {
   const storedData = useSelector(state => state.storedData);
@@ -205,6 +205,7 @@ function App() {
       </header> */}
       <Map />
       <VariablePanel />
+      <DataPanel />
       <div id="bottom-drawer">
         <Legend labels={bins.bins} title={currentVariable} colors={colorScale} />
         <hr />
