@@ -39,6 +39,7 @@ const PlayPauseButton = styled(Button)`
     background:none;
     transform:translateY(-100%);
     svg {
+        width: 100%;
         g {
             fill: white;
         }
@@ -46,6 +47,28 @@ const PlayPauseButton = styled(Button)`
 `
 
 const LineSlider = styled(Slider)`
+    color:white;
+    // span.MuiSlider-rail {
+    //     display:none;
+    // }
+    // span.MuiSlider-track {
+    //     display: none;
+    // }
+    span.MuiSlider-thumb {
+        .MuiSlider-valueLabel {
+            transform:translateY(-10px);
+            pointer-events:none;
+            span {
+                background: none;
+            }
+        }
+    }
+    span.MuiSlider-thumb.MuiSlider-active: {
+        box-shadow: 0px 0px 10px rgba(200,200,200,0.5);
+    }
+`
+
+const RangeSlider = styled(Slider)`
     color:white;
     // span.MuiSlider-rail {
     //     display:none;
@@ -78,7 +101,6 @@ const DateSlider = () => {
     const [timerId, setTimerId] = useState(null);
     const [customRange, setCustomRange] = useState(false);
     // const [useLog, setUseLog] = useState(false);
-    
     const handleChange = (event, newValue) => {
         if (dataParams.nType === "time-series" && dataParams.dType === "time-series") {
             dispatch(setVariableParams({nIndex: newValue, dIndex: newValue}))
@@ -89,6 +111,26 @@ const DateSlider = () => {
         } 
         dispatch(setDate(dates[currentData][newValue]));
     };
+
+    const handleRangeChange = (event, newValue) => {   
+        if (dataParams.dRange) {
+            dispatch(setVariableParams(
+                {
+                    nIndex: newValue[1], 
+                    nRange: newValue[1]-newValue[0],
+                    rIndex: newValue[1], 
+                    rRange: newValue[1]-newValue[0]
+                }
+            ))
+        } else {
+            dispatch(setVariableParams(
+                {
+                    nIndex: newValue[1], 
+                    nRange: newValue[1]-newValue[0]
+                }
+            ))
+        }
+    }
 
     const handlePlayPause = (timerId, rate, interval) => {
         if (timerId === null) {
@@ -161,7 +203,7 @@ const DateSlider = () => {
                     </PlayPauseButton>
                 </Grid>
                 <Grid item xs={9}>
-                    <LineSlider 
+                    {!customRange && <LineSlider 
                         value={dataParams.nIndex} 
                         valueLabelDisplay="on"
                         onChange={handleChange} 
@@ -171,7 +213,18 @@ const DateSlider = () => {
                         min={startDateIndex}
                         step={1}
                         max={dates[currentData].length-1}
-                    />
+                    />}
+                    {customRange && <RangeSlider 
+                        value={[dataParams.nIndex-dataParams.nRange, dataParams.nIndex]} 
+                        valueLabelDisplay="on"
+                        onChange={handleRangeChange} 
+                        getAriaValueText={valuetext}
+                        valueLabelFormat={valuetext}
+                        aria-labelledby="aria-valuetext"
+                        min={startDateIndex}
+                        step={1}
+                        max={dates[currentData].length-1}
+                    />}
                 </Grid>
                 <Grid item xs={2} style={{marginTop:'-120px'}}>
                     <ButtonGroup
@@ -180,7 +233,7 @@ const DateSlider = () => {
                         aria-label="vertical outlined primary button group"
                         style={{float:'right'}}
                     >
-                        <DateButton className={dataParams.nRange === null ? 'active' : ''} onClick={() => handleRangeButton(null)}>Total</DateButton>
+                        <DateButton className={dataParams.nRange === null ? 'active' : ''} onClick={() => handleRangeButton(null)}>Cumulative</DateButton>
                         <DateButton className={dataParams.nRange === 1 ? 'active' : ''} onClick={() => handleRangeButton(1)}>New Daily</DateButton>
                         <DateButton className={dataParams.nRange === 7 ? 'active' : ''} onClick={() => handleRangeButton(7)}>Weekly Average</DateButton>
                         <DateButton className={customRange ? 'active' : ''} onClick={() => handleRangeButton('custom')}>Custom Range</DateButton>

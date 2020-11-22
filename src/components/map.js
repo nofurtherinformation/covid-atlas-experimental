@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { setDataSidebar } from '../actions';
 import { mapFn, dataFn, getVarId } from '../utils';
 import { lisaColorScale } from '../config';
+import styled from 'styled-components';
 
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0bTFhaTZmbnRwaiJ9.VRNeNnyb96Eo-CorkJmIqg';
 
@@ -16,10 +17,22 @@ const initialViewState = {
     zoom: 3.5,
     pitch:0,
     bearing:0
-}
+};
+
 const DATA_URL = {
     CONTINENTS: `${process.env.PUBLIC_URL}/geojson/world50m.json`
-}
+};
+
+const HoverDiv = styled.div`
+    background:#2b2b2b;
+    padding:20px;
+    color:white;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.7);
+    border-radius:0.5vh 0.5vh 0 0;
+    h3 {
+        margin:2px 0;
+    }
+`;
 
 const viewGlobe = new GlobeView({id: 'globe', controller: false, resolution:1});
 const view = new MapView({repeat: true});
@@ -27,7 +40,9 @@ const view = new MapView({repeat: true});
 const Map = () => { 
     
     const [hoverInfo, setHoverInfo] = useState(false);
+    const [highlightGeog, setHighlightGeog] = useState(false);
     const [globalMap, setGlobalMap] = useState(false);
+    const [currLisaData, setCurrLisaData] = useState({})
 
     const storedData = useSelector(state => state.storedData);
     const storedGeojson = useSelector(state => state.storedGeojson);
@@ -41,7 +56,6 @@ const Map = () => {
     
     const dispatch = useDispatch();
 
-    const [currLisaData, setCurrLisaData] = useState({})
 
     useEffect(() => {
         let tempData = storedLisaData[getVarId(currentData, dataParams)]
@@ -93,8 +107,33 @@ const Map = () => {
                 getElevation: [dataParams, mapParams],
             },
             onHover: info => setHoverInfo(info),
-            onClick: info => dispatch(setDataSidebar(info.object)),
-            autoHighlight: true,
+            onClick: info => {
+                try {
+                    dispatch(setDataSidebar(info.object));
+                    setHighlightGeog(info.object.properties.GEOID);
+                } catch {}
+
+            }
+        }),
+        new GeoJsonLayer({
+            id: 'highlightLayer',
+            data: {
+                "type": "FeatureCollection",
+                "name": currentData,
+                "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+                "features": storedData[currentData] ? storedData[currentData] : [],
+            },
+            pickable: false,
+            stroked: true,
+            filled:false,
+            getLineColor: f => (highlightGeog === f.properties.GEOID ? [255,255,255] : [255,255,255,0]), 
+            lineWidthScale: 10,
+            getLineWidth: 1,
+            lineWidthMinPixels: 2,
+            updateTriggers: {
+                data: currentData,
+                getLineColor: highlightGeog,
+            },
         }),
     ]
 
@@ -114,13 +153,13 @@ const Map = () => {
                     >
                 </ReactMapGL >
                 {hoverInfo.object && (
-                <div style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: hoverInfo.x, top: hoverInfo.y, background: 'white', padding:'0 10px'}}>
-                    <h5>{`${hoverInfo.object.properties.NAME},${hoverInfo.object.properties.state_name}`}</h5>
-                    {`Cases: ${hoverInfo.object.cases.slice(-1,)[0]}`}<br/>
-                    {`Deaths: ${hoverInfo.object.deaths.slice(-1,)[0]}`}<br/>
-                    {`New Cases: ${hoverInfo.object.cases.slice(-1,)[0]-hoverInfo.object.cases.slice(-2,-1)[0]}`}<br/>
-                    {`New Deaths: ${hoverInfo.object.deaths.slice(-1,)[0]-hoverInfo.object.deaths.slice(-2,-1)[0]}`}<br/>
-                    </div>
+                <HoverDiv style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: hoverInfo.x, top: hoverInfo.y}}>
+                    <h3>{`${hoverInfo.object.properties.NAME}, ${hoverInfo.object.properties.state_name}`}</h3>
+                    {`Cases: ${hoverInfo.object.cases.slice(-1,)[0].toLocaleString('en')}`}<br/>
+                    {`Deaths: ${hoverInfo.object.deaths.slice(-1,)[0].toLocaleString('en')}`}<br/>
+                    {`New Cases: ${(hoverInfo.object.cases.slice(-1,)[0]-hoverInfo.object.cases.slice(-2,-1)[0]).toLocaleString('en')}`}<br/>
+                    {`New Deaths: ${(hoverInfo.object.deaths.slice(-1,)[0]-hoverInfo.object.deaths.slice(-2,-1)[0]).toLocaleString('en')}`}<br/>
+                </HoverDiv>
                 )}
             </DeckGL>
         </div>

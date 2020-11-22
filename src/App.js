@@ -254,24 +254,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
-        <button onClick={() => console.log( 
-          getDataForLisa(
-            storedData[currentData], 
-            dataParams.numerator, 
-            dataParams.nType,
-            dataParams.nProperty, 
-            dataParams.nIndex, 
-            dataParams.nRange, 
-            dataParams.denominator, 
-            dataParams.dType,
-            dataParams.dProperty, 
-            dataParams.dIndex, 
-            dataParams.dRange, 
-            dataParams.scale,
-            storedGeojson[currentData].indexOrder
-          )
-          )
-        }>dummy button for testing</button>
+        <button onClick={() => console.log(columnNames[currentData].predictions)}>dummy button for testing</button>
       </header>
       <Map />
       <VariablePanel />

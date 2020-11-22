@@ -8,7 +8,7 @@ div#view-default-view, div#view-MapView {
 }
 
 /*  PANELS */
-#variable-panel, #data-panel {
+#variable-panel {
     position:fixed;
     left:0;
     top:0;
@@ -21,12 +21,6 @@ div#view-default-view, div#view-MapView {
     transition:250ms all;
     font: 'Lato', sans-serif;
     color:white;
-}
-
-#data-panel {
-    right:0;
-    left:auto;
-    box-shadow: -2px 0px 5px rgba(0,0,0,0.7);
 }
 
 #variable-panel p.note {
@@ -67,7 +61,7 @@ div#view-default-view, div#view-MapView {
     transform: translate(-50%,40%);
 }
 
-#variable-panel button#showHideLeftPanel, #data-panel button#showHideRightPanel {
+#variable-panel button#showHideLeftPanel {
     position:absolute;
     left:95%;
     top:20px;
@@ -82,37 +76,22 @@ div#view-default-view, div#view-MapView {
     cursor: pointer;
     transition:500ms all;
 }
-#data-panel button#showHideRightPanel {
-    right:95%;
-    left:auto;
-}
-
-#variable-panel button#showHideLeftPanel svg, #data-panel button#showHideRightPanel svg{
+#variable-panel button#showHideLeftPanel svg {
     padding:0;
     margin:0;
     fill:white;
     transform:rotate(0deg);
     transition:500ms all;
 }
-#data-panel button#showHideRightPanel svg {
-    transform:rotate(180deg);
-}
 
 #variable-panel button#showHideLeftPanel.hidden{
     left:100%;
-}
-
-#data-panel button#showHideRightPanel.hidden{
-    right:100%;
 }
 
 #variable-panel button#showHideLeftPanel.hidden svg {
     transform:rotate(180deg);
 }
 
-#data-panel button#showHideRightPanel.hidden svg {
-    transform:rotate(0deg);
-}
 
 #variable-panel button#showHideLeftPanel:after{
     opacity:0;
@@ -124,7 +103,7 @@ div#view-default-view, div#view-MapView {
     top:-30px;
     transition:500ms all;
 }
-#variable-panel button#showHideLeftPanel:after, #data-panel button#showHideRightPanel:after{
+#variable-panel button#showHideLeftPanel:after {
     opacity:0;
     font-weight:bold;
     content: 'Variables';
@@ -135,13 +114,7 @@ div#view-default-view, div#view-MapView {
     transition:500ms all;
 }
 
-#data-panel button#showHideRightPanel:after {
-    content: 'Info';
-    right:40px;
-}
-
-#variable-panel button#showHideLeftPanel.hidden:after,
-#data-panel button#showHideRightPanel.hidden:after{
+#variable-panel button#showHideLeftPanel.hidden:after{
     opacity:1;
 }
 
