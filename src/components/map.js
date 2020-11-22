@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView} from '@deck.gl/core';
-import ReactMapGL from 'react-map-gl';
+import ReactMapGL, {NavigationControl, GeolocateControl} from 'react-map-gl';
 import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDataSidebar } from '../actions';
@@ -43,6 +43,7 @@ const Map = () => {
     const [highlightGeog, setHighlightGeog] = useState(false);
     const [globalMap, setGlobalMap] = useState(false);
     const [currLisaData, setCurrLisaData] = useState({})
+    const [viewState, setViewState] = useState(initialViewState)
 
     const storedData = useSelector(state => state.storedData);
     const storedGeojson = useSelector(state => state.storedGeojson);
@@ -140,7 +141,7 @@ const Map = () => {
     return (
         <div id="mapContainer" style={{position:'fixed',left:0,top:0,width:'100%',height:'100%'}}>
             <DeckGL
-            initialViewState={initialViewState}
+            initialViewState={viewState}
             controller={true}
             layers={Layers}
             views={globalMap ? viewGlobe : view} //enable this for globe view
@@ -151,6 +152,19 @@ const Map = () => {
                     preventStyleDiffing={true}
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
                     >
+                        
+                    <div style={{position: 'absolute', right: 10, bottom: 30, zIndex: 10}}>
+                        <GeolocateControl
+                            positionOptions={{enableHighAccuracy: true}}
+                            trackUserLocation={true}
+                            onGeolocate={viewState => console.log(viewState.coords.latitude)}
+                            style={{marginBottom: 10}}
+                        />
+                        <NavigationControl
+                            onViewportChange={viewState  => setViewState(viewState)} 
+                        />
+                    </div>
+                    <div></div>
                 </ReactMapGL >
                 {hoverInfo.object && (
                 <HoverDiv style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: hoverInfo.x, top: hoverInfo.y}}>

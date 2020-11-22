@@ -253,9 +253,9 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
+      {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
         <button onClick={() => console.log(columnNames[currentData].predictions)}>dummy button for testing</button>
-      </header>
+      </header> */}
       <Map />
       <VariablePanel />
       <DataPanel />

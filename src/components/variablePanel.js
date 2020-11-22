@@ -12,6 +12,7 @@ import Select from '@material-ui/core/Select';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import { colLookup } from '../utils';
+import styled from 'styled-components';
 
 const useStyles = makeStyles((theme) => ({
     formControl: {
@@ -58,6 +59,94 @@ const useStyles = makeStyles((theme) => ({
       }
     }
 }));
+
+const VariablePanelContainer = styled.div`
+  position:fixed;
+  left:0;
+  top:0;
+  height:100vh;
+  max-width:20vw;
+  background-color: #2b2b2b;
+  box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
+  padding:20px;
+  box-sizing: border-box;
+  transition:250ms all;
+  font: 'Lato', sans-serif;
+  color:white;
+  p.note {
+    position: absolute;
+    bottom:100px;
+    width:calc(100% - 40px);
+    font-family: 'Lato', sans-serif;
+    font-weight:300;
+    font-size:90%;
+    a {
+      color:yellow;
+      text-decoration: none;
+    }
+  }
+  div.poweredByGeoda {
+    position: absolute;
+    bottom: 40px;
+    color:white;
+    width:100%;
+    text-align:center;
+    transform:translateX(-20px);
+    a {
+      color:white;
+      margin:0 auto;
+      text-decoration: none;
+      letter-spacing: 2px;
+      font-size:75%;
+      img {
+        width:23px;
+        height:27px;
+        transform: translate(-50%,40%);
+      }
+    }
+  }
+  button#showHideLeft {
+    position:absolute;
+    left:95%;
+    top:20px;
+    width:40px;
+    height:40px;
+    padding:0;
+    margin:0;
+    background-color: #2b2b2b;
+    box-shadow: 0px 0px 6px rgba(0,0,0,1);
+    outline:none;
+    border:none;
+    cursor: pointer;
+    transition:500ms all;
+    svg { 
+      padding:0;
+      margin:0;
+      fill:white;
+      transform:rotate(0deg);
+      transition:500ms all;
+    }
+    :after {
+      opacity:0;
+      font-weight:bold;
+      content: 'Variables';
+      color:white;
+      position: relative;
+      right:-50px;
+      top:-30px;
+      transition:500ms all;
+    }
+  }
+  button#showHideLeft.hidden {
+    left:100%;
+    svg {
+      transform:rotate(180deg);
+    }
+    :after {
+      opacity:1;
+    }
+  }
+`
 
 const VariablePanel = (props) => {
 
@@ -284,7 +373,7 @@ const VariablePanel = (props) => {
   }
 
   return (
-    <div id="variable-panel" style={{transform: (hidePanel ? 'translateX(-100%)' : '')}}>
+    <VariablePanelContainer style={{transform: (hidePanel ? 'translateX(-100%)' : '')}}>
       <h2>Data Sources &amp;<br/> Map Variables</h2>
       <FormControl className={classes.formControl}>
         <InputLabel htmlFor="data-select">Data Source</InputLabel>
@@ -378,7 +467,7 @@ const VariablePanel = (props) => {
               POWERED BY GEODA
             </a>
         </div>
-      <button onClick={() => setHidePanel(prev => { return !prev })} id="showHideLeftPanel" className={hidePanel ? 'hidden' : 'active'}>
+      <button onClick={() => setHidePanel(prev => { return !prev })} id="showHideLeft" className={hidePanel ? 'hidden' : 'active'}>
         <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
           <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
             <path d="M38,33.8L23.9,47.9c-1.2,1.2-1.2,3.1,0,4.2L38,66.2l4.2-4.2l-9-9H71v17c0,0.6-0.4,1-1,1H59v6h11
@@ -387,7 +476,7 @@ const VariablePanel = (props) => {
         </svg>
 
       </button>
-    </div>
+    </VariablePanelContainer>
   );
 }
 
