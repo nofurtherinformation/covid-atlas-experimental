@@ -54,7 +54,8 @@ const mergeData = (featureCollection, featureCollectionJoinCol, joinData, joinDa
     let keys = Object.keys(merged)
     
     for (let i = 0; i < keys.length; i++) {
-      if (Object.keys(merged[keys[i]]).length == (joinDataNames.length+baseColumnLength)) rtn.push(merged[keys[i]])
+      // if (Object.keys(merged[keys[i]]).length == (joinDataNames.length+baseColumnLength)) rtn.push(merged[keys[i]])
+      rtn.push(merged[keys[i]])
     }
 
     return rtn;

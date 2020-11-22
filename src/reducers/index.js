@@ -16,6 +16,24 @@ var reducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 storedData: obj
             };
+        case 'SET_STORED_GEOJSON':
+            let geojsonObj = {
+                ...state.storedGeojson,
+            }
+            geojsonObj[action.payload.name] = action.payload.data
+            return {
+                ...state,
+                storedGeojson: geojsonObj
+            };
+        case 'SET_STORED_LISA_DATA':
+            let lisaObj = {
+                ...state.storedLisaData,
+            }
+            lisaObj[action.payload.name] = action.payload.data
+            return {
+                ...state,
+                storedLisaData: lisaObj
+            };
         case 'SET_CENTROIDS':
             let centroidsObj = {
                 ...state.centroids,
@@ -136,6 +154,15 @@ var reducer = (state = INITIAL_STATE, action) => {
                     ...state,
                     dataParams: paramObj 
                 }
+            }
+        case 'SET_MAP_PARAMS':
+            let mapParamObj = {
+                ...state.mapParams,
+                ...action.payload.params
+            }
+            return {
+                ...state,
+                mapParams: mapParamObj 
             }
         case 'SET_VARIABLE_NAME':
             return {

@@ -6,7 +6,7 @@ const DataPanel = (props) => {
   const [hidePanel, setHidePanel] = useState(true);
   const sidebarData = useSelector(state => state.sidebarData);
 
-  console.log(sidebarData)
+  // console.log(sidebarData)
 
   return (
     <div id="data-panel" style={{transform: (hidePanel ? 'translateX(100%)' : '')}}>

@@ -19,6 +19,26 @@ export const storeData = (data, name) => {
     }
 }
 
+export const storeGeojson = (data, name) => {
+    return {
+        type: 'SET_STORED_GEOJSON',
+        payload: {
+            data,
+            name
+        }   
+    }
+}
+
+export const storeLisaValues = (data, name) => {
+    return {
+        type: 'SET_STORED_LISA_DATA',
+        payload: {
+            data,
+            name
+        }   
+    }
+}
+
 export const setCurrentData = (data) => {
     return {
         type: 'SET_CURRENT_DATA',
@@ -142,6 +162,15 @@ export const incrementDate = ( index ) => {
 export const setVariableParams = ( params ) => {
     return {
         type: 'SET_VARIABLE_PARAMS',
+        payload: {
+            params
+        }
+    }
+}
+
+export const setMapParams = ( params ) => {
+    return {
+        type: 'SET_MAP_PARAMS',
         payload: {
             params
         }

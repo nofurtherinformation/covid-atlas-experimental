@@ -12,7 +12,7 @@ const getDataForCharts = (data, table, startIndex, dates) => {
         let i = 0;
 
         while (i<features.length) {
-            sum += data[features[i]][table][n]
+            if (data[features[i]][table]!== undefined) sum += data[features[i]][table][n]
             // tempObj[`n${i}`] = data[features[i]][table][n]
             i++;
         }

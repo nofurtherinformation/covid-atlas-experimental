@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setVariableParams, setVariableName } from '../actions';
+import { setVariableParams, setVariableName, setMapParams } from '../actions';
 import { makeStyles } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -68,6 +68,7 @@ const VariablePanel = (props) => {
   const columnNames = useSelector(state => state.cols);
   const currentData = useSelector(state => state.currentData);
   const currentVariable = useSelector(state => state.currentVariable);
+  const mapParams = useSelector(state => state.mapParams);
 
   const [hidePanel, setHidePanel] = useState(false);
   
@@ -234,6 +235,8 @@ const VariablePanel = (props) => {
       }
   }
 
+  
+
   const handleVariable = (event) => {
       let variable = event.target.value;
       // setCurrVariableName(variable);
@@ -248,6 +251,37 @@ const VariablePanel = (props) => {
       }
           
   };
+
+  const handleMapType = (event, newValue) =>{
+    console.log(newValue)
+      dispatch(
+        setMapParams(
+          {
+            'mapType': newValue
+          }
+        )
+      )
+  }
+
+  const handleMapOverlay = (event) =>{
+    dispatch(
+      setMapParams(
+        {
+          'overlay': event.target.value
+        }
+      )
+    )
+  }
+
+  const handleMapResource = (event) =>{
+    dispatch(
+      setMapParams(
+        {
+          'resource': event.target.value
+        }
+      )
+    )
+  }
 
   return (
     <div id="variable-panel" style={{transform: (hidePanel ? 'translateX(-100%)' : '')}}>
@@ -271,7 +305,7 @@ const VariablePanel = (props) => {
       <FormControl className={classes.formControl}>
         <InputLabel htmlFor="numerator-select">Select Variable</InputLabel>
         <Select 
-          defaultValue={currentVariable} 
+          value={currentVariable} 
           id="numerator-select"
           onChange={handleVariable}
         >
@@ -291,8 +325,13 @@ const VariablePanel = (props) => {
       <br/>
       <FormControl component="fieldset" className={classes.formControl}>
         <FormLabel component="legend">Map Type</FormLabel>
-        <RadioGroup aria-label="maptype" name="maptype1">
-          <FormControlLabel value="natural_breaks" control={<Radio />} label="Choropleth" />
+        <RadioGroup 
+          aria-label="maptype" 
+          name="maptype1" 
+          onChange={handleMapType} 
+          value={mapParams.mapType}
+          >
+          <FormControlLabel value="choropleth" control={<Radio />} label="Choropleth" />
           <FormControlLabel value="hinge15" control={<Radio />} label="Box Map" />
           <FormControlLabel value="lisa" control={<Radio />} label="Local Moran" />
           <FormControlLabel value="cartogram" control={<Radio />} label="Cartogram" />
@@ -303,35 +342,37 @@ const VariablePanel = (props) => {
           <InputLabel htmlFor="overlay-select">Overlay</InputLabel>
           <Select  
             id="overlay-select"
-            defaultValue={"Choose Overlay"} 
+            value={mapParams.overlay}
+            onChange={handleMapOverlay}
           >
-            <MenuItem value={''} key={'na'}>None</MenuItem> 
-            <MenuItem value={'variable1'} key={'variable1'}>Native American Reservations</MenuItem>
-            <MenuItem value={'variable2'} key={'variable2'}>Hypersegregated Cities</MenuItem>
-            <MenuItem value={'variable3'} key={'variable3'}>Black Belt Counties</MenuItem>
-            <MenuItem value={'variable4'} key={'variable4'}>US Congressional Districts</MenuItem>
+            <MenuItem value="" key={'None'}>None</MenuItem> 
+            <MenuItem value={'native_american_reservations'} key={'variable1'}>Native American Reservations</MenuItem>
+            <MenuItem value={'hypersegregated_cities'} key={'variable2'}>Hypersegregated Cities</MenuItem>
+            <MenuItem value={'black_belt_counties'} key={'variable3'}>Black Belt Counties</MenuItem>
+            <MenuItem value={'us_congressional_districts'} key={'variable4'}>US Congressional Districts</MenuItem>
           </Select>
         </FormControl>
         <FormControl className={classes.formControl}>
           <InputLabel htmlFor="resource-select">Resource</InputLabel>
           <Select  
             id="resource-select"
-            defaultValue={"Choose Resource"} 
+            value={mapParams.resource}
+            onChange={handleMapResource}
           >
-            <MenuItem value={''} key={'na'}>None</MenuItem> 
-            <MenuItem value={'variable1'} key={'variable1'}>Clinics and Hospitals</MenuItem>
-            <MenuItem value={'variable2'} key={'variable2'}>Clinics</MenuItem>
-            <MenuItem value={'variable3'} key={'variable3'}>Hospitals</MenuItem>
+            <MenuItem value="" key='None'>None</MenuItem> 
+            <MenuItem value={'clinics_hospitals'} key={'variable1'}>Clinics and Hospitals</MenuItem>
+            <MenuItem value={'clinics'} key={'variable2'}>Clinics</MenuItem>
+            <MenuItem value={'hospitals'} key={'variable3'}>Hospitals</MenuItem>
           </Select>
         </FormControl>
       </div>
-      <p class="note">
+      <p className="note">
         Data is updated with freshest available data at 3pm CST daily, at minimum. 
         In case of data discrepancy, local health departments are considered most accurate as per CDC recommendations. 
         More information on <a href="data.html">data</a>, <a href="methods.html">methods</a>, 
         and <a href="FAQ.html">FAQ</a> at main site.
       </p>
-      <div class="poweredByGeoda">
+      <div className="poweredByGeoda">
             <a href="https://geodacenter.github.io" target="_blank" rel="noopener noreferrer">
               <img src={`${process.env.PUBLIC_URL}/assets/img/geoda-logo.png`} />
               POWERED BY GEODA

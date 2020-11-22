@@ -1,68 +1,73 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-
 import Grid from '@material-ui/core/Grid';
-import { makeStyles } from '@material-ui/core/styles';
 import Slider from '@material-ui/core/Slider';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
+import styled from 'styled-components';
 
 import { setDate, setVariableParams, incrementDate } from '../actions';
 // import { getParseCSV, getJson, mergeData, colIndex, getDataForBins } from './utils';
 
-const useStyles = makeStyles({
-    root: {
-        width:'100%',
-        margin:0,
-        padding:'5px 20px',
-        color: 'white'
-    },
-    button: {
-        color:'rgb(200,200,200)',
-        background: 'none',
-        transition: '250ms all',
-        borderColor: 'white !important',
-        fontSize: '75% !important',
-        '& :hover': {
-            color:'white'
-        },
-    },
-    buttonActive: {
-        cursor: 'initial',
-        fontSize: '75%',
-        color:'black !important',
-        background: 'white !important',
-        transition: '250ms all',
-        borderColor: 'white'
-    },
-    slider: {
-        color:'white',
-        height:'58%',
-        '& > span.MuiSlider-rail': {
-            display: 'none'
-        },
-        '& > span.MuiSlider-track': {
-            display: 'none'
-        },
-        '& > span.MuiSlider-thumb': {
-            width:'1px',
-            height:'100%'
-        },
-        '& > span.MuiSlider-thumb.MuiSlider-active': {
-            boxShadow: '0px 0px 10px rgba(200,200,200,0.5)'
-        }
-    },
-    playPauseButton: {
-        background:'none',
-        transform:'translateY(-100%)',
-        '& svg  > g': {
-            fill: "white"
+const SliderContainer = styled(Grid)`
+    width: 100%;
+    margin: 0;
+    padding: 5px 20px;
+    color: white;
+`
+
+const DateButton = styled(Button)`
+    color:rgb(200,200,200);
+    background: none;
+    transition: 250ms all;
+    border-color: white !important;
+    font-size: 75% !important;
+    transition:250ms all;
+    &:hover {
+        color:white;
+    }
+    &.active {
+        cursor: initial;
+        font-size: 75%;
+        color:black !important;
+        background: white !important;
+        transition: 250ms all;
+        border-color: white;
+    }
+`
+const PlayPauseButton = styled(Button)`
+    background:none;
+    transform:translateY(-100%);
+    svg {
+        g {
+            fill: white;
         }
     }
-  });
+`
+
+const LineSlider = styled(Slider)`
+    color:white;
+    // span.MuiSlider-rail {
+    //     display:none;
+    // }
+    // span.MuiSlider-track {
+    //     display: none;
+    // }
+    span.MuiSlider-thumb {
+        .MuiSlider-valueLabel {
+            transform:translateY(-10px);
+            pointer-events:none;
+            span {
+                background: none;
+            }
+        }
+    }
+    span.MuiSlider-thumb.MuiSlider-active: {
+        box-shadow: 0px 0px 10px rgba(200,200,200,0.5);
+    }
+`
 
 const DateSlider = () => {
-    const classes = useStyles();
     const dispatch = useDispatch();  
     
     const currentData = useSelector(state => state.currentData);
@@ -72,6 +77,7 @@ const DateSlider = () => {
     
     const [timerId, setTimerId] = useState(null);
     const [customRange, setCustomRange] = useState(false);
+    // const [useLog, setUseLog] = useState(false);
     
     const handleChange = (event, newValue) => {
         if (dataParams.nType === "time-series" && dataParams.dType === "time-series") {
@@ -120,12 +126,12 @@ const DateSlider = () => {
 
     if (dates[currentData] !== undefined) {
         return (
-            <Grid container spacing={2} className={classes.root} id="slider-container" style={{visibility: (dataParams.nType === 'time-series' ? 'visible' : 'hidden')}}>
+            <SliderContainer container spacing={2} id="slider-container" style={{visibility: (dataParams.nType === 'time-series' ? 'visible' : 'hidden')}}>
                 {/* <Grid item xs={12}>
                     <h4 style={{textAlign:"center", color:"white"}}>{dates[currentData][dataParams.nIndex]||dates[currentData].slice(-1,)[0]}</h4>
                 </Grid> */}
                 <Grid item xs={1}>
-                    <Button id="playPause" className={classes.playPauseButton} onClick={() => handlePlayPause(timerId, 1, 100)}>
+                    <PlayPauseButton id="playPause" onClick={() => handlePlayPause(timerId, 1, 100)}>
                         {timerId === null ? 
                             <svg x="0px" y="0px" viewBox="0 0 100 100">
                                 <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
@@ -152,38 +158,38 @@ const DateSlider = () => {
                             </svg>
 
                         }
-                    </Button>
+                    </PlayPauseButton>
                 </Grid>
                 <Grid item xs={9}>
-                    <Slider 
+                    <LineSlider 
                         value={dataParams.nIndex} 
+                        valueLabelDisplay="on"
                         onChange={handleChange} 
                         getAriaValueText={valuetext}
-                        aria-labelledby="discrete-slider-always"
-                        className={classes.slider}
+                        valueLabelFormat={valuetext}
+                        aria-labelledby="aria-valuetext"
                         min={startDateIndex}
                         step={1}
                         max={dates[currentData].length-1}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={2} style={{marginTop:'-120px'}}>
                     <ButtonGroup
                         orientation="vertical"
                         color="primary"
                         aria-label="vertical outlined primary button group"
                         style={{float:'right'}}
-                        valueLabelDisplay="on"
                     >
-                        <Button className={dataParams.nRange === null ? classes.buttonActive : classes.button} onClick={() => handleRangeButton(null)}>Total</Button>
-                        <Button className={dataParams.nRange === 1 ?classes.buttonActive : classes.button} onClick={() => handleRangeButton(1)}>New Daily</Button>
-                        <Button className={dataParams.nRange === 7 ? classes.buttonActive : classes.button} onClick={() => handleRangeButton(7)}>Weekly Average</Button>
-                        <Button className={customRange ? classes.buttonActive : classes.button} onClick={() => handleRangeButton('custom')}>Custom Range</Button>
+                        <DateButton className={dataParams.nRange === null ? 'active' : ''} onClick={() => handleRangeButton(null)}>Total</DateButton>
+                        <DateButton className={dataParams.nRange === 1 ? 'active' : ''} onClick={() => handleRangeButton(1)}>New Daily</DateButton>
+                        <DateButton className={dataParams.nRange === 7 ? 'active' : ''} onClick={() => handleRangeButton(7)}>Weekly Average</DateButton>
+                        <DateButton className={customRange ? 'active' : ''} onClick={() => handleRangeButton('custom')}>Custom Range</DateButton>
                     </ButtonGroup>
                 </Grid>
-            </Grid>
+            </SliderContainer>
         );
     } else {
-        return <div className={classes.root} />
+        return <SliderContainer />
     }
 }
 

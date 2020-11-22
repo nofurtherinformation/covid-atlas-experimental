@@ -18,15 +18,15 @@ const getDataForBins = (tableData, table, nType, numerProp, numerIndex, numerRan
         // if the denominator is time series data (eg. deaths / cases this week), make the indices the same (most recent)
         let tempDenomIndex = dType === 'time-series' ? tableData[0][denomTable].length-1 : denomIndex;
 
-        // loop through, do appropriate calculation. push returned value to rtn array
+        // loop through, do appropriate calculation. add returned value to rtn array
         while (n>0) {
             n--;
-            rtn.push(dataFn(tableData[n][table], numerProp, tempIndex, numerRange, tableData[n][denomTable], denomProp, tempDenomIndex, denomRange, scale))
+            rtn.unshift(dataFn(tableData[n][table], numerProp, tempIndex, numerRange, tableData[n][denomTable], denomProp, tempDenomIndex, denomRange, scale))
         }
     } else {
        while (n>0) {
             n--;
-            rtn.push(dataFn(tableData[n][table], numerProp, numerIndex, numerRange, tableData[n][denomTable], denomProp, denomIndex, denomRange, scale))
+            rtn.unshift(dataFn(tableData[n][table], numerProp, numerIndex, numerRange, tableData[n][denomTable], denomProp, denomIndex, denomRange, scale))
         }
     }
 

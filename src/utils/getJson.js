@@ -1,4 +1,4 @@
-import { loadGeojsonToGeoda } from './loadGeojsonToGeoda.js';
+import { loadGeojsonToGeoda, getGeoidIndex } from '../utils';
 
 async function getJson(url, gda_proxy){
     const tempData = await fetch(url)
@@ -11,9 +11,13 @@ async function getJson(url, gda_proxy){
         return response.json();
 
       }).then(data => {
+        console.log(getGeoidIndex(data.features))
 
-        return data
-
+        return {
+          data: data,
+          geoidIndex: getGeoidIndex(data.features)
+        }
+        
       });     
       
     return tempData;

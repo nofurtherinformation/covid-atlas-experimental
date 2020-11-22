@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView} from '@deck.gl/core';
 import ReactMapGL from 'react-map-gl';
 import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDataSidebar } from '../actions';
-import { mapFn, dataFn } from '../utils';
+import { mapFn, dataFn, getVarId } from '../utils';
+import { lisaColorScale } from '../config';
 
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0bTFhaTZmbnRwaiJ9.VRNeNnyb96Eo-CorkJmIqg';
 
@@ -29,15 +30,34 @@ const Map = () => {
     const [globalMap, setGlobalMap] = useState(false);
 
     const storedData = useSelector(state => state.storedData);
+    const storedGeojson = useSelector(state => state.storedGeojson);
     const currentData = useSelector(state => state.currentData);
-    const bins = useSelector(state => state.bins);
-    const colorScale = useSelector(state => state.colorScale);
-    const use3D = useSelector(state => state.use3D);
+    const storedLisaData = useSelector(state => state.storedLisaData);
+    
     const dataParams = useSelector(state => state.dataParams);
+    const mapParams = useSelector(state => state.mapParams);
 
+    const colorScale = useSelector(state => state.colorScale);
+    
     const dispatch = useDispatch();
 
-    const GetFillColor = (f, bins) => bins.hasOwnProperty("bins") ? mapFn(dataFn(f[dataParams.numerator], dataParams.nProperty, dataParams.nIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale), bins.breaks, colorScale) : [0,0,0]
+    const [currLisaData, setCurrLisaData] = useState({})
+
+    useEffect(() => {
+        let tempData = storedLisaData[getVarId(currentData, dataParams)]
+        if (tempData !== undefined) setCurrLisaData(tempData);
+    }, [storedLisaData, dataParams, mapParams])
+
+    const GetFillColor = (f, bins, mapType) => {
+        if (!bins.hasOwnProperty("bins")) {
+            return [0,0,0]
+        } else if (mapType === 'lisa') {
+            return lisaColorScale[currLisaData[storedGeojson[currentData]['geoidOrder'][f.properties.GEOID]]]
+        } else {
+            return mapFn(dataFn(f[dataParams.numerator], dataParams.nProperty, dataParams.nIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale), bins.breaks, colorScale) 
+        }
+    }
+    
     const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f[dataParams.numerator], dataParams.nProperty, dataParams.nIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale)*1000 : 0
     
     const Layers = [
@@ -58,18 +78,19 @@ const Map = () => {
                 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
                 "features": storedData[currentData] ? storedData[currentData] : [],
             },
+            visible: mapParams.mapType !== 'cartogram',
             pickable: true,
             stroked: false,
             filled: true,
             wireframe: false,
-            extruded:use3D,
-            opacity: use3D ? 1 : 0.5,
-            getFillColor: f => GetFillColor(f, bins),
-            getElevation: f => GetHeight(f, bins),
+            extruded: mapParams.use3d,
+            opacity: mapParams.use3d ? 1 : 0.5,
+            getFillColor: f => GetFillColor(f, mapParams.bins, mapParams.mapType),
+            getElevation: f => GetHeight(f, mapParams.bins, mapParams.mapType),
             updateTriggers: {
                 data: currentData,
-                getFillColor: [dataParams],
-                getElevation: [dataParams],
+                getFillColor: [dataParams, mapParams],
+                getElevation: [dataParams, mapParams],
             },
             onHover: info => setHoverInfo(info),
             onClick: info => dispatch(setDataSidebar(info.object)),

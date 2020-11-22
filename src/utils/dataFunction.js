@@ -38,7 +38,9 @@
 // export default dataFn;
 
 const dataFn = (numeratorData, numeratorProperty, index, range, denominatorData, denominatorProperty, denominatorIndex, denominatorRange, scale)  => {
-  if (denominatorProperty===null&&range===null){ // whole count or number -- no range, no normalization
+  if (numeratorData === undefined) {
+    return 0;
+  } else if (denominatorProperty===null&&range===null){ // whole count or number -- no range, no normalization
     return (numeratorData[numeratorProperty]||numeratorData[index])*scale
   } else if (denominatorProperty===null&&range!==null){ // range number, daily or weekly count -- no normalization
     return (numeratorData[index]-numeratorData[index-range])/range*scale

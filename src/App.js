@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setBins, set3D, setVariableParams, setStartDateIndex, setChartData } from './actions';
+import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setMapParams, setVariableParams, setStartDateIndex, setChartData, storeGeojson, storeLisaValues } from './actions';
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
-import { getParseCSV, getJson, mergeData, colIndex, getDataForBins, getDataForCharts, colLookup } from './utils';
+import { getParseCSV, getJson, mergeData, colIndex, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa } from './utils';
 import { Map, DateSlider, Legend, VariablePanel, MainLineChart, DataPanel } from './components';
 
 function App() {
   const storedData = useSelector(state => state.storedData);
+  const storedGeojson = useSelector(state => state.storedGeojson);
+  const storedLisaData = useSelector(state => state.storedLisaData);
   const currentData = useSelector(state => state.currentData);
   const currentVariable = useSelector(state => state.currentVariable);
   const columnNames = useSelector(state => state.cols);
   const dates = useSelector(state => state.dates);
-  const bins = useSelector(state => state.bins);
-  const binMode = useSelector(state => state.binMode);
+  const mapParams = useSelector(state => state.mapParams);
   const colorScale = useSelector(state => state.colorScale);
   const dataParams = useSelector(state => state.dataParams);
+  const chartData = useSelector(state => state.chartData);
   const startDateIndex = useSelector(state => state.startDateIndex);
 
   const [gda_proxy, set_gda_proxy] = useState(null);
@@ -54,10 +56,11 @@ function App() {
       getJson(`${process.env.PUBLIC_URL}/geojson/${geojson}`, gda_proxy),
       ...csvPromises
     ]).then(values => {
-      // console.log(values.slice(1,))
-      dispatch(storeData(mergeData(values[0], joinCols[0], values.slice(1,), names, joinCols[1]),geojson));
-      dispatch(setCurrentData(geojson))
-      dispatch(setColumnNames(getColumns(values.slice(1,), names), geojson))
+      dispatch(storeGeojson(values[0]['geoidIndex'], geojson));
+      let tempData = mergeData(values[0]['data'], joinCols[0], values.slice(1,), names, joinCols[1]);
+      dispatch(storeData(tempData, geojson));
+      dispatch(setCurrentData(geojson));
+      dispatch(setColumnNames(getColumns(values.slice(1,), names), geojson));
     })    
   }
 
@@ -65,7 +68,6 @@ function App() {
   useEffect(() => {
     const waitForWASM = () => {
       setTimeout(() => {
-        console.log(window.Module)
         if (window.Module === undefined) {
           waitForWASM()
         } else {
@@ -81,7 +83,6 @@ function App() {
 
   // on initial load and after gda_proxy has been initialized, this loads in the default data sets (USA Facts)
   useEffect(() => {
-    console.log(gda_proxy)
     if ((gda_proxy !== null) && (currentData === '')) {
       loadData(
         'county_usfacts.geojson', 
@@ -118,30 +119,71 @@ function App() {
     }
   }, [startDateIndex])
 
+  // get lisa values on change, if map type set to lisa
+  useEffect(() => {
+    if (gda_proxy !== null && mapParams.mapType === "lisa"){
+      let tempId = getVarId(currentData, dataParams)
+      if (!(storedLisaData.hasOwnProperty(tempId))) {
+        dispatch(
+          storeLisaValues(
+            getLisaValues(
+              gda_proxy, 
+              currentData, 
+              getDataForLisa(
+                storedData[currentData], 
+                dataParams.numerator, 
+                dataParams.nType,
+                dataParams.nProperty, 
+                dataParams.nIndex, 
+                dataParams.nRange, 
+                dataParams.denominator, 
+                dataParams.dType,
+                dataParams.dProperty, 
+                dataParams.dIndex, 
+                dataParams.dRange, 
+                dataParams.scale,
+                storedGeojson[currentData].indexOrder
+              )
+            ),
+            tempId
+          )
+        )
+      }
+    }
+  }, [dataParams, mapParams])
 
-
+  // trigger on parameter change for metric values
   useEffect(() => {
     if (gda_proxy !== null && currentData !== ''){
-      if (binMode === 'dynamic') {
+      if (mapParams.binMode === 'dynamic') {
         let nb = gda_proxy.custom_breaks(
           currentData, 
           "natural_breaks", 
           8, 
-          null, 
-          getDataForBins(
-            storedData[currentData], 
-            dataParams.numerator, 
-            dataParams.nProperty, 
-            dataParams.nIndex, 
-            dataParams.nRange, 
-            dataParams.denominator, 
-            dataParams.dProperty, 
-            dataParams.dIndex, 
-            dataParams.dRange, 
-            dataParams.scale
-            )
+          null,  
+            getDataForBins(
+              storedData[currentData], 
+              dataParams.numerator, 
+              dataParams.nType,
+              dataParams.nProperty, 
+              dataParams.nIndex, 
+              dataParams.nRange, 
+              dataParams.denominator, 
+              dataParams.dType,
+              dataParams.dProperty, 
+              dataParams.dIndex, 
+              dataParams.dRange, 
+              dataParams.scale
+            ), 
           )
-        dispatch(setBins(nb.bins, [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]))
+          dispatch(
+            setMapParams({
+              bins: {
+                bins:nb.bins,
+                breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+              }
+            })
+          )
       } else {
         let nb = gda_proxy.custom_breaks(
           currentData, 
@@ -163,13 +205,21 @@ function App() {
             dataParams.scale
             )
           )
-        dispatch(setBins(nb.bins, [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]))
+          dispatch(
+            setMapParams({
+              bins: {
+                bins:nb.bins,
+                breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+              }
+            })
+          )
       }
     }
   }, [dates, storedData[currentData], dataParams.numerator, dataParams.nProperty, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dRange, dataParams.scale])
 
+  // trigger on date (index) change for dynamic binning
   useEffect(() => {
-    if (gda_proxy !== null && binMode === 'dynamic' && currentData !== ''){
+    if (gda_proxy !== null && mapParams.binMode === 'dynamic' && currentData !== ''){
       let nb = gda_proxy.custom_breaks(
         currentData, 
         "natural_breaks", 
@@ -178,36 +228,56 @@ function App() {
         getDataForBins(
           storedData[currentData], 
           dataParams.numerator, 
+          dataParams.nType,
           dataParams.nProperty, 
           dataParams.nIndex, 
           dataParams.nRange, 
           dataParams.denominator, 
+          dataParams.dType,
           dataParams.dProperty, 
           dataParams.dIndex, 
           dataParams.dRange, 
           dataParams.scale
-          )
+          ), 
         )
-      dispatch(setBins(nb.bins, [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]))
+      dispatch(
+        setMapParams({
+          bins: {
+            bins:nb.bins,
+            breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+          }
+        })
+      )
     }
   }, [dataParams.nIndex, dataParams.dIndex])
 
   return (
     <div className="App">
-      {/* <header className="App-header" style={{position:'fixed', left: '30vw', top:'20px', zIndex:10}}>
-        <h1 style={{color:"white"}}>Tech Demo</h1>
-        <button onClick={() => console.log(         getDataForCharts(
-            storedData[currentData],
-            'cases',
-            startDateIndex,
-            dates[currentData]
-          ))}>total count</button>
-      </header> */}
+      <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
+        <button onClick={() => console.log( 
+          getDataForLisa(
+            storedData[currentData], 
+            dataParams.numerator, 
+            dataParams.nType,
+            dataParams.nProperty, 
+            dataParams.nIndex, 
+            dataParams.nRange, 
+            dataParams.denominator, 
+            dataParams.dType,
+            dataParams.dProperty, 
+            dataParams.dIndex, 
+            dataParams.dRange, 
+            dataParams.scale,
+            storedGeojson[currentData].indexOrder
+          )
+          )
+        }>dummy button for testing</button>
+      </header>
       <Map />
       <VariablePanel />
       <DataPanel />
       <div id="bottom-drawer">
-        <Legend labels={bins.bins} title={currentVariable} colors={colorScale} />
+        <Legend labels={mapParams.bins.bins} title={currentVariable} colors={colorScale} />
         <hr />
         <MainLineChart />
         <DateSlider />

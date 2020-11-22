@@ -1,11 +1,12 @@
 export const INITIAL_STATE = {
   geodaProxy: null,
   storedData: {},
+  storedGeojson: {},
+  storedLisaData: {},
+  storedCSV: {},
   cols: {},
   currentData: '',
-  chartData: {},
-  bins: {},
-  binMode: '',
+  chartData: [{}],
   colorScale:  [
     [240,240,240],
     [255,255,204],
@@ -39,10 +40,17 @@ export const INITIAL_STATE = {
     dIndex:null,
     scale:100000,
   },
+  mapParams: {
+    mapType: 'choropleth',
+    binType: 'natural_breaks',
+    bins: {},
+    binMode: '',
+    use3d: false,
+    activeGeoid: '',
+    overlay: '',
+    resource: '',
+  },
   storedRange: null,
-  isCartogram: false,
   currentGeoid: '',
-  use3D: false,
   sidebarData: {},
-  chartData: [{}]
 };
