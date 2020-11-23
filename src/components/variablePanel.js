@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setVariableParams, setVariableName, setMapParams } from '../actions';
-import { makeStyles } from '@material-ui/core/styles';
+import { setVariableParams, setVariableName, setMapParams, setCurrentData } from '../actions';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
@@ -14,58 +13,12 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import { colLookup } from '../utils';
 import styled from 'styled-components';
 
-const useStyles = makeStyles((theme) => ({
-    formControl: {
-      margin: theme.spacing(1),
-      minWidth: 200,
-      color:'white',
-      padding:0,
-      margin: '0 10px 40px 0',
-      fontFamily: "'Lato', sans-serif",
-      '& > .MuiFormLabel-root': {
-        color:'white',
-      },
-      '& > .MuiInput-underline:before': {
-        borderBottom:'1px solid rgba(255,255, 255, 0.42)'
-      },
-      '& > .MuiInput-underline:after': {
-        borderBottom: '2px solid white'
-      },
-      '& > .MuiInputBase-root': {
-        color: 'white',
-        '& > .MuiSvgIcon-root': {
-          color: 'rgba(255,255,255,0.54)'
-        },
-        '& > .MuiPopover-paper': {
-          color:'white',
-          background:'black'
-        }
-      },
-      '& > .MuiFormGroup-root':{
-        '& > .MuiFormControlLabel-root': {
-          color:'white',
-          '& > .MuiRadio-root': {
-            color: 'rgba(255,255,255,0.54)'
-          },
-        }
-      }
-    },
-    twoUp: {
-      width:'100%',
-      '& > .MuiFormControl-root': {
-        width:'45%',
-        // display: 'inline',
-        minWidth:60
-      }
-    }
-}));
-
 const VariablePanelContainer = styled.div`
   position:fixed;
   left:0;
   top:0;
   height:100vh;
-  max-width:20vw;
+  min-width:200px;
   background-color: #2b2b2b;
   box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
   padding:20px;
@@ -73,6 +26,7 @@ const VariablePanelContainer = styled.div`
   transition:250ms all;
   font: 'Lato', sans-serif;
   color:white;
+  z-index:50;
   p.note {
     position: absolute;
     bottom:100px;
@@ -135,6 +89,7 @@ const VariablePanelContainer = styled.div`
       right:-50px;
       top:-30px;
       transition:500ms all;
+      z-index:4;
     }
   }
   button#showHideLeft.hidden {
@@ -148,9 +103,65 @@ const VariablePanelContainer = styled.div`
   }
 `
 
-const VariablePanel = (props) => {
 
-  const classes = useStyles();
+const StyledDropDown = styled(FormControl)`
+  padding:0 0 40px 0!important;
+  color:white;
+  padding:0;
+  margin: 0 10px 40px 0;
+  .MuiInputBase-root {
+    font-family: 'Lato', sans-serif;
+  }
+  .MuiFormLabel-root {
+    color: white;
+    font-family: 'Lato', sans-serif;
+  }
+  .Mui-focused {
+    color: white !important;
+  }
+  .MuiInput-underline:before {
+    border-bottom:1px solid rgba(255,255, 255, 0.42);
+  }
+  .MuiInput-underline:after {
+    border-bottom: 2px solid white
+  }
+  .MuiInputBase-root {
+    color: white;
+    .MuiSvgIcon-root {
+      color: rgba(255,255,255,0.54);
+    },
+    .MuiPopover-paper {
+      color:white;
+    }
+  }
+  .MuiFormGroup-root {
+    .MuiFormControlLabel-root{
+      color:white;
+      span {
+        font-family: 'Lato', sans-serif;
+      }
+      .MuiRadio-root {
+        color: rgba(255,255,255,0.54);
+      }
+    }
+  }
+  .MuiRadio-root {
+    color:white;
+  }
+  .MuiRadio-colorSecondary.Mui-checked {
+    color:white;
+  }
+`
+
+const TwoUp = styled.div`
+  width:100%;
+  .MuiFormControl-root {
+    width:45%;
+    min-width:60px;
+    margin-right:5px;
+  }
+`
+const VariablePanel = (props) => {
 
   const dispatch = useDispatch();  
   
@@ -162,11 +173,11 @@ const VariablePanel = (props) => {
   const [hidePanel, setHidePanel] = useState(false);
   
   const PresetVariables = {
+      "HEADER:cases":{},
       "Confirmed Count": {
           numerator: 'cases',
           nType: 'time-series',
           nProperty: null,
-          nRange: null,
           denominator: 'properties',
           dType: 'none',
           dProperty: null,
@@ -196,6 +207,7 @@ const VariablePanel = (props) => {
           dIndex:null,
           scale:1,
       },
+      "HEADER:deaths":{},
       "Death Count":{
         numerator: 'deaths',
         nType: 'time-series',
@@ -227,10 +239,10 @@ const VariablePanel = (props) => {
         denominator: 'cases',
         dType: 'time-series',
         dProperty: null,
-        dIndex:null,
         scale:1,
 
       },
+      "HEADER:community health":{},
       "Uninsured % (Community Health Factor)":{
         numerator: 'chr_health_factors',
         nType: 'characteristic',
@@ -271,6 +283,7 @@ const VariablePanel = (props) => {
   }
 
   const CountyVariables = {
+      "HEADER:forecasting":{},
       "Forecasting (5-Day Severity Index)": {
         numerator: 'predictions',
         nType: 'characteristic',
@@ -286,6 +299,7 @@ const VariablePanel = (props) => {
   }
 
   const StateVariables = {
+      "HEADER:testing":{},
       "7 Day Testing Positivity Rate %": {
         numerator: 'testing_wk_pos',
         nType: 'time-series',
@@ -328,7 +342,6 @@ const VariablePanel = (props) => {
 
   const handleVariable = (event) => {
       let variable = event.target.value;
-      // setCurrVariableName(variable);
       dispatch(setVariableName(variable))
 
       if (PresetVariables.hasOwnProperty(variable)) {
@@ -341,15 +354,20 @@ const VariablePanel = (props) => {
           
   };
 
+  const handleDataSource = (event) => {
+    dispatch(setCurrentData(event.target.value)) ;  
+  };
+
   const handleMapType = (event, newValue) =>{
-    console.log(newValue)
-      dispatch(
-        setMapParams(
-          {
-            'mapType': newValue
-          }
-        )
+    let nBins = newValue === 'hinge15_breaks' ? 6 : 8
+    dispatch(
+      setMapParams(
+        {
+          nBins,
+          'mapType': newValue
+        }
       )
+    )
   }
 
   const handleMapOverlay = (event) =>{
@@ -375,23 +393,25 @@ const VariablePanel = (props) => {
   return (
     <VariablePanelContainer style={{transform: (hidePanel ? 'translateX(-100%)' : '')}}>
       <h2>Data Sources &amp;<br/> Map Variables</h2>
-      <FormControl className={classes.formControl}>
+      <StyledDropDown>
         <InputLabel htmlFor="data-select">Data Source</InputLabel>
         <Select  
           id="data-select"
+          value={currentData}
+          onChange={handleDataSource}
         >
           
-        <ListSubheader>County Data</ListSubheader>
-          <MenuItem value={'variable1'} key={'variable1'}>USA Facts</MenuItem>
-          <MenuItem value={'variable2'} key={'variable2'}>1point3acres</MenuItem>
-          <MenuItem value={'variable3'} key={'variable3'}>New York Times</MenuItem>
-        <ListSubheader>State Data</ListSubheader>
-          <MenuItem value={'variable4'} key={'variable4'}>1point3acres</MenuItem>
-          <MenuItem value={'variable5'} key={'variable5'}>New York Times</MenuItem>
+        <ListSubheader>county data</ListSubheader>
+          <MenuItem value={'county_usfacts.geojson'} key={'county_usfacts.geojson'}>USA Facts</MenuItem>
+          <MenuItem value={'county_nyt.geojson'} key={'county_nyt.geojson'}>New York Times</MenuItem>
+          <MenuItem value={'county_1p3a.geojson'} key={'county_1p3a.geojson'}>1point3acres</MenuItem>
+        <ListSubheader>state data</ListSubheader>
+          <MenuItem value={'state_1p3a.geojson'} key={'state_1p3a.geojson'}>1point3acres</MenuItem>
+          <MenuItem value={'state_nyt.geojson'} key={'state_nyt.geojson'} disabled>New York Times</MenuItem>
         </Select>
-      </FormControl>
+      </StyledDropDown>
       <br />
-      <FormControl className={classes.formControl}>
+      <StyledDropDown>
         <InputLabel htmlFor="numerator-select">Select Variable</InputLabel>
         <Select 
           value={currentVariable} 
@@ -399,20 +419,38 @@ const VariablePanel = (props) => {
           onChange={handleVariable}
         >
           {
-            Object.keys(PresetVariables).map((variable) => <MenuItem value={variable} key={variable}>{variable}</MenuItem> )
+            Object.keys(PresetVariables).map((variable) => {
+              if (variable.split(':')[0]==="HEADER") {
+                return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+              } else {
+                return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
+              }
+            })
           }
           
           {
-            currentData.includes("county") && Object.keys(CountyVariables).map((variable) => <MenuItem value={variable} key={variable}>{variable}</MenuItem> )
+            currentData.includes("county") && Object.keys(CountyVariables).map((variable) => {
+              if (variable.split(':')[0]==="HEADER") {
+                return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+              } else {
+                return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
+              }
+            })
           }
           
           {
-            currentData.includes("state") && Object.keys(StateVariables).map((variable) => <MenuItem value={variable} key={variable}>{variable}</MenuItem> )
+            currentData.includes("state") && Object.keys(StateVariables).map((variable) => {
+              if (variable.split(':')[0]==="HEADER") {
+                return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+              } else {
+                return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
+              }
+            })
           }
         </Select>
-      </FormControl>
+      </StyledDropDown>
       <br/>
-      <FormControl component="fieldset" className={classes.formControl}>
+      <StyledDropDown component="fieldset" >
         <FormLabel component="legend">Map Type</FormLabel>
         <RadioGroup 
           aria-label="maptype" 
@@ -420,14 +458,14 @@ const VariablePanel = (props) => {
           onChange={handleMapType} 
           value={mapParams.mapType}
           >
-          <FormControlLabel value="choropleth" control={<Radio />} label="Choropleth" />
-          <FormControlLabel value="hinge15" control={<Radio />} label="Box Map" />
+          <FormControlLabel value="natural_breaks" control={<Radio />} label="Choropleth" />
+          <FormControlLabel value="hinge15_breaks" control={<Radio />} label="Box Map" />
           <FormControlLabel value="lisa" control={<Radio />} label="Local Moran" />
           <FormControlLabel value="cartogram" control={<Radio />} label="Cartogram" />
         </RadioGroup>
-      </FormControl>
-      <div className={classes.twoUp}>
-        <FormControl className={classes.formControl}>
+      </StyledDropDown>
+      <TwoUp>
+        <StyledDropDown>
           <InputLabel htmlFor="overlay-select">Overlay</InputLabel>
           <Select  
             id="overlay-select"
@@ -440,8 +478,8 @@ const VariablePanel = (props) => {
             <MenuItem value={'black_belt_counties'} key={'variable3'}>Black Belt Counties</MenuItem>
             <MenuItem value={'us_congressional_districts'} key={'variable4'}>US Congressional Districts</MenuItem>
           </Select>
-        </FormControl>
-        <FormControl className={classes.formControl}>
+        </StyledDropDown>
+        <StyledDropDown>
           <InputLabel htmlFor="resource-select">Resource</InputLabel>
           <Select  
             id="resource-select"
@@ -453,8 +491,8 @@ const VariablePanel = (props) => {
             <MenuItem value={'clinics'} key={'variable2'}>Clinics</MenuItem>
             <MenuItem value={'hospitals'} key={'variable3'}>Hospitals</MenuItem>
           </Select>
-        </FormControl>
-      </div>
+        </StyledDropDown>
+      </TwoUp>
       <p className="note">
         Data is updated with freshest available data at 3pm CST daily, at minimum. 
         In case of data discrepancy, local health departments are considered most accurate as per CDC recommendations. 

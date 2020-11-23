@@ -8,7 +8,7 @@ const DataPanelContainer = styled.div`
   right:0;
   top:0;
   height:100vh;
-  max-width:20vw;
+  min-width:200px;
   background-color: #2b2b2b;
   box-shadow: -2px 0px 5px rgba(0,0,0,0.7);
   padding:20px;
@@ -18,6 +18,7 @@ const DataPanelContainer = styled.div`
   color: white;
   font-size:100%;
   padding:0;
+  z-index:5;
   div.container {
     width:100%;
     height:100vh;
@@ -59,6 +60,7 @@ const DataPanelContainer = styled.div`
       transition:500ms all;
       content: 'Info';
       right:40px;
+      z-index:4;
     }
   }
   button#showHideRight.hidden {

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setMapParams, setVariableParams, setStartDateIndex, setChartData, storeGeojson, storeLisaValues } from './actions';
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
-import { getParseCSV, getJson, mergeData, colIndex, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa } from './utils';
+import { getParseCSV, getJson, mergeData, colIndex, findDates, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa } from './utils';
 import { Map, DateSlider, Legend, VariablePanel, MainLineChart, DataPanel } from './components';
+import { colorScales, fixedScales, dataPresets } from './config';
 
 function App() {
   const storedData = useSelector(state => state.storedData);
@@ -14,7 +15,6 @@ function App() {
   const columnNames = useSelector(state => state.cols);
   const dates = useSelector(state => state.dates);
   const mapParams = useSelector(state => state.mapParams);
-  const colorScale = useSelector(state => state.colorScale);
   const dataParams = useSelector(state => state.dataParams);
   const chartData = useSelector(state => state.chartData);
   const startDateIndex = useSelector(state => state.startDateIndex);
@@ -33,15 +33,6 @@ function App() {
     dispatch(setStartDateIndex(dates[1]))
   }
 
-  const findDates = (data) => {
-    for (let i = 0; i < data.length; i++) {
-      if (Date.parse(data[i])) {
-        return [data.slice(i,),i]
-      }
-    }
-    return;
-  }
-
   const getColumns = (data, names) => {
     let rtn = {};
     for (let i=0; i < data.length; i++) {
@@ -50,8 +41,8 @@ function App() {
   return rtn;
   }
 
-  async function loadData(geojson, csvs, joinCols, names, gda_proxy) {
-    const csvPromises = csvs.map(csv => getParseCSV(`${process.env.PUBLIC_URL}/csv/${csv}.csv`, joinCols[1]).then(result => {return result}))
+  async function loadData(geojson, csvs, joinCols, names, accumulate, gda_proxy) {
+    const csvPromises = csvs.map(csv => getParseCSV(`${process.env.PUBLIC_URL}/csv/${csv}.csv`, joinCols[1], accumulate.includes(csv)).then(result => {return result}))
     Promise.all([
       getJson(`${process.env.PUBLIC_URL}/geojson/${geojson}`, gda_proxy),
       ...csvPromises
@@ -89,10 +80,27 @@ function App() {
         ['covid_confirmed_usafacts','covid_deaths_usafacts', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
         ['GEOID', 'FIPS'], 
         ['cases','deaths', 'predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'],
+        [],
         gda_proxy
       )
     }
   },[gda_proxy])
+
+  useEffect(() => {
+    if ((gda_proxy !== null) && (currentData !== '')) {
+      if (storedData[currentData] === undefined) {
+        loadData(
+          dataPresets[currentData].geojson, 
+          dataPresets[currentData].csv, 
+          dataPresets[currentData].joinCols,
+          dataPresets[currentData].tableNames,  
+          dataPresets[currentData].accumulate,
+          gda_proxy
+        )
+      }
+    }
+  },[currentData])
+
 
   // whenever the current data changes, this 
   useEffect(() => {
@@ -154,76 +162,56 @@ function App() {
 
   // trigger on parameter change for metric values
   useEffect(() => {
-    if (gda_proxy !== null && currentData !== ''){
-      if (mapParams.binMode === 'dynamic') {
-        let nb = gda_proxy.custom_breaks(
-          currentData, 
-          "natural_breaks", 
-          8, 
-          null,  
-            getDataForBins(
-              storedData[currentData], 
-              dataParams.numerator, 
-              dataParams.nType,
-              dataParams.nProperty, 
-              dataParams.nIndex, 
-              dataParams.nRange, 
-              dataParams.denominator, 
-              dataParams.dType,
-              dataParams.dProperty, 
-              dataParams.dIndex, 
-              dataParams.dRange, 
-              dataParams.scale
-            ), 
-          )
-          dispatch(
-            setMapParams({
-              bins: {
-                bins:nb.bins,
-                breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
-              }
-            })
-          )
+    if (gda_proxy !== null && currentData !== '' && mapParams.mapType !== "lisa"){
+      if (mapParams.fixedScale !== null) {
+        dispatch(
+          setMapParams({
+            bins: fixedScales[mapParams.fixedScale],
+            colorScale: colorScales[mapParams.fixedScale]
+          })
+        )
       } else {
         let nb = gda_proxy.custom_breaks(
           currentData, 
-          "natural_breaks", 
-          8, 
+          mapParams.mapType, 
+          mapParams.nBins, 
           null, 
           getDataForBins(
             storedData[currentData], 
             dataParams.numerator, 
             dataParams.nType,
             dataParams.nProperty, 
-            null,
+            mapParams.binMode === 'dynamic' ? dataParams.nIndex : null,
             dataParams.nRange, 
             dataParams.denominator,
             dataParams.dType,
             dataParams.dProperty, 
-            dataParams.dIndex, 
+            mapParams.binMode === 'dynamic' ? dataParams.dIndex : null, 
             dataParams.dRange, 
             dataParams.scale
-            )
           )
-          dispatch(
-            setMapParams({
-              bins: {
-                bins:nb.bins,
-                breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
-              }
-            })
-          )
+        )
+
+        dispatch(
+          setMapParams({
+            bins: {
+              bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
+              breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+            },
+            colorScale: colorScales[mapParams.mapType]
+          })
+        )
       }
     }
-  }, [dates, storedData[currentData], dataParams.numerator, dataParams.nProperty, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dRange, dataParams.scale])
+  }, [dates, dataParams.numerator, dataParams.nProperty, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dRange, dataParams.scale, mapParams.mapType])
 
   // trigger on date (index) change for dynamic binning
   useEffect(() => {
-    if (gda_proxy !== null && mapParams.binMode === 'dynamic' && currentData !== ''){
+    if (gda_proxy !== null && mapParams.binMode === 'dynamic' && currentData !== '' && mapParams.mapType !== 'lisa'){
       let nb = gda_proxy.custom_breaks(
         currentData, 
-        "natural_breaks", 
-        8, 
+        mapParams.mapType,
+        mapParams.nBins.
         null, 
         getDataForBins(
           storedData[currentData], 
@@ -243,24 +231,27 @@ function App() {
       dispatch(
         setMapParams({
           bins: {
-            bins:nb.bins,
+            bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
             breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
-          }
+          },
+          colorScale: colorScales[mapParams.mapType]
         })
       )
     }
   }, [dataParams.nIndex, dataParams.dIndex])
 
+
+
   return (
     <div className="App">
       {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
-        <button onClick={() => console.log(columnNames[currentData].predictions)}>dummy button for testing</button>
+        <button onClick={() => console.log(getParseCSV(`${process.env.PUBLIC_URL}/csv/covid_deaths_1p3a.csv`, 'FIPS', true))}>dummy button for testing</button>
       </header> */}
       <Map />
       <VariablePanel />
       <DataPanel />
       <div id="bottom-drawer">
-        <Legend labels={mapParams.bins.bins} title={currentVariable} colors={colorScale} />
+        <Legend labels={mapParams.bins.bins} title={currentVariable} colors={mapParams.colorScale} binType={mapParams.mapType} />
         <hr />
         <MainLineChart />
         <DateSlider />

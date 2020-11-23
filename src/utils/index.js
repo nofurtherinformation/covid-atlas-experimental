@@ -6,6 +6,7 @@ import getParseCSV from './getParseCSV.js';
 import mergeData from './mergeData.js';
 import colIndex from './colIndex.js';
 import colLookup from './colLookup.js';
+import findDates from './findDates';
 import getDataForBins from './getDataForBins.js';
 import getDataForCharts from './getDataForCharts.js';
 import getDataForLisa from './getDataForLisa.js';
@@ -22,6 +23,7 @@ export {
     mergeData,
     colIndex,
     colLookup,
+    findDates,
     getDataForBins,
     getDataForCharts,
     getDataForLisa,
