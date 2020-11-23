@@ -17,14 +17,15 @@ const SliderContainer = styled(Grid)`
 `
 
 const DateButton = styled(Button)`
-    color:rgb(200,200,200);
+    color:rgb(200,200,200) !important;
     background: none;
     transition: 250ms all;
-    border-color: white !important;
+    border:none !important;
     font-size: 75% !important;
     transition:250ms all;
     &:hover {
         color:white;
+        border:none !important;
     }
     &.active {
         cursor: initial;
@@ -32,7 +33,16 @@ const DateButton = styled(Button)`
         color:black !important;
         background: white !important;
         transition: 250ms all;
-        border-color: white;
+        border:none !important;
+    }
+    .MuiButtonGroup-vertical {
+        border:none !important;
+    }
+    .MuiButton-label {
+        justify-content: left !important;
+        text-transform:none;
+        font-family:'Lato', sans-serif;
+        font-weight:bold;
     }
 `
 const PlayPauseButton = styled(Button)`
@@ -47,14 +57,15 @@ const PlayPauseButton = styled(Button)`
 `
 
 const LineSlider = styled(Slider)`
-    color:white;
-    // span.MuiSlider-rail {
-    //     display:none;
-    // }
-    // span.MuiSlider-track {
-    //     display: none;
-    // }
+    width:92% !important;
+    span.MuiSlider-rail {
+        color:white;
+    }
+    span.MuiSlider-track {
+        color:white;
+    }
     span.MuiSlider-thumb {
+        color:white;
         .MuiSlider-valueLabel {
             transform:translateY(-10px);
             pointer-events:none;
@@ -69,14 +80,15 @@ const LineSlider = styled(Slider)`
 `
 
 const RangeSlider = styled(Slider)`
-    color:white;
-    // span.MuiSlider-rail {
-    //     display:none;
-    // }
-    // span.MuiSlider-track {
-    //     display: none;
-    // }
+    width:92% !important;
+    span.MuiSlider-rail {
+        color:white;
+    }
+    span.MuiSlider-track {
+        color:white;
+    }
     span.MuiSlider-thumb {
+        color:white;
         .MuiSlider-valueLabel {
             transform:translateY(-10px);
             pointer-events:none;
@@ -230,7 +242,7 @@ const DateSlider = () => {
                     <ButtonGroup
                         orientation="vertical"
                         color="primary"
-                        aria-label="vertical outlined primary button group"
+                        aria-label="vertical text primary button group"
                         style={{float:'right'}}
                     >
                         <DateButton className={dataParams.nRange === null ? 'active' : ''} onClick={() => handleRangeButton(null)}>Cumulative</DateButton>

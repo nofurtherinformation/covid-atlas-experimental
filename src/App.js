@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setMapParams, setVariableParams, setStartDateIndex, setChartData, storeGeojson, storeLisaValues } from './actions';
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
-import { getParseCSV, getJson, mergeData, colIndex, findDates, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa } from './utils';
-import { Map, DateSlider, Legend, VariablePanel, MainLineChart, DataPanel } from './components';
+import { getParseCSV, getJson, mergeData, colIndex, findDates, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa, getCartogramValues } from './utils';
+import { Map, DateSlider, Legend, VariablePanel, MainLineChart, DataPanel, Popover } from './components';
 import { colorScales, fixedScales, dataPresets } from './config';
 
 function App() {
@@ -157,7 +157,36 @@ function App() {
           )
         )
       }
-    }
+    } 
+    // else if (gda_proxy !== null && mapParams.mapType === "cartogram") {
+    //   let tempId = getVarId(currentData, dataParams)
+    //   if (!(storedCartogramData.hasOwnProperty(tempId))) {
+    //     dispatch(
+    //       storeCartogramData(
+    //         getLisaValues(
+    //           gda_proxy, 
+    //           currentData, 
+    //           getDataForLisa(
+    //             storedData[currentData], 
+    //             dataParams.numerator, 
+    //             dataParams.nType,
+    //             dataParams.nProperty, 
+    //             dataParams.nIndex, 
+    //             dataParams.nRange, 
+    //             dataParams.denominator, 
+    //             dataParams.dType,
+    //             dataParams.dProperty, 
+    //             dataParams.dIndex, 
+    //             dataParams.dRange, 
+    //             dataParams.scale,
+    //             storedGeojson[currentData].indexOrder
+    //           )
+    //         ),
+    //         tempId
+    //       )
+    //     )
+    //   }
+    // }
   }, [dataParams, mapParams])
 
   // trigger on parameter change for metric values
@@ -245,7 +274,27 @@ function App() {
   return (
     <div className="App">
       {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
-        <button onClick={() => console.log(getParseCSV(`${process.env.PUBLIC_URL}/csv/covid_deaths_1p3a.csv`, 'FIPS', true))}>dummy button for testing</button>
+        <button onClick={() => console.log(
+            getCartogramValues(
+              gda_proxy, 
+              currentData, 
+              getDataForLisa(
+                storedData[currentData], 
+                dataParams.numerator, 
+                dataParams.nType,
+                dataParams.nProperty, 
+                dataParams.nIndex, 
+                dataParams.nRange, 
+                dataParams.denominator, 
+                dataParams.dType,
+                dataParams.dProperty, 
+                dataParams.dIndex, 
+                dataParams.dRange, 
+                dataParams.scale,
+                storedGeojson[currentData].indexOrder
+              )
+            )
+        )}>dummy button for testing</button>
       </header> */}
       <Map />
       <VariablePanel />
@@ -256,6 +305,7 @@ function App() {
         <MainLineChart />
         <DateSlider />
       </div>
+      <Popover />
     </div>
   );
 }

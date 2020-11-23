@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView, FlyToInterpolator} from '@deck.gl/core';
-import ReactMapGL, {NavigationControl, GeolocateControl} from 'react-map-gl';
+import ReactMapGL, {NavigationControl, GeolocateControl } from 'react-map-gl';
 import { GeoJsonLayer, PolygonLayer, SolidPolygonLayer } from '@deck.gl/layers';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDataSidebar, setMapParams } from '../actions';
@@ -20,7 +20,12 @@ const initialViewState = {
 };
 
 const DATA_URL = {
-    CONTINENTS: `${process.env.PUBLIC_URL}/geojson/world50m.json`
+    CONTINENTS: `${process.env.PUBLIC_URL}/geojson/world50m.json`,
+    BLACKBELT:`${process.env.PUBLIC_URL}/geojson/blackbelt_highlight.geojson`,
+    SEG_CITIES:`${process.env.PUBLIC_URL}/geojson/seg_cities.geojson`,
+    CONGRESS_DISTRICTS:`${process.env.PUBLIC_URL}/geojson/districts.geojson`,
+    CONGRESS_CENTROIDS:`${process.env.PUBLIC_URL}/geojson/district_centroids.geojson`,
+    RESERVATIONS:`${process.env.PUBLIC_URL}/geojson/reservations.geojson`
 };
 
 const HoverDiv = styled.div`
@@ -83,7 +88,7 @@ const Map = () => {
         } else if (mapType === 'lisa') {
             return colorScales.lisa[currLisaData[storedGeojson[currentData]['geoidOrder'][f.properties.GEOID]]]
         } else {
-            return mapFn(dataFn(f[dataParams.numerator], dataParams.nProperty, dataParams.nIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale), bins.breaks, mapParams.colorScale) 
+            return mapFn(dataFn(f[dataParams.numerator], dataParams.nProperty, dataParams.nIndex, dataParams.nRange, f[dataParams.denominator], dataParams.dProperty, dataParams.dIndex, dataParams.dRange, dataParams.scale), bins.breaks, mapParams.colorScale, mapParams.mapType) 
         }
     }
     
@@ -96,6 +101,7 @@ const Map = () => {
                 ...view,
                 bearing:0,
                 pitch:0,
+                zoom: 3.5,
                 transitionInterpolator: new FlyToInterpolator(),
                 transitionDuration: 250,
             }))
@@ -105,25 +111,38 @@ const Map = () => {
                 ...view,
                 bearing:-30,
                 pitch:45,
+                zoom: 3.5,
                 transitionInterpolator: new FlyToInterpolator(),
                 transitionDuration: 250,
             }))
         }
     }
+    
+    const handleGeolocate = (viewState) => {
+        console.log(viewState)
+        setViewState(view => ({
+            ...view,
+            latitude: viewState.coords.latitude,
+            longitude: viewState.coords.longitude,
+            zoom: 8,
+            transitionInterpolator: new FlyToInterpolator(),
+            transitionDuration: 250,
+        }))
+    }
 
     const Layers = [
-        new SolidPolygonLayer({
-            id: 'background',
-            data: [
-                // prettier-ignore
-                [[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]
-            ],
-            opacity: 1,
-            getPolygon: d => d,
-            stroked: false,
-            filled: true,
-            getFillColor: [10,10,10],
-        }),
+        // new SolidPolygonLayer({
+        //     id: 'background',
+        //     data: [
+        //         // prettier-ignore
+        //         [[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]
+        //     ],
+        //     opacity: 1,
+        //     getPolygon: d => d,
+        //     stroked: false,
+        //     filled: true,
+        //     getFillColor: [10,10,10],
+        // }),
         new GeoJsonLayer({
             id: 'base continents',
             data: DATA_URL.CONTINENTS,
@@ -157,7 +176,6 @@ const Map = () => {
             },
             onHover: info => {
                 try {
-                    console.log(info)
                     setHoverInfo(info)
                 } catch {
                     setHoverInfo(null)
@@ -189,6 +207,58 @@ const Map = () => {
             updateTriggers: {
                 data: currentData,
                 getLineColor: highlightGeog,
+            },
+        }),
+        new GeoJsonLayer({
+            id: 'blackbelt',
+            data: DATA_URL.BLACKBELT,
+            pickable: false,
+            stroked: false,
+            filled:true,
+            getLineColor: [0,0,0],
+            opacity:0.2,
+            visible: mapParams.overlay === "blackbelt",
+            updateTriggers: {
+                visible: mapParams
+            },
+        }),
+        new GeoJsonLayer({
+            id: 'segregated cities',
+            data: DATA_URL.SEG_CITIES,
+            pickable: false,
+            stroked: false,
+            filled:true,
+            getLineColor: [0,0,0],
+            opacity:0.2,
+            visible: mapParams.overlay === "segregated_cities",
+            updateTriggers: {
+                visible: mapParams
+            },
+        }),
+        new GeoJsonLayer({
+            id: 'native american reservations',
+            data: DATA_URL.RESERVATIONS,
+            pickable: false,
+            stroked: false,
+            filled:true,
+            getLineColor: [0,0,0],
+            opacity:0.2,
+            visible: mapParams.overlay === "native_american_reservations",
+            updateTriggers: {
+                visible: mapParams
+            },
+        }),
+        new GeoJsonLayer({
+            id: 'congressional distrcits',
+            data: DATA_URL.CONGRESS_DISTRICTS,
+            pickable: false,
+            stroked: true,
+            filled:false,
+            getLineColor: [0,0,0],
+            lineWidthMinPixels:1,
+            visible: mapParams.overlay === "congressional_districts",
+            updateTriggers: {
+                visible: mapParams
             },
         }),
     ]
@@ -245,9 +315,9 @@ const Map = () => {
                             </svg>
                         </NavInlineButton>
                         <GeolocateControl
-                            positionOptions={{enableHighAccuracy: true}}
-                            trackUserLocation={true}
-                            onGeolocate={viewState => console.log(viewState.coords.latitude)}
+                            positionOptions={{enableHighAccuracy: false}}
+                            trackUserLocation={false}
+                            onGeolocate={viewState  => handleGeolocate(viewState)}
                             style={{marginBottom: 10}}
                         />
                         <NavigationControl

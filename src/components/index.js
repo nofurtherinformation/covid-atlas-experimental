@@ -4,6 +4,8 @@ import Legend from './legend';
 import DataPanel from './dataPanel';
 import VariablePanel from './variablePanel';
 import MainLineChart from './mainLineChart';
+import Popover from './tooltipPopper';
+import Tooltip from './tooltip';
 
 export {
     Map,
@@ -11,5 +13,7 @@ export {
     Legend,
     DataPanel,
     VariablePanel,
-    MainLineChart
+    MainLineChart,
+    Popover,
+    Tooltip
 }

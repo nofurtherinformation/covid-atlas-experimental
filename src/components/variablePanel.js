@@ -12,6 +12,8 @@ import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import { colLookup } from '../utils';
 import styled from 'styled-components';
+import Tooltip from './tooltip';
+import { fixedScales, colorScales } from '../config'
 
 const VariablePanelContainer = styled.div`
   position:fixed;
@@ -161,6 +163,7 @@ const TwoUp = styled.div`
     margin-right:5px;
   }
 `
+
 const VariablePanel = (props) => {
 
   const dispatch = useDispatch();  
@@ -171,6 +174,7 @@ const VariablePanel = (props) => {
   const mapParams = useSelector(state => state.mapParams);
 
   const [hidePanel, setHidePanel] = useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
   
   const PresetVariables = {
       "HEADER:cases":{},
@@ -183,7 +187,7 @@ const VariablePanel = (props) => {
           dProperty: null,
           dRange:null,
           dIndex:null,
-          scale:1,
+          scale:1
       },
       "Confirmed Count per 100K Population": {
           numerator: 'cases',
@@ -194,7 +198,7 @@ const VariablePanel = (props) => {
           dProperty: 'population',
           dRange:null,
           dIndex:null,
-          scale:100000,
+          scale:100000
       },
       "Confirmed Count per Licensed Bed": {
           numerator: 'cases',
@@ -205,7 +209,7 @@ const VariablePanel = (props) => {
           dProperty: 'beds',
           dRange:null,
           dIndex:null,
-          scale:1,
+          scale:1
       },
       "HEADER:deaths":{},
       "Death Count":{
@@ -217,7 +221,7 @@ const VariablePanel = (props) => {
         dProperty: null,
         dRange:null,
         dIndex:null,
-        scale:1,
+        scale:1
           
       }, 
       "Death Count per 100K Population":{
@@ -229,7 +233,7 @@ const VariablePanel = (props) => {
         dProperty: 'population',
         dRange:null,
         dIndex:null,
-        scale:100000,
+        scale:100000
 
       },
       "Death Count / Confirmed Count":{
@@ -239,7 +243,7 @@ const VariablePanel = (props) => {
         denominator: 'cases',
         dType: 'time-series',
         dProperty: null,
-        scale:1,
+        scale:1
 
       },
       "HEADER:community health":{},
@@ -254,6 +258,7 @@ const VariablePanel = (props) => {
         dRange:null,
         dIndex:null,
         scale:1,
+        colorScale: colorScales['uninsured']
 
       },
       "Over 65 Years % (Community Health Context)":{
@@ -267,6 +272,7 @@ const VariablePanel = (props) => {
         dRange:null,
         dIndex:null,
         scale:1,
+        colorScale: colorScales['over65']
       },
       "Life expectancy (Length and Quality of Life)":{
         numerator: 'chr_life',
@@ -279,6 +285,7 @@ const VariablePanel = (props) => {
         dRange:null,
         dIndex:null,
         scale:1,
+        colorScale: colorScales['lifeExp']
       }
   }
 
@@ -341,40 +348,70 @@ const VariablePanel = (props) => {
   
 
   const handleVariable = (event) => {
-      let variable = event.target.value;
-      dispatch(setVariableName(variable))
+    let variable = event.target.value;
+    dispatch(setVariableName(variable))
 
-      if (PresetVariables.hasOwnProperty(variable)) {
-          dispatch(setVariableParams({...PresetVariables[variable]}))
-      } else if (CountyVariables.hasOwnProperty(variable)){
-          dispatch(setVariableParams({...CountyVariables[variable]}))
+    if (PresetVariables.hasOwnProperty(variable)) {
+      if (PresetVariables[variable].hasOwnProperty('colorScale')) {
+        dispatch(setMapParams({colorScale: PresetVariables[variable].colorScale}))
+        dispatch(setVariableParams({...PresetVariables[variable]}))
       } else {
-          dispatch(setVariableParams({...StateVariables[variable]}))
+        dispatch(setMapParams({colorScale: colorScales['natural_breaks']}))
+        dispatch(setVariableParams({...PresetVariables[variable]}))
       }
-          
+    } else if (CountyVariables.hasOwnProperty(variable)){
+      if (CountyVariables[variable].hasOwnProperty('colorScale')) {
+        dispatch(setMapParams({colorScale: CountyVariables[variable].colorScale}))
+        dispatch(setVariableParams({...CountyVariables[variable]}))
+      } else {
+        dispatch(setMapParams({colorScale: colorScales['natural_breaks']}))
+        dispatch(setVariableParams({...CountyVariables[variable]}))
+      }
+    } else {
+      if (StateVariables[variable].hasOwnProperty('colorScale')) {
+        dispatch(setMapParams({colorScale: StateVariables[variable].colorScale}))
+        dispatch(setVariableParams({...StateVariables[variable]}))
+      } else {
+        dispatch(setMapParams({colorScale: colorScales['natural_breaks']}))
+        dispatch(setVariableParams({...StateVariables[variable]}))
+      }
+    }   
   };
 
   const handleDataSource = (event) => {
     dispatch(setCurrentData(event.target.value)) ;  
   };
 
-  const handleMapType = (event, newValue) =>{
+  const handleMapType = (event, newValue) => {
     let nBins = newValue === 'hinge15_breaks' ? 6 : 8
-    dispatch(
-      setMapParams(
-        {
-          nBins,
-          'mapType': newValue
-        }
+    if (newValue === 'lisa') {
+      dispatch(
+        setMapParams(
+          {
+            mapType: newValue,
+            nBins: 4,
+            bins: fixedScales[newValue],
+            colorScale: colorScales[newValue]
+          }
+        )
       )
-    )
+    } else {
+      dispatch(
+        setMapParams(
+          {
+            nBins,
+            mapType: newValue
+          }
+        )
+      )
+    }
   }
 
   const handleMapOverlay = (event) =>{
     dispatch(
       setMapParams(
         {
-          'overlay': event.target.value
+          overlay: event.target.value
         }
       )
     )
@@ -384,7 +421,7 @@ const VariablePanel = (props) => {
     dispatch(
       setMapParams(
         {
-          'resource': event.target.value
+          resource: event.target.value
         }
       )
     )
@@ -458,10 +495,30 @@ const VariablePanel = (props) => {
           onChange={handleMapType} 
           value={mapParams.mapType}
           >
-          <FormControlLabel value="natural_breaks" control={<Radio />} label="Choropleth" />
-          <FormControlLabel value="hinge15_breaks" control={<Radio />} label="Box Map" />
-          <FormControlLabel value="lisa" control={<Radio />} label="Local Moran" />
-          <FormControlLabel value="cartogram" control={<Radio />} label="Cartogram" />
+          <FormControlLabel 
+            value="natural_breaks" 
+            key="natural_breaks" 
+            control={<Radio />} 
+            label="Choropleth" 
+          />
+          <FormControlLabel 
+            value="hinge15_breaks" 
+            key="hinge15_breaks" 
+            control={<Radio />} 
+            label="Box Map" 
+          />
+          <FormControlLabel 
+            value="lisa" 
+            key="lisa" 
+            control={<Radio />} 
+            label="Local Moran" 
+          />
+          <FormControlLabel 
+            value="cartogram" 
+            key="cartogram" 
+            control={<Radio />} 
+            label="Cartogram" 
+          />
         </RadioGroup>
       </StyledDropDown>
       <TwoUp>
@@ -473,10 +530,10 @@ const VariablePanel = (props) => {
             onChange={handleMapOverlay}
           >
             <MenuItem value="" key={'None'}>None</MenuItem> 
-            <MenuItem value={'native_american_reservations'} key={'variable1'}>Native American Reservations</MenuItem>
-            <MenuItem value={'hypersegregated_cities'} key={'variable2'}>Hypersegregated Cities</MenuItem>
-            <MenuItem value={'black_belt_counties'} key={'variable3'}>Black Belt Counties</MenuItem>
-            <MenuItem value={'us_congressional_districts'} key={'variable4'}>US Congressional Districts</MenuItem>
+            <MenuItem value={'native_american_reservations'} key={'native_american_reservations'}>Native American Reservations</MenuItem>
+            <MenuItem value={'segregated_cities'} key={'segregated_cities'}>Hypersegregated Cities<Tooltip id="Hypersegregated"/></MenuItem>
+            <MenuItem value={'blackbelt'} key={'blackbelt'}>Black Belt Counties<Tooltip id="BlackBelt" /></MenuItem>
+            <MenuItem value={'congressional_districts'} key={'congressional_districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
           </Select>
         </StyledDropDown>
         <StyledDropDown>
@@ -514,6 +571,7 @@ const VariablePanel = (props) => {
         </svg>
 
       </button>
+
     </VariablePanelContainer>
   );
 }

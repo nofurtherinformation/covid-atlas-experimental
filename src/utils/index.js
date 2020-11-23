@@ -16,6 +16,7 @@ import getVarId from './getVarId';
 import getGeoids from './getGeoids';
 import getGeoidIndex from './getGeoidIndex';
 import loadGeojsonToGeoda from './loadGeojsonToGeoda';
+import getCartogramValues from './getCartogramValues';
 
 export {
     getJson,
@@ -31,6 +32,7 @@ export {
     mapFn,
     getCurrentWuuid,
     getLisaValues,
+    getCartogramValues,
     getVarId,
     getGeoids,
     getGeoidIndex,

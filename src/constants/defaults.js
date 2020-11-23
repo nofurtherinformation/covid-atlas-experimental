@@ -57,4 +57,5 @@ export const INITIAL_STATE = {
   storedRange: null,
   currentGeoid: '',
   sidebarData: {},
+  anchorEl: null,
 };

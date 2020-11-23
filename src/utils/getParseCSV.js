@@ -38,7 +38,6 @@ async function getParseCSV(url, joinCol, accumulate){
             rtn[data[n][joinCol]] = Object.values(data[n])
           }
         }
-        console.log(rtn)
         return [rtn, Object.keys(data[0])]
       });
     return tempData;

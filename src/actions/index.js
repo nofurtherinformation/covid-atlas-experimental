@@ -194,3 +194,13 @@ export const setVariableName = ( name ) => {
         }
     }
 }
+
+
+export const setAnchorEl = ( anchorEl ) => {
+    return {
+        type: 'SET_ANCHOR_EL',
+        payload: {
+            anchorEl
+        }
+    }
+}

@@ -174,6 +174,11 @@ var reducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 chartData: action.payload.data
             }
+        case 'SET_ANCHOR_EL':
+            return {
+                ...state,
+                anchorEl: action.payload.anchorEl
+            }
         default:
             return state;
     }

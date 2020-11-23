@@ -5,6 +5,7 @@ const getDataForCharts = (data, table, startIndex, dates) => {
     let features = Object.keys(data);
     let n = startIndex;
     let rtn = []
+    let j = -1;
 
     while (n<data[features[0]][table].length) {
         let tempObj = {};
@@ -18,8 +19,14 @@ const getDataForCharts = (data, table, startIndex, dates) => {
         }
         tempObj.count = sum
         tempObj.date = dates[n-startIndex]
+        if (j===-1) {
+            tempObj.dailyNew = sum
+        } else {
+            tempObj.dailyNew = sum - rtn[j].count
+        }
         rtn.push(tempObj);
         n++;
+        j++;
     }
     
     console.log(performance.now() - t0);

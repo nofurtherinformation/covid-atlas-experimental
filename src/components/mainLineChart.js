@@ -73,16 +73,19 @@ const MainLineChart = () => {
                         {/* <CartesianGrid strokeDasharray="3 3" /> */}
                         <XAxis dataKey="date" />
                         {/* <YAxis type="number" /> */}
-                        <YAxis type="number" dataKey="count" scale={logChart ? "log" : "linear"} domain={['auto', 'auto']} />
+                        <YAxis yAxisId="left" type="number" dataKey="count"  scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow />
+                        <YAxis yAxisId="right" orientation="right" dataKey="dailyNew" scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow />
                         <Tooltip />
-                            <ReferenceArea 
-                                x1={getStartDate(dataParams.nRange, dataParams.nIndex, chartData)}
-                                x2={getEndDate(dataParams.nIndex, chartData)} 
-                                fill="white" 
-                                fillOpacity={0.15}
-                                isAnimationActive={false}
-                            />
-                        <Line type="monotone" dataKey="count" stroke="#ff0000" dot={false} />
+                        <ReferenceArea 
+                            yAxisId="left"
+                            x1={getStartDate(dataParams.nRange, dataParams.nIndex, chartData)}
+                            x2={getEndDate(dataParams.nIndex, chartData)} 
+                            fill="white" 
+                            fillOpacity={0.15}
+                            isAnimationActive={false}
+                        />
+                        <Line type="monotone" yAxisId="left" dataKey="count" name="Total Count" stroke="#5555ff" dot={false} />
+                        <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="Daily Count" stroke="#ff0000" dot={false} />
                     </LineChart>
                 </ResponsiveContainer>
             </Grid>
