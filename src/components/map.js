@@ -2,14 +2,25 @@ import React, { useState, useEffect } from 'react';
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView, FlyToInterpolator} from '@deck.gl/core';
 import ReactMapGL, {NavigationControl, GeolocateControl } from 'react-map-gl';
-import { GeoJsonLayer, PolygonLayer, SolidPolygonLayer } from '@deck.gl/layers';
+import { GeoJsonLayer, PolygonLayer, ScatterplotLayer, SolidPolygonLayer } from '@deck.gl/layers';
+import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDataSidebar, setMapParams } from '../actions';
 import { mapFn, dataFn, getVarId } from '../utils';
 import { colorScales } from '../config';
 import styled from 'styled-components';
+import { Polygon } from 'recharts';
+import {IcoSphereGeometry} from '@luma.gl/engine';
+import {fromJS} from 'immutable';
+import MAP_STYLE from '../config/style.json';
+
+const cartoGeom = new IcoSphereGeometry({
+  iterations: 1
+});
 
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0bTFhaTZmbnRwaiJ9.VRNeNnyb96Eo-CorkJmIqg';
+
+const defaultMapStyle = fromJS(MAP_STYLE);
 
 const initialViewState = {
     latitude: 35.850033,
@@ -58,24 +69,80 @@ const NavInlineButton = styled.button`
 const viewGlobe = new GlobeView({id: 'globe', controller: false, resolution:1});
 const view = new MapView({repeat: true});
 
+
 const Map = () => { 
     
     const [hoverInfo, setHoverInfo] = useState(false);
     const [highlightGeog, setHighlightGeog] = useState(false);
     const [globalMap, setGlobalMap] = useState(false);
+    const [mapStyle, setMapStyle] = useState(defaultMapStyle);
     const [currLisaData, setCurrLisaData] = useState({})
     const [viewState, setViewState] = useState(initialViewState)
+    const [cartogramData, setCartogramData] = useState([]);
+    const [currVarId, setCurrVarId] = useState(null);
 
     const storedData = useSelector(state => state.storedData);
     const storedGeojson = useSelector(state => state.storedGeojson);
     const currentData = useSelector(state => state.currentData);
     const storedLisaData = useSelector(state => state.storedLisaData);
-    
+    const storedCartogramData = useSelector(state => state.storedCartogramData);
+
     const dataParams = useSelector(state => state.dataParams);
     const mapParams = useSelector(state => state.mapParams);
     
     const dispatch = useDispatch();
 
+    useEffect(() => {
+        let arr = [];
+        if (storedData[currentData] && mapParams.vizType === 'cartogram') {
+            for (let i=0; i<storedData[currentData].length; i++) {
+                arr.push({id:i})
+            }
+        }
+        setCartogramData(arr)
+    }, [storedData, mapParams.vizType])
+
+    useEffect(() => {
+        setCurrVarId(getVarId(currentData, dataParams))
+    }, [dataParams, mapParams])
+
+
+    useEffect(() => {
+        switch(mapParams.vizType) {
+            case '2D': 
+                setViewState(view => ({
+                    ...view,
+                    latitude: 35.850033,
+                    longitude: -105.6500523,
+                    zoom: 3.5,
+                    bearing:0,
+                    pitch:0
+                }));
+                break
+            case '3D':
+                setViewState(view => ({
+                    ...view,
+                    latitude: 35.850033,
+                    longitude: -105.6500523,
+                    zoom: 3.5,
+                    bearing:-30,
+                    pitch:30
+                }));
+                break
+            case 'cartogram':
+                setViewState(view => ({
+                    ...view,
+                    latitude: 11.673,
+                    longitude: -31.061,
+                    zoom: 4.2,
+                    bearing:0,
+                    pitch:0
+                }));
+                break
+            default:
+                //
+        }
+    }, [mapParams.vizType])
 
     useEffect(() => {
         let tempData = storedLisaData[getVarId(currentData, dataParams)]
@@ -96,7 +163,7 @@ const Map = () => {
     
     const handle3dButton = (using3d) => {
         if (using3d) {
-            dispatch(setMapParams({use3d: false}))
+            dispatch(setMapParams({vizType: '2D'}))
             setViewState(view => ({
                 ...view,
                 bearing:0,
@@ -106,7 +173,7 @@ const Map = () => {
                 transitionDuration: 250,
             }))
         } else {
-            dispatch(setMapParams({use3d: true}))
+            dispatch(setMapParams({vizType: '3D'}))
             setViewState(view => ({
                 ...view,
                 bearing:-30,
@@ -130,19 +197,20 @@ const Map = () => {
         }))
     }
 
+    const getCartogramPosition = (data) => data.position;
+    const getCartogramScale = (data) => [data.radius, data.radius, data.radius*10];
+    const getCartogramFillColor = (val, bins, mapType) => {
+        if (!bins.hasOwnProperty("bins")) {
+            return [0,0,0]
+        // } else if (mapType === 'lisa') {
+        //     return colorScales.lisa[currLisaData[storedGeojson[currentData]['geoidOrder'][f.properties.GEOID]]]
+        } else {
+            return mapFn(val, bins.breaks, mapParams.colorScale, mapParams.mapType) 
+        }
+    }
+    const getCartogramTranslation = (data) => [0, 0, data.radius*30];
+    // const getCartogramColor = () => mapFn(, bins.breaks, mapParams.colorScale, mapParams.mapType)
     const Layers = [
-        // new SolidPolygonLayer({
-        //     id: 'background',
-        //     data: [
-        //         // prettier-ignore
-        //         [[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]
-        //     ],
-        //     opacity: 1,
-        //     getPolygon: d => d,
-        //     stroked: false,
-        //     filled: true,
-        //     getFillColor: [10,10,10],
-        // }),
         new GeoJsonLayer({
             id: 'base continents',
             data: DATA_URL.CONTINENTS,
@@ -164,9 +232,9 @@ const Map = () => {
             pickable: true,
             stroked: false,
             filled: true,
-            wireframe: mapParams.use3d,
-            extruded: mapParams.use3d,
-            opacity: mapParams.use3d ? 1 : 0.5,
+            wireframe: mapParams.vizType === '3D',
+            extruded: mapParams.vizType === '3D',
+            opacity: mapParams.vizType === '3D' ? 1 : 0.5,
             getFillColor: f => GetFillColor(f, mapParams.bins, mapParams.mapType),
             getElevation: f => GetHeight(f, mapParams.bins, mapParams.mapType),
             updateTriggers: {
@@ -261,22 +329,81 @@ const Map = () => {
                 visible: mapParams
             },
         }),
+        new PolygonLayer({
+            id: 'background',
+            data: [
+                // prettier-ignore
+                [[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]
+            ],
+            opacity: 1,
+            getPolygon: d => d,
+            stroked: false,
+            filled: true,
+            visible: mapParams.vizType === 'cartogram',
+            getFillColor: [10,10,10],
+            updateTriggers: {
+                visible: mapParams.vizType
+            }
+        }),
+        new ScatterplotLayer({
+            id: 'cartogram layer',
+            data: cartogramData,
+            visible: mapParams.vizType === 'cartogram',
+            getPosition: f => storedCartogramData[currVarId][f.id].position,
+            getFillColor: f => getCartogramFillColor(storedCartogramData[currVarId][f.id].value, mapParams.bins, mapParams.mapType),
+            getRadius: f => storedCartogramData[currVarId][f.id].radius*10,
+            transitions: {
+                getPosition: 150,
+                getFillColor: 150,
+                getRadius: 150
+            },   
+            updateTriggers: {
+                getPosition: [storedCartogramData, mapParams, dataParams, currVarId],
+                getFillColor: [storedCartogramData, mapParams, dataParams, currVarId],
+                getRadius: [storedCartogramData, mapParams, dataParams, currVarId],
+                visible: [storedCartogramData, mapParams, dataParams, currVarId]
+            }
+          }),
+        // new SimpleMeshLayer({
+        //     id: 'cartogram layer',
+        //     data: cartogramData,
+        //     // texture: 'texture.png',
+        //     sizeScale:10,
+        //     visible: mapParams.vizType === 'cartogram',
+        //     mesh: cartoGeom,
+        //     getPosition:f => getCartogramPosition(storedCartogramData[currVarId][f.id]),
+        //     getColor: f => getCartogramFillColor(storedCartogramData[currVarId][f.id].value, mapParams.bins, mapParams.mapType),
+        //     getScale: f => getCartogramScale(storedCartogramData[currVarId][f.id]),
+        //     // getTranslation: f => getCartogramTranslation(storedCartogramData[currVarId][f.id]),
+        //     transitions: {
+        //         getPosition: 150,
+        //         getColor: 150,
+        //         getScale: 150,
+        //         getTranslation: 150
+        //     },   
+        //     updateTriggers: {
+        //         getPosition: [mapParams, dataParams, currVarId],
+        //         getColor: [mapParams, dataParams, currVarId],
+        //         getScale: [mapParams, dataParams, currVarId],
+        //         getTranslation: [mapParams, dataParams, currVarId]
+        //     }
+        //   })
     ]
-
     return (
         <div id="mapContainer" style={{position:'fixed',left:0,top:0,width:'100%',height:'100%'}}>
             <DeckGL
-            initialViewState={viewState}
-            controller={true}
-            layers={Layers}
-            views={globalMap ? viewGlobe : view} //enable this for globe view
+                initialViewState={viewState}
+                controller={true}
+                layers={Layers}
+                views={globalMap ? viewGlobe : view} //enable this for globe view
             >
                 <ReactMapGL
                     reuseMaps
-                    mapStyle={globalMap ? 'mapbox://styles/lixun910/ckhtcdx4b0xyc19qzlt4b5c0d' : 'mapbox://styles/lixun910/ckhkoo8ix29s119ruodgwfxec'}
+                    mapStyle={mapStyle} //{globalMap || mapParams.vizType === 'cartogram' ? 'mapbox://styles/lixun910/ckhtcdx4b0xyc19qzlt4b5c0d' : 'mapbox://styles/lixun910/ckhkoo8ix29s119ruodgwfxec'}
                     preventStyleDiffing={true}
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
                     >
+                        
                         
                     <div style={{position: 'absolute', right: 10, bottom: 30, zIndex: 10}}>
                         {/* <NavInlineButton
@@ -300,7 +427,7 @@ const Map = () => {
                                 </g>
                             </svg>
                         </NavInlineButton> */}
-                        <NavInlineButton
+                        {/* <NavInlineButton
                             onClick={() => handle3dButton(mapParams.use3d)}
                             isActive={mapParams.use3d}
                         >
@@ -313,7 +440,7 @@ const Map = () => {
                                         L8.5,23.7L50-7.4z"/>
                                 </g>
                             </svg>
-                        </NavInlineButton>
+                        </NavInlineButton> */}
                         <GeolocateControl
                             positionOptions={{enableHighAccuracy: false}}
                             trackUserLocation={false}

@@ -7,21 +7,9 @@ div#view-default-view, div#view-MapView {
     z-index:500;
 }
 
-
 /* bottom drawer */
-#bottom-drawer {
-    position: fixed;
-    bottom:0;
-    left:50%;
-    background:#2b2b2b;
-    transform:translateX(-50%);
-    width:90vw;
-    box-sizing: border-box;
-    padding:0;
-    margin:0;
-    max-width: 1024px;
-    box-shadow: 0px 0px 5px rgba(0,0,0,0.7);
-    border-radius:0.5vh 0.5vh 0 0;
+#bottom-drawer.hidden {
+    bottom:-266px;
 }
 
 div.MuiPaper-root.MuiPopover-paper {

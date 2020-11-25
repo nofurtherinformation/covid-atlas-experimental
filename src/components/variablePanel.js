@@ -1,25 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setVariableParams, setVariableName, setMapParams, setCurrentData } from '../actions';
+
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import FormLabel from '@material-ui/core/FormLabel';
-import FormControl from '@material-ui/core/FormControl';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Select from '@material-ui/core/Select';
 import Radio from '@material-ui/core/Radio';
 import RadioGroup from '@material-ui/core/RadioGroup';
-import { colLookup } from '../utils';
+import Button from '@material-ui/core/Button';
+import ButtonGroup from '@material-ui/core/ButtonGroup';
+
 import styled from 'styled-components';
+
+import { colLookup } from '../utils';
 import Tooltip from './tooltip';
-import { fixedScales, colorScales } from '../config'
+import { fixedScales, colorScales } from '../config';
+import { StyledDropDown } from '../styled_components';
+import { setVariableParams, setVariableName, setMapParams, setCurrentData, setPanelState } from '../actions';
 
 const VariablePanelContainer = styled.div`
   position:fixed;
   left:0;
   top:0;
-  height:100vh;
+  height:auto;
+  min-height:100vh;
   min-width:200px;
   background-color: #2b2b2b;
   box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
@@ -37,7 +43,7 @@ const VariablePanelContainer = styled.div`
     font-weight:300;
     font-size:90%;
     a {
-      color:yellow;
+      color:#FFCE00;
       text-decoration: none;
     }
   }
@@ -104,54 +110,19 @@ const VariablePanelContainer = styled.div`
     }
   }
 `
-
-
-const StyledDropDown = styled(FormControl)`
-  padding:0 0 40px 0!important;
+const StyledButtonGroup = styled(ButtonGroup)`
   color:white;
-  padding:0;
-  margin: 0 10px 40px 0;
-  .MuiInputBase-root {
-    font-family: 'Lato', sans-serif;
-  }
-  .MuiFormLabel-root {
-    color: white;
-    font-family: 'Lato', sans-serif;
-  }
-  .Mui-focused {
-    color: white !important;
-  }
-  .MuiInput-underline:before {
-    border-bottom:1px solid rgba(255,255, 255, 0.42);
-  }
-  .MuiInput-underline:after {
-    border-bottom: 2px solid white
-  }
-  .MuiInputBase-root {
-    color: white;
-    .MuiSvgIcon-root {
-      color: rgba(255,255,255,0.54);
-    },
-    .MuiPopover-paper {
-      color:white;
-    }
-  }
-  .MuiFormGroup-root {
-    .MuiFormControlLabel-root{
-      color:white;
-      span {
-        font-family: 'Lato', sans-serif;
-      }
-      .MuiRadio-root {
-        color: rgba(255,255,255,0.54);
-      }
-    }
-  }
-  .MuiRadio-root {
+  padding-bottom:20px;
+  .MuiButtonGroup-grouped {
     color:white;
-  }
-  .MuiRadio-colorSecondary.Mui-checked {
-    color:white;
+    border-color:#ffffff77;
+    &:hover {
+      border-color:white;
+    }
+    &.active {
+      background:white;
+      color:#2e2e2e;
+    }
   }
 `
 
@@ -165,55 +136,17 @@ const TwoUp = styled.div`
 `
 
 const VariablePanel = (props) => {
-
-  const dispatch = useDispatch();  
-  
+  const dispatch = useDispatch();    
   const columnNames = useSelector(state => state.cols);
   const currentData = useSelector(state => state.currentData);
   const currentVariable = useSelector(state => state.currentVariable);
   const mapParams = useSelector(state => state.mapParams);
+  const panelState = useSelector(state => state.panelState);
 
-  const [hidePanel, setHidePanel] = useState(false);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  
   const PresetVariables = {
-      "HEADER:cases":{},
-      "Confirmed Count": {
-          numerator: 'cases',
-          nType: 'time-series',
-          nProperty: null,
-          denominator: 'properties',
-          dType: 'none',
-          dProperty: null,
-          dRange:null,
-          dIndex:null,
-          scale:1
-      },
-      "Confirmed Count per 100K Population": {
-          numerator: 'cases',
-          nType: 'time-series',
-          nProperty: null,
-          denominator: 'properties',
-          dType: 'characteristic',
-          dProperty: 'population',
-          dRange:null,
-          dIndex:null,
-          scale:100000
-      },
-      "Confirmed Count per Licensed Bed": {
-          numerator: 'cases',
-          nType: 'time-series',
-          nProperty: null,
-          denominator: 'properties',
-          dType: 'characteristic',
-          dProperty: 'beds',
-          dRange:null,
-          dIndex:null,
-          scale:1
-      },
-      "HEADER:deaths":{},
-      "Death Count":{
-        numerator: 'deaths',
+    "HEADER:cases":{},
+    "Confirmed Count": {
+        numerator: 'cases',
         nType: 'time-series',
         nProperty: null,
         denominator: 'properties',
@@ -222,10 +155,9 @@ const VariablePanel = (props) => {
         dRange:null,
         dIndex:null,
         scale:1
-          
-      }, 
-      "Death Count per 100K Population":{
-        numerator: 'deaths',
+    },
+    "Confirmed Count per 100K Population": {
+        numerator: 'cases',
         nType: 'time-series',
         nProperty: null,
         denominator: 'properties',
@@ -234,148 +166,173 @@ const VariablePanel = (props) => {
         dRange:null,
         dIndex:null,
         scale:100000
-
-      },
-      "Death Count / Confirmed Count":{
-        numerator: 'deaths',
+    },
+    "Confirmed Count per Licensed Bed": {
+        numerator: 'cases',
         nType: 'time-series',
         nProperty: null,
-        denominator: 'cases',
-        dType: 'time-series',
-        dProperty: null,
+        denominator: 'properties',
+        dType: 'characteristic',
+        dProperty: 'beds',
+        dRange:null,
+        dIndex:null,
         scale:1
+    },
+    "HEADER:deaths":{},
+    "Death Count":{
+      numerator: 'deaths',
+      nType: 'time-series',
+      nProperty: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1
+        
+    }, 
+    "Death Count per 100K Population":{
+      numerator: 'deaths',
+      nType: 'time-series',
+      nProperty: null,
+      denominator: 'properties',
+      dType: 'characteristic',
+      dProperty: 'population',
+      dRange:null,
+      dIndex:null,
+      scale:100000
 
-      },
-      "HEADER:community health":{},
-      "Uninsured % (Community Health Factor)":{
-        numerator: 'chr_health_factors',
-        nType: 'characteristic',
-        nProperty: colLookup(columnNames, currentData, 'chr_health_factors', 'UnInPrc'),
-        nRange: null,
-        denominator: 'properties',
-        dType: 'none',
-        dProperty: null,
-        dRange:null,
-        dIndex:null,
-        scale:1,
-        colorScale: colorScales['uninsured']
+    },
+    "Death Count / Confirmed Count":{
+      numerator: 'deaths',
+      nType: 'time-series',
+      nProperty: null,
+      denominator: 'cases',
+      dType: 'time-series',
+      dProperty: null,
+      scale:1
 
-      },
-      "Over 65 Years % (Community Health Context)":{
-        numerator: 'chr_health_context',
-        nType: 'characteristic',
-        nProperty: colLookup(columnNames, currentData, 'chr_health_context', 'Over65YearsPrc'),
-        nRange: null,
-        denominator: 'properties',
-        dType: 'none',
-        dProperty: null,
-        dRange:null,
-        dIndex:null,
-        scale:1,
-        colorScale: colorScales['over65']
-      },
-      "Life expectancy (Length and Quality of Life)":{
-        numerator: 'chr_life',
-        nType: 'characteristic',
-        nProperty: colLookup(columnNames, currentData, 'chr_life', 'LfExpRt'),
-        nRange: null,
-        denominator: 'properties',
-        dType: 'none',
-        dProperty: null,
-        dRange:null,
-        dIndex:null,
-        scale:1,
-        colorScale: colorScales['lifeExp']
-      }
+    },
+    "HEADER:community health":{},
+    "Uninsured % (Community Health Factor)":{
+      numerator: 'chr_health_factors',
+      nType: 'characteristic',
+      nProperty: colLookup(columnNames, currentData, 'chr_health_factors', 'UnInPrc'),
+      nRange: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1,
+      colorScale: colorScales['uninsured']
+
+    },
+    "Over 65 Years % (Community Health Context)":{
+      numerator: 'chr_health_context',
+      nType: 'characteristic',
+      nProperty: colLookup(columnNames, currentData, 'chr_health_context', 'Over65YearsPrc'),
+      nRange: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1,
+      colorScale: colorScales['over65']
+    },
+    "Life expectancy (Length and Quality of Life)":{
+      numerator: 'chr_life',
+      nType: 'characteristic',
+      nProperty: colLookup(columnNames, currentData, 'chr_life', 'LfExpRt'),
+      nRange: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1,
+      colorScale: colorScales['lifeExp']
+    }
   }
 
   const CountyVariables = {
-      "HEADER:forecasting":{},
-      "Forecasting (5-Day Severity Index)": {
-        numerator: 'predictions',
-        nType: 'characteristic',
-        nProperty: colLookup(columnNames, currentData, 'predictions', 'severity_index'),
-        nRange: null,
-        denominator: 'properties',
-        dType: 'none',
-        dProperty: null,
-        dRange:null,
-        dIndex:null,
-        scale:1,
-      }
+    "HEADER:forecasting":{},
+    "Forecasting (5-Day Severity Index)": {
+      numerator: 'predictions',
+      nType: 'characteristic',
+      nProperty: colLookup(columnNames, currentData, 'predictions', 'severity_index'),
+      nRange: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1,
+    }
   }
 
   const StateVariables = {
-      "HEADER:testing":{},
-      "7 Day Testing Positivity Rate %": {
-        numerator: 'testing_wk_pos',
-        nType: 'time-series',
-        nProperty: null,
-        nRange: null,
-        denominator: 'properties',
-        dType: 'none',
-        dProperty: null,
-        dRange:null,
-        dIndex:null,
-        scale:1,
-      },
-      "7 Day Testing Capacity": {
-        numerator: 'testing_tcap',
-        nType: 'time-series',
-        nProperty: null,
-        nRange: null,
-        denominator: 'properties',
-        dType: 'none',
-        dProperty: null,
-        dRange:null,
-        dIndex:null,
-        scale:1,
-      }, 
-      "7 Day Confirmed Cases per Testing %":{
-        numerator: 'testing_ccpt',
-        nType: 'time-series',
-        nProperty: null,
-        nRange: null,
-        denominator: 'properties',
-        dType: 'none',
-        dProperty: null,
-        dRange:null,
-        dIndex:null,
-        scale:1,
-      }
+    "HEADER:testing":{},
+    "7 Day Testing Positivity Rate %": {
+      numerator: 'testing_wk_pos',
+      nType: 'time-series',
+      nProperty: null,
+      nRange: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1,
+    },
+    "7 Day Testing Capacity": {
+      numerator: 'testing_tcap',
+      nType: 'time-series',
+      nProperty: null,
+      nRange: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1,
+    }, 
+    "7 Day Confirmed Cases per Testing %":{
+      numerator: 'testing_ccpt',
+      nType: 'time-series',
+      nProperty: null,
+      nRange: null,
+      denominator: 'properties',
+      dType: 'none',
+      dProperty: null,
+      dRange:null,
+      dIndex:null,
+      scale:1,
+    }
   }
-
-  
 
   const handleVariable = (event) => {
     let variable = event.target.value;
     dispatch(setVariableName(variable))
 
-    if (PresetVariables.hasOwnProperty(variable)) {
-      if (PresetVariables[variable].hasOwnProperty('colorScale')) {
-        dispatch(setMapParams({colorScale: PresetVariables[variable].colorScale}))
-        dispatch(setVariableParams({...PresetVariables[variable]}))
+    let tempParams = 
+      PresetVariables.hasOwnProperty(variable) ? 
+        PresetVariables[variable] : 
+      CountyVariables.hasOwnProperty(variable) ?
+        CountyVariables[variable] :
+      StateVariables.hasOwnProperty(variable) ?
+        StateVariables[variable] :
+      null;
+
+    dispatch(setVariableParams({...tempParams}))
+    if (mapParams.mapType === "natural_breaks") {
+      if (tempParams.hasOwnProperty('colorScale')) {
+        dispatch(setMapParams({colorScale: tempParams.colorScale}))
       } else {
         dispatch(setMapParams({colorScale: colorScales['natural_breaks']}))
-        dispatch(setVariableParams({...PresetVariables[variable]}))
       }
-    } else if (CountyVariables.hasOwnProperty(variable)){
-      if (CountyVariables[variable].hasOwnProperty('colorScale')) {
-        dispatch(setMapParams({colorScale: CountyVariables[variable].colorScale}))
-        dispatch(setVariableParams({...CountyVariables[variable]}))
-      } else {
-        dispatch(setMapParams({colorScale: colorScales['natural_breaks']}))
-        dispatch(setVariableParams({...CountyVariables[variable]}))
-      }
-    } else {
-      if (StateVariables[variable].hasOwnProperty('colorScale')) {
-        dispatch(setMapParams({colorScale: StateVariables[variable].colorScale}))
-        dispatch(setVariableParams({...StateVariables[variable]}))
-      } else {
-        dispatch(setMapParams({colorScale: colorScales['natural_breaks']}))
-        dispatch(setVariableParams({...StateVariables[variable]}))
-      }
-    }   
+    }
   };
 
   const handleDataSource = (event) => {
@@ -427,8 +384,22 @@ const VariablePanel = (props) => {
     )
   }
 
+  const handleOpenClose = () => {
+    if (panelState.variables) {
+      dispatch(setPanelState({variables:false}))
+    } else {
+      dispatch(setPanelState({variables:true}))
+    }
+  }
+
+  const handleVizTypeButton = (vizType) => {
+    if (mapParams.vizType !== vizType) {
+      dispatch(setMapParams({vizType}))
+    }
+  }
+
   return (
-    <VariablePanelContainer style={{transform: (hidePanel ? 'translateX(-100%)' : '')}}>
+    <VariablePanelContainer style={{transform: (panelState.variables ? '' : 'translateX(-100%)')}}>
       <h2>Data Sources &amp;<br/> Map Variables</h2>
       <StyledDropDown>
         <InputLabel htmlFor="data-select">Data Source</InputLabel>
@@ -487,7 +458,7 @@ const VariablePanel = (props) => {
         </Select>
       </StyledDropDown>
       <br/>
-      <StyledDropDown component="fieldset" >
+      <StyledDropDown component="radios">
         <FormLabel component="legend">Map Type</FormLabel>
         <RadioGroup 
           aria-label="maptype" 
@@ -499,7 +470,7 @@ const VariablePanel = (props) => {
             value="natural_breaks" 
             key="natural_breaks" 
             control={<Radio />} 
-            label="Choropleth" 
+            label="Natural Breaks" 
           />
           <FormControlLabel 
             value="hinge15_breaks" 
@@ -513,14 +484,15 @@ const VariablePanel = (props) => {
             control={<Radio />} 
             label="Local Moran" 
           />
-          <FormControlLabel 
-            value="cartogram" 
-            key="cartogram" 
-            control={<Radio />} 
-            label="Cartogram" 
-          />
         </RadioGroup>
       </StyledDropDown>
+      <p>Visualization Type</p>
+      <StyledButtonGroup color="primary" aria-label="text button group">
+        <Button className={mapParams.vizType === '2D' ? 'active' : ''} data-val="2D" onClick={() => handleVizTypeButton('2D')}>2D</Button>
+        <Button className={mapParams.vizType === '3D' ? 'active' : ''} data-val="3D" onClick={() => handleVizTypeButton('3D')}>3D</Button>
+        <Button className={mapParams.vizType === 'cartogram' ? 'active' : ''} data-val="cartogram" onClick={() => handleVizTypeButton('cartogram')}>Cartogram</Button>
+      </StyledButtonGroup>
+      <br/>
       <TwoUp>
         <StyledDropDown>
           <InputLabel htmlFor="overlay-select">Overlay</InputLabel>
@@ -562,7 +534,7 @@ const VariablePanel = (props) => {
               POWERED BY GEODA
             </a>
         </div>
-      <button onClick={() => setHidePanel(prev => { return !prev })} id="showHideLeft" className={hidePanel ? 'hidden' : 'active'}>
+      <button onClick={handleOpenClose} id="showHideLeft" className={panelState.variables ? 'active' : 'hidden'}>
         <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
           <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
             <path d="M38,33.8L23.9,47.9c-1.2,1.2-1.2,3.1,0,4.2L38,66.2l4.2-4.2l-9-9H71v17c0,0.6-0.4,1-1,1H59v6h11

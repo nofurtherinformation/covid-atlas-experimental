@@ -34,6 +34,15 @@ var reducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 storedLisaData: lisaObj
             };
+        case 'SET_STORED_CARTOGRAM_DATA':
+            let cartoObj = {
+                ...state.storedCartogramData,
+            }
+            cartoObj[action.payload.name] = action.payload.data
+            return {
+                ...state,
+                storedCartogramData: cartoObj
+            };
         case 'SET_CENTROIDS':
             let centroidsObj = {
                 ...state.centroids,
@@ -163,6 +172,15 @@ var reducer = (state = INITIAL_STATE, action) => {
             return {
                 ...state,
                 mapParams: mapParamObj 
+            }
+        case 'SET_PANELS':
+            let panelsObj = {
+                ...state.panelState,
+                ...action.payload.params
+            }
+            return {
+                ...state,
+                panelState: panelsObj 
             }
         case 'SET_VARIABLE_NAME':
             return {

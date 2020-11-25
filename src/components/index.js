@@ -2,6 +2,7 @@ import Map from './map';
 import DateSlider from './slider';
 import Legend from './legend';
 import DataPanel from './dataPanel';
+import BottomPanel from './bottomPanel';
 import VariablePanel from './variablePanel';
 import MainLineChart from './mainLineChart';
 import Popover from './tooltipPopper';
@@ -15,5 +16,6 @@ export {
     VariablePanel,
     MainLineChart,
     Popover,
-    Tooltip
+    Tooltip,
+    BottomPanel
 }

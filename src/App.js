@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setMapParams, setVariableParams, setStartDateIndex, setChartData, storeGeojson, storeLisaValues } from './actions';
+import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setDate, setDateIndex, setMapParams, setVariableParams, setStartDateIndex, setChartData, storeGeojson, storeLisaValues, storeCartogramData } from './actions';
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
 import { getParseCSV, getJson, mergeData, colIndex, findDates, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa, getCartogramValues } from './utils';
-import { Map, DateSlider, Legend, VariablePanel, MainLineChart, DataPanel, Popover } from './components';
+import { Map, VariablePanel, BottomPanel, DataPanel, Popover } from './components';
 import { colorScales, fixedScales, dataPresets } from './config';
 
 function App() {
   const storedData = useSelector(state => state.storedData);
   const storedGeojson = useSelector(state => state.storedGeojson);
   const storedLisaData = useSelector(state => state.storedLisaData);
+  const storedCartogramData = useSelector(state => state.storedCartogramData);
   const currentData = useSelector(state => state.currentData);
-  const currentVariable = useSelector(state => state.currentVariable);
   const columnNames = useSelector(state => state.cols);
   const dates = useSelector(state => state.dates);
   const mapParams = useSelector(state => state.mapParams);
   const dataParams = useSelector(state => state.dataParams);
-  const chartData = useSelector(state => state.chartData);
   const startDateIndex = useSelector(state => state.startDateIndex);
 
-  const [gda_proxy, set_gda_proxy] = useState(null);
+  const [gda_proxy, set_gda_proxy] = useState(null); 
   
   const dispatch = useDispatch();  
   
@@ -129,6 +128,7 @@ function App() {
 
   // get lisa values on change, if map type set to lisa
   useEffect(() => {
+    console.log('map or data params')
     if (gda_proxy !== null && mapParams.mapType === "lisa"){
       let tempId = getVarId(currentData, dataParams)
       if (!(storedLisaData.hasOwnProperty(tempId))) {
@@ -158,35 +158,35 @@ function App() {
         )
       }
     } 
-    // else if (gda_proxy !== null && mapParams.mapType === "cartogram") {
-    //   let tempId = getVarId(currentData, dataParams)
-    //   if (!(storedCartogramData.hasOwnProperty(tempId))) {
-    //     dispatch(
-    //       storeCartogramData(
-    //         getLisaValues(
-    //           gda_proxy, 
-    //           currentData, 
-    //           getDataForLisa(
-    //             storedData[currentData], 
-    //             dataParams.numerator, 
-    //             dataParams.nType,
-    //             dataParams.nProperty, 
-    //             dataParams.nIndex, 
-    //             dataParams.nRange, 
-    //             dataParams.denominator, 
-    //             dataParams.dType,
-    //             dataParams.dProperty, 
-    //             dataParams.dIndex, 
-    //             dataParams.dRange, 
-    //             dataParams.scale,
-    //             storedGeojson[currentData].indexOrder
-    //           )
-    //         ),
-    //         tempId
-    //       )
-    //     )
-    //   }
-    // }
+    if (gda_proxy !== null && mapParams.vizType === "cartogram"){
+      let tempId = getVarId(currentData, dataParams)
+      if (!(storedCartogramData.hasOwnProperty(tempId))) {
+        dispatch(
+          storeCartogramData(
+            getCartogramValues(
+              gda_proxy, 
+              currentData, 
+              getDataForLisa(
+                storedData[currentData], 
+                dataParams.numerator, 
+                dataParams.nType,
+                dataParams.nProperty, 
+                dataParams.nIndex, 
+                dataParams.nRange, 
+                dataParams.denominator, 
+                dataParams.dType,
+                dataParams.dProperty, 
+                dataParams.dIndex, 
+                dataParams.dRange, 
+                dataParams.scale,
+                storedGeojson[currentData].indexOrder
+              )
+            ),
+            tempId
+          )
+        )
+      }
+    }
   }, [dataParams, mapParams])
 
   // trigger on parameter change for metric values
@@ -240,7 +240,7 @@ function App() {
       let nb = gda_proxy.custom_breaks(
         currentData, 
         mapParams.mapType,
-        mapParams.nBins.
+        mapParams.nBins,
         null, 
         getDataForBins(
           storedData[currentData], 
@@ -267,44 +267,40 @@ function App() {
         })
       )
     }
-  }, [dataParams.nIndex, dataParams.dIndex])
 
-
+  }, [dataParams.nIndex, dataParams.dIndex, mapParams.binMode])
 
   return (
     <div className="App">
       {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
-        <button onClick={() => console.log(
-            getCartogramValues(
-              gda_proxy, 
-              currentData, 
-              getDataForLisa(
-                storedData[currentData], 
-                dataParams.numerator, 
-                dataParams.nType,
-                dataParams.nProperty, 
-                dataParams.nIndex, 
-                dataParams.nRange, 
-                dataParams.denominator, 
-                dataParams.dType,
-                dataParams.dProperty, 
-                dataParams.dIndex, 
-                dataParams.dRange, 
-                dataParams.scale,
-                storedGeojson[currentData].indexOrder
-              )
-            )
+        <button onClick={() => console.log(gda_proxy.custom_breaks(
+          currentData, 
+          mapParams.mapType, 
+          mapParams.nBins, 
+          null, 
+          getDataForBins(
+            storedData[currentData], 
+            dataParams.numerator, 
+            dataParams.nType,
+            dataParams.nProperty, 
+            298,
+            dataParams.nRange, 
+            dataParams.denominator,
+            dataParams.dType,
+            dataParams.dProperty, 
+            298, 
+            dataParams.dRange, 
+            dataParams.scale
+          )
+        )
+
+
         )}>dummy button for testing</button>
       </header> */}
       <Map />
       <VariablePanel />
       <DataPanel />
-      <div id="bottom-drawer">
-        <Legend labels={mapParams.bins.bins} title={currentVariable} colors={mapParams.colorScale} binType={mapParams.mapType} />
-        <hr />
-        <MainLineChart />
-        <DateSlider />
-      </div>
+      <BottomPanel />
       <Popover />
     </div>
   );

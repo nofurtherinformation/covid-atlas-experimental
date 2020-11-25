@@ -1,3 +1,4 @@
+import { compose } from 'redux';
 import dataFn from './dataFunction';
 
 // this function loops through the current data set and provides data for GeodaJS to create custom breaks 
@@ -14,7 +15,6 @@ const getDataForBins = (tableData, table, nType, numerProp, numerIndex, numerRan
     if (numerIndex === null && numerProp === null) {
         // if fixed, get the most recent date
         let tempIndex = tableData[0][table].length-1;
-        
         // if the denominator is time series data (eg. deaths / cases this week), make the indices the same (most recent)
         let tempDenomIndex = dType === 'time-series' ? tableData[0][denomTable].length-1 : denomIndex;
 

@@ -39,6 +39,16 @@ export const storeLisaValues = (data, name) => {
     }
 }
 
+export const storeCartogramData = (data, name) => {
+    return {
+        type: 'SET_STORED_CARTOGRAM_DATA',
+        payload: {
+            data,
+            name
+        }   
+    }
+}
+
 export const setCurrentData = (data) => {
     return {
         type: 'SET_CURRENT_DATA',
@@ -201,6 +211,15 @@ export const setAnchorEl = ( anchorEl ) => {
         type: 'SET_ANCHOR_EL',
         payload: {
             anchorEl
+        }
+    }
+}
+
+export const setPanelState = ( params ) => {
+    return {
+        type: 'SET_PANELS',
+        payload: {
+            params
         }
     }
 }

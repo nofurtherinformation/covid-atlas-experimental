@@ -1,6 +1,7 @@
-import React, {useState} from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
+import { setPanelState } from '../actions';
 import {dataFn, colLookup} from '../utils';
 
 const DataPanelContainer = styled.div`
@@ -76,15 +77,25 @@ const DataPanelContainer = styled.div`
 
 const DataPanel = () => {
 
-  const [hidePanel, setHidePanel] = useState(true);
+  const dispatch = useDispatch();
+
   const sidebarData = useSelector(state => state.sidebarData);
   const currentData = useSelector(state => state.currentData);
+  const panelState = useSelector(state => state.panelState);
   const cols = useSelector(state => state.cols);
 
   const parsePredictedDate = (list) => `${list.slice(-2,)[0]}/${list.slice(-1,)[0]}`
 
+  const handleOpenClose = () => {
+    if (panelState.info) {
+      dispatch(setPanelState({info:false}))
+    } else {
+      dispatch(setPanelState({info:true}))
+    }
+  }
+  
   return (
-    <DataPanelContainer style={{transform: (hidePanel ? 'translateX(100%)' : '')}}>
+    <DataPanelContainer style={{transform: (panelState.info ? '' : 'translateX(100%)')}} id="data-panel">
       <div className="container">
         {sidebarData.properties && <h2>{sidebarData.properties.NAME}, {sidebarData.properties.state_name}</h2>}
         {sidebarData.properties && 
@@ -161,7 +172,7 @@ const DataPanel = () => {
           </div>
         }
         
-        {sidebarData !== {} && <button onClick={() => setHidePanel(prev => { return !prev })} id="showHideRight" className={hidePanel ? 'hidden' : 'active'}>
+        {sidebarData !== {} && <button onClick={handleOpenClose} id="showHideRight" className={panelState.info ? 'active' : 'hidden'}>
           <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
             <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
               <path d="M38,33.8L23.9,47.9c-1.2,1.2-1.2,3.1,0,4.2L38,66.2l4.2-4.2l-9-9H71v17c0,0.6-0.4,1-1,1H59v6h11

@@ -15,7 +15,7 @@ const store = createStore(
 
 WebFont.load({
   google: {
-    families: ['Lato:300,400,700,900', 'Montserrat:400,600,800', 'Playfair Display:ital', 'sans-serif']
+    families: ['Lato:300,400,700,900', 'Playfair Display:ital', 'sans-serif']
   }
 });
 
