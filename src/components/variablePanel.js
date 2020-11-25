@@ -23,9 +23,9 @@ import { setVariableParams, setVariableName, setMapParams, setCurrentData, setPa
 const VariablePanelContainer = styled.div`
   position:fixed;
   left:0;
-  top:0;
+  top:50px;
   height:auto;
-  min-height:100vh;
+  min-height:calc(100vh - 50px);
   min-width:200px;
   background-color: #2b2b2b;
   box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
@@ -133,6 +133,10 @@ const TwoUp = styled.div`
     min-width:60px;
     margin-right:5px;
   }
+`
+
+const ControlsContainer = styled.div`
+  
 `
 
 const VariablePanel = (props) => {
@@ -400,128 +404,130 @@ const VariablePanel = (props) => {
 
   return (
     <VariablePanelContainer style={{transform: (panelState.variables ? '' : 'translateX(-100%)')}}>
-      <h2>Data Sources &amp;<br/> Map Variables</h2>
-      <StyledDropDown>
-        <InputLabel htmlFor="data-select">Data Source</InputLabel>
-        <Select  
-          id="data-select"
-          value={currentData}
-          onChange={handleDataSource}
-        >
-          
-        <ListSubheader>county data</ListSubheader>
-          <MenuItem value={'county_usfacts.geojson'} key={'county_usfacts.geojson'}>USA Facts</MenuItem>
-          <MenuItem value={'county_nyt.geojson'} key={'county_nyt.geojson'}>New York Times</MenuItem>
-          <MenuItem value={'county_1p3a.geojson'} key={'county_1p3a.geojson'}>1point3acres</MenuItem>
-        <ListSubheader>state data</ListSubheader>
-          <MenuItem value={'state_1p3a.geojson'} key={'state_1p3a.geojson'}>1point3acres</MenuItem>
-          <MenuItem value={'state_nyt.geojson'} key={'state_nyt.geojson'} disabled>New York Times</MenuItem>
-        </Select>
-      </StyledDropDown>
-      <br />
-      <StyledDropDown>
-        <InputLabel htmlFor="numerator-select">Select Variable</InputLabel>
-        <Select 
-          value={currentVariable} 
-          id="numerator-select"
-          onChange={handleVariable}
-        >
-          {
-            Object.keys(PresetVariables).map((variable) => {
-              if (variable.split(':')[0]==="HEADER") {
-                return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
-              } else {
-                return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
-              }
-            })
-          }
-          
-          {
-            currentData.includes("county") && Object.keys(CountyVariables).map((variable) => {
-              if (variable.split(':')[0]==="HEADER") {
-                return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
-              } else {
-                return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
-              }
-            })
-          }
-          
-          {
-            currentData.includes("state") && Object.keys(StateVariables).map((variable) => {
-              if (variable.split(':')[0]==="HEADER") {
-                return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
-              } else {
-                return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
-              }
-            })
-          }
-        </Select>
-      </StyledDropDown>
-      <br/>
-      <StyledDropDown component="radios">
-        <FormLabel component="legend">Map Type</FormLabel>
-        <RadioGroup 
-          aria-label="maptype" 
-          name="maptype1" 
-          onChange={handleMapType} 
-          value={mapParams.mapType}
-          >
-          <FormControlLabel 
-            value="natural_breaks" 
-            key="natural_breaks" 
-            control={<Radio />} 
-            label="Natural Breaks" 
-          />
-          <FormControlLabel 
-            value="hinge15_breaks" 
-            key="hinge15_breaks" 
-            control={<Radio />} 
-            label="Box Map" 
-          />
-          <FormControlLabel 
-            value="lisa" 
-            key="lisa" 
-            control={<Radio />} 
-            label="Local Moran" 
-          />
-        </RadioGroup>
-      </StyledDropDown>
-      <p>Visualization Type</p>
-      <StyledButtonGroup color="primary" aria-label="text button group">
-        <Button className={mapParams.vizType === '2D' ? 'active' : ''} data-val="2D" onClick={() => handleVizTypeButton('2D')}>2D</Button>
-        <Button className={mapParams.vizType === '3D' ? 'active' : ''} data-val="3D" onClick={() => handleVizTypeButton('3D')}>3D</Button>
-        <Button className={mapParams.vizType === 'cartogram' ? 'active' : ''} data-val="cartogram" onClick={() => handleVizTypeButton('cartogram')}>Cartogram</Button>
-      </StyledButtonGroup>
-      <br/>
-      <TwoUp>
+      <ControlsContainer>
+        <h2>Data Sources &amp;<br/> Map Variables</h2>
         <StyledDropDown>
-          <InputLabel htmlFor="overlay-select">Overlay</InputLabel>
+          <InputLabel htmlFor="data-select">Data Source</InputLabel>
           <Select  
-            id="overlay-select"
-            value={mapParams.overlay}
-            onChange={handleMapOverlay}
+            id="data-select"
+            value={currentData}
+            onChange={handleDataSource}
           >
-            <MenuItem value="" key={'None'}>None</MenuItem> 
-            <MenuItem value={'native_american_reservations'} key={'native_american_reservations'}>Native American Reservations</MenuItem>
-            <MenuItem value={'segregated_cities'} key={'segregated_cities'}>Hypersegregated Cities<Tooltip id="Hypersegregated"/></MenuItem>
-            <MenuItem value={'blackbelt'} key={'blackbelt'}>Black Belt Counties<Tooltip id="BlackBelt" /></MenuItem>
-            <MenuItem value={'congressional_districts'} key={'congressional_districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
+            
+          <ListSubheader>county data</ListSubheader>
+            <MenuItem value={'county_usfacts.geojson'} key={'county_usfacts.geojson'}>USA Facts</MenuItem>
+            <MenuItem value={'county_nyt.geojson'} key={'county_nyt.geojson'}>New York Times</MenuItem>
+            <MenuItem value={'county_1p3a.geojson'} key={'county_1p3a.geojson'}>1point3acres</MenuItem>
+          <ListSubheader>state data</ListSubheader>
+            <MenuItem value={'state_1p3a.geojson'} key={'state_1p3a.geojson'}>1point3acres</MenuItem>
+            <MenuItem value={'state_nyt.geojson'} key={'state_nyt.geojson'} disabled>New York Times</MenuItem>
           </Select>
         </StyledDropDown>
+        <br />
         <StyledDropDown>
-          <InputLabel htmlFor="resource-select">Resource</InputLabel>
-          <Select  
-            id="resource-select"
-            value={mapParams.resource}
-            onChange={handleMapResource}
+          <InputLabel htmlFor="numerator-select">Select Variable</InputLabel>
+          <Select 
+            value={currentVariable} 
+            id="numerator-select"
+            onChange={handleVariable}
           >
-            <MenuItem value="" key='None'>None</MenuItem> 
-            <MenuItem value={'clinics_hospitals'} key={'variable1'}>Clinics and Hospitals</MenuItem>
-            <MenuItem value={'clinics'} key={'variable2'}>Clinics</MenuItem>
-            <MenuItem value={'hospitals'} key={'variable3'}>Hospitals</MenuItem>
+            {
+              Object.keys(PresetVariables).map((variable) => {
+                if (variable.split(':')[0]==="HEADER") {
+                  return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+                } else {
+                  return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
+                }
+              })
+            }
+            
+            {
+              currentData.includes("county") && Object.keys(CountyVariables).map((variable) => {
+                if (variable.split(':')[0]==="HEADER") {
+                  return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+                } else {
+                  return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
+                }
+              })
+            }
+            
+            {
+              currentData.includes("state") && Object.keys(StateVariables).map((variable) => {
+                if (variable.split(':')[0]==="HEADER") {
+                  return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+                } else {
+                  return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
+                }
+              })
+            }
           </Select>
         </StyledDropDown>
-      </TwoUp>
+        <br/>
+        <StyledDropDown component="radios">
+          <FormLabel component="legend">Map Type</FormLabel>
+          <RadioGroup 
+            aria-label="maptype" 
+            name="maptype1" 
+            onChange={handleMapType} 
+            value={mapParams.mapType}
+            >
+            <FormControlLabel 
+              value="natural_breaks" 
+              key="natural_breaks" 
+              control={<Radio />} 
+              label="Natural Breaks" 
+            />
+            <FormControlLabel 
+              value="hinge15_breaks" 
+              key="hinge15_breaks" 
+              control={<Radio />} 
+              label="Box Map" 
+            />
+            <FormControlLabel 
+              value="lisa" 
+              key="lisa" 
+              control={<Radio />} 
+              label="Local Moran" 
+            />
+          </RadioGroup>
+        </StyledDropDown>
+        <p>Visualization Type</p>
+        <StyledButtonGroup color="primary" aria-label="text button group">
+          <Button className={mapParams.vizType === '2D' ? 'active' : ''} data-val="2D" onClick={() => handleVizTypeButton('2D')}>2D</Button>
+          <Button className={mapParams.vizType === '3D' ? 'active' : ''} data-val="3D" onClick={() => handleVizTypeButton('3D')}>3D</Button>
+          <Button className={mapParams.vizType === 'cartogram' ? 'active' : ''} data-val="cartogram" onClick={() => handleVizTypeButton('cartogram')}>Cartogram</Button>
+        </StyledButtonGroup>
+        <br/>
+        <TwoUp>
+          <StyledDropDown>
+            <InputLabel htmlFor="overlay-select">Overlay</InputLabel>
+            <Select  
+              id="overlay-select"
+              value={mapParams.overlay}
+              onChange={handleMapOverlay}
+            >
+              <MenuItem value="" key={'None'}>None</MenuItem> 
+              <MenuItem value={'native_american_reservations'} key={'native_american_reservations'}>Native American Reservations</MenuItem>
+              <MenuItem value={'segregated_cities'} key={'segregated_cities'}>Hypersegregated Cities<Tooltip id="Hypersegregated"/></MenuItem>
+              <MenuItem value={'blackbelt'} key={'blackbelt'}>Black Belt Counties<Tooltip id="BlackBelt" /></MenuItem>
+              <MenuItem value={'congressional_districts'} key={'congressional_districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
+            </Select>
+          </StyledDropDown>
+          <StyledDropDown>
+            <InputLabel htmlFor="resource-select">Resource</InputLabel>
+            <Select  
+              id="resource-select"
+              value={mapParams.resource}
+              onChange={handleMapResource}
+            >
+              <MenuItem value="" key='None'>None</MenuItem> 
+              <MenuItem value={'clinics_hospitals'} key={'variable1'}>Clinics and Hospitals</MenuItem>
+              <MenuItem value={'clinics'} key={'variable2'}>Clinics</MenuItem>
+              <MenuItem value={'hospitals'} key={'variable3'}>Hospitals</MenuItem>
+            </Select>
+          </StyledDropDown>
+        </TwoUp>
+      </ControlsContainer>
       <p className="note">
         Data is updated with freshest available data at 3pm CST daily, at minimum. 
         In case of data discrepancy, local health departments are considered most accurate as per CDC recommendations. 

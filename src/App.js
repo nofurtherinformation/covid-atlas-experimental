@@ -3,7 +3,7 @@ import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setD
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
 import { getParseCSV, getJson, mergeData, colIndex, findDates, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa, getCartogramValues } from './utils';
-import { Map, VariablePanel, BottomPanel, DataPanel, Popover } from './components';
+import { Map, VariablePanel, BottomPanel, DataPanel, Popover, NavBar } from './components';
 import { colorScales, fixedScales, dataPresets } from './config';
 
 function App() {
@@ -272,6 +272,7 @@ function App() {
 
   return (
     <div className="App">
+      <NavBar />
       {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
         <button onClick={() => console.log(gda_proxy.custom_breaks(
           currentData, 
@@ -297,11 +298,13 @@ function App() {
 
         )}>dummy button for testing</button>
       </header> */}
-      <Map />
-      <VariablePanel />
-      <DataPanel />
-      <BottomPanel />
-      <Popover />
+      <div id="mapContainer">
+        <Map />
+        <VariablePanel />
+        <DataPanel />
+        <BottomPanel />
+        <Popover />
+      </div>
     </div>
   );
 }

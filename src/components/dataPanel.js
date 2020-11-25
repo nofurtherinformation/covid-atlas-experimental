@@ -7,8 +7,8 @@ import {dataFn, colLookup} from '../utils';
 const DataPanelContainer = styled.div`
   position:fixed;
   right:0;
-  top:0;
-  height:100vh;
+  top:50px;
+  height:calc(100vh - 50px);
   min-width:200px;
   background-color: #2b2b2b;
   box-shadow: -2px 0px 5px rgba(0,0,0,0.7);

@@ -7,9 +7,11 @@ import VariablePanel from './variablePanel';
 import MainLineChart from './mainLineChart';
 import Popover from './tooltipPopper';
 import Tooltip from './tooltip';
+import NavBar from './navbar';
 
 export {
     Map,
+    NavBar,
     DateSlider,
     Legend,
     DataPanel,
