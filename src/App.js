@@ -298,7 +298,7 @@ function App() {
 
         )}>dummy button for testing</button>
       </header> */}
-      <div id="mapContainer">
+      <div id="mainContainer">
         <Map />
         <VariablePanel />
         <DataPanel />

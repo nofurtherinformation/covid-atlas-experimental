@@ -27,7 +27,7 @@ const Tooltip = (props) => {
     }
 
     return (
-        <TooltipContainer id={props.id} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseLeave} />
+        <TooltipContainer id={props.id} key={props.id} onMouseEnter={handleMouseOver} onMouseLeave={handleMouseLeave} />
     )
 }
 

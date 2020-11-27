@@ -2,6 +2,7 @@
 import dataFn from './dataFunction.js';
 import mapFn from './mapFunction.js';
 import getJson from './getJson.js';
+import getCSV from './getCSV.js';
 import getParseCSV from './getParseCSV.js';
 import mergeData from './mergeData.js';
 import colIndex from './colIndex.js';
@@ -20,6 +21,7 @@ import getCartogramValues from './getCartogramValues';
 
 export {
     getJson,
+    getCSV,
     getParseCSV,
     mergeData,
     colIndex,

@@ -1,22 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import styled from 'styled-components';
+import {fromJS} from 'immutable';
+
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView, FlyToInterpolator} from '@deck.gl/core';
+import { GeoJsonLayer, PolygonLayer, ScatterplotLayer,  IconLayer } from '@deck.gl/layers';
+// import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
+// import {IcoSphereGeometry} from '@luma.gl/engine';
+
 import ReactMapGL, {NavigationControl, GeolocateControl } from 'react-map-gl';
-import { GeoJsonLayer, PolygonLayer, ScatterplotLayer, SolidPolygonLayer } from '@deck.gl/layers';
-import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
-import { useSelector, useDispatch } from 'react-redux';
-import { setDataSidebar, setMapParams } from '../actions';
-import { mapFn, dataFn, getVarId } from '../utils';
+import Geocoder from 'react-map-gl-geocoder'
+
+import { MapTooltipContent } from '../components';
 import { colorScales } from '../config';
-import styled from 'styled-components';
-import { Polygon } from 'recharts';
-import {IcoSphereGeometry} from '@luma.gl/engine';
-import {fromJS} from 'immutable';
+import { setDataSidebar, setMapParams } from '../actions';
+import { mapFn, dataFn, getVarId, getCSV } from '../utils';
 import MAP_STYLE from '../config/style.json';
 
-const cartoGeom = new IcoSphereGeometry({
-  iterations: 1
-});
+// const cartoGeom = new IcoSphereGeometry({
+//   iterations: 1
+// });
+
+const ICON_MAPPING = {
+    hospital: {x: 0, y: 0, width: 128, height: 128},
+    clinic: {x: 128, y: 0, width: 128, height: 128},
+  };
 
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0bTFhaTZmbnRwaiJ9.VRNeNnyb96Eo-CorkJmIqg';
 
@@ -66,6 +75,18 @@ const NavInlineButton = styled.button`
     transition:250ms all;
 `
 
+const NavBarBacking = styled.div`
+width:100%;
+height:50px;
+position:absolute;
+top:0;
+left:0;
+background:#2b2b2b;
+-moz-box-shadow: 0 0 2px rgba(0,0,0,.1);
+-webkit-box-shadow: 0 0 2px rgba(0,0,0,.1);
+box-shadow: 0 0 0 2px rgba(0,0,0,.1);
+`
+
 const viewGlobe = new GlobeView({id: 'globe', controller: false, resolution:1});
 const view = new MapView({repeat: true});
 
@@ -80,6 +101,8 @@ const Map = () => {
     const [viewState, setViewState] = useState(initialViewState)
     const [cartogramData, setCartogramData] = useState([]);
     const [currVarId, setCurrVarId] = useState(null);
+    const [hospitalData, setHospitalData] = useState(null);
+    const [clinicData, setClinicData] = useState(null);
 
     const storedData = useSelector(state => state.storedData);
     const storedGeojson = useSelector(state => state.storedGeojson);
@@ -149,6 +172,35 @@ const Map = () => {
         if (tempData !== undefined) setCurrLisaData(tempData);
     }, [storedLisaData, dataParams, mapParams])
 
+    useEffect(() => {
+
+        const defaultLayers = defaultMapStyle.get('layers');
+
+        let tempLayers = defaultLayers.map(layer => {
+            if (mapParams.resource.includes(layer.get('id')) || mapParams.overlay.includes(layer.get('id'))) {
+                return layer.setIn(['layout', 'visibility'], 'visible');
+            } else {
+                return layer;
+            }
+        })
+
+        setMapStyle(defaultMapStyle.set('layers', tempLayers))
+
+    }, [mapParams.overlay])
+
+    useEffect(() => {
+        if (hospitalData === null) {
+            getCSV('https://raw.githubusercontent.com/covidcaremap/covid19-healthsystemcapacity/master/data/published/us_healthcare_capacity-facility-CovidCareMap.csv')
+            .then(values => setHospitalData(values))
+        }
+
+        if (clinicData === null) {
+            getCSV(`${process.env.PUBLIC_URL}/csv/health_centers.csv`)
+            .then(values => setClinicData(values))
+        }
+    },[])
+    const mapRef = useRef();
+    
     const GetFillColor = (f, bins, mapType) => {
         if (!bins.hasOwnProperty("bins")) {
             return [0,0,0]
@@ -186,7 +238,6 @@ const Map = () => {
     }
     
     const handleGeolocate = (viewState) => {
-        console.log(viewState)
         setViewState(view => ({
             ...view,
             latitude: viewState.coords.latitude,
@@ -277,6 +328,40 @@ const Map = () => {
                 getLineColor: highlightGeog,
             },
         }),
+        new IconLayer({
+            id: 'hospital-layer',
+            data: hospitalData,
+            visible: mapParams.resource.includes('hospital'),
+            iconAtlas: `${process.env.PUBLIC_URL}/assets/img/icon_atlas.png`,
+            iconMapping: ICON_MAPPING,
+            getIcon: d => 'hospital',
+            getPosition: d => [d.Longitude, d.Latitude],
+            sizeUnits: 'meters',
+            getSize: 12500,
+            sizeMinPixels:4,
+            sizeMaxPixels:20,
+            updateTriggers: {
+                data: hospitalData,
+                visible: mapParams
+            }
+        }),
+        new IconLayer({
+            id: 'clinics-layer',
+            data: clinicData,
+            visible: mapParams.resource.includes('clinic'),
+            iconAtlas: `${process.env.PUBLIC_URL}/assets/img/icon_atlas.png`,
+            iconMapping: ICON_MAPPING,
+            getIcon: d => 'clinic',
+            getPosition: d => [d.lon, d.lat],
+            sizeUnits: 'meters',
+            getSize: 12500,
+            sizeMinPixels:4,
+            sizeMaxPixels:20,
+            updateTriggers: {
+                data: clinicData,
+                visible: mapParams
+            }
+        }),
         new GeoJsonLayer({
             id: 'blackbelt',
             data: DATA_URL.BLACKBELT,
@@ -317,14 +402,14 @@ const Map = () => {
             },
         }),
         new GeoJsonLayer({
-            id: 'congressional distrcits',
+            id: 'uscongressional_districts',
             data: DATA_URL.CONGRESS_DISTRICTS,
             pickable: false,
             stroked: true,
             filled:false,
             getLineColor: [0,0,0],
             lineWidthMinPixels:1,
-            visible: mapParams.overlay === "congressional_districts",
+            visible: mapParams.overlay === "uscongressional_districts",
             updateTriggers: {
                 visible: mapParams
             },
@@ -389,6 +474,7 @@ const Map = () => {
         //     }
         //   })
     ]
+
     return (
         <div id="mapContainer" style={{position:'fixed',left:0,top:0,width:'100%',height:'100%'}}>
             <DeckGL
@@ -399,11 +485,20 @@ const Map = () => {
             >
                 <ReactMapGL
                     reuseMaps
+                    ref={mapRef}
                     mapStyle={mapStyle} //{globalMap || mapParams.vizType === 'cartogram' ? 'mapbox://styles/lixun910/ckhtcdx4b0xyc19qzlt4b5c0d' : 'mapbox://styles/lixun910/ckhkoo8ix29s119ruodgwfxec'}
                     preventStyleDiffing={true}
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
                     >
                         
+                    <Geocoder
+                    mapRef={mapRef}
+                    onViewportChange={viewState  => setViewState(viewState)} 
+                    mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
+                    position="top-right"
+                    style={{transform:'translateY(-5px)'}}
+                    />
+                    <NavBarBacking />
                         
                     <div style={{position: 'absolute', right: 10, bottom: 30, zIndex: 10}}>
                         {/* <NavInlineButton
@@ -455,25 +550,7 @@ const Map = () => {
                 </ReactMapGL >
                 {hoverInfo.object && (
                 <HoverDiv style={{position: 'absolute', zIndex: 1, pointerEvents: 'none', left: hoverInfo.x, top: hoverInfo.y}}>
-                    {hoverInfo.object.properties && <h3>{`${hoverInfo.object.properties.NAME}`} {hoverInfo.object.properties.state_name!==undefined && `, ${hoverInfo.object.properties.state_name}`}</h3>}
-                    {hoverInfo.object.cases && (
-                        <div>
-                            Cases: {hoverInfo.object.cases.slice(-1,)[0].toLocaleString('en')}<br/>
-                            Deaths: {hoverInfo.object.deaths.slice(-1,)[0].toLocaleString('en')}<br/>
-                            New Cases: {(hoverInfo.object.cases.slice(-1,)[0]-hoverInfo.object.cases.slice(-2,-1)[0]).toLocaleString('en')}<br/>
-                            New Deaths: {(hoverInfo.object.deaths.slice(-1,)[0]-hoverInfo.object.deaths.slice(-2,-1)[0]).toLocaleString('en')}<br/>
-                        </div>
-                        )
-                    }
-                    {/* {hoverInfo.object.testing && (
-                        <div>
-                            Total Testing: {hoverInfo.object.cases.slice(-1,)[0].toLocaleString('en')}<br/>
-                            7 Day Positivity Rate: {hoverInfo.object.deaths.slice(-1,)[0].toLocaleString('en')}<br/>
-                            7 Day Confirmed Cases per Testing: {(hoverInfo.object.cases.slice(-1,)[0]-hoverInfo.object.cases.slice(-2,-1)[0]).toLocaleString('en')}<br/>
-                            Testing Criteria: {(hoverInfo.object.deaths.slice(-1,)[0]-hoverInfo.object.deaths.slice(-2,-1)[0]).toLocaleString('en')}<br/>
-                        </div>
-                        )
-                    } */}
+                    <MapTooltipContent content={hoverInfo.object} />
                 </HoverDiv>
                 )}
             </DeckGL>

@@ -7,6 +7,7 @@ import VariablePanel from './variablePanel';
 import MainLineChart from './mainLineChart';
 import Popover from './tooltipPopper';
 import Tooltip from './tooltip';
+import MapTooltipContent from './mapTooltipContent';
 import NavBar from './navbar';
 
 export {
@@ -19,5 +20,6 @@ export {
     MainLineChart,
     Popover,
     Tooltip,
-    BottomPanel
+    MapTooltipContent,
+    BottomPanel,
 }

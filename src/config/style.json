@@ -50,7 +50,7 @@
                         "settlement-minor-label",
                         "settlement-major-label",
                         "state-label",
-                        "uscongress-label",
+                        "uscongress",
                         "hospitals"
                     ]
                 }
@@ -1188,7 +1188,7 @@
             }
         },
         {
-            "id": "uscongress-label",
+            "id": "uscongress",
             "type": "symbol",
             "source": "composite",
             "source-layer": "district_centroids-c05zce",
@@ -1215,38 +1215,6 @@
                 "visibility": "none"
             },
             "paint": {"text-color": "hsl(0, 0%, 100%)"}
-        },
-        {
-            "id": "hospitals",
-            "type": "symbol",
-            "source": "composite",
-            "source-layer": "us_healthcare_capacity-facili-dpqovj",
-            "layout": {
-                "text-field": "+",
-                "text-padding": 0,
-                "text-allow-overlap": true,
-                "text-ignore-placement": true,
-                "text-font": [
-                    "Open Sans ExtraBold",
-                    "Arial Unicode MS Regular"
-                ],
-                "text-size": [
-                    "interpolate",
-                    ["linear"],
-                    ["zoom"],
-                    4,
-                    12,
-                    22,
-                    48
-                ],
-                "visibility": "none"
-            },
-            "paint": {
-                "text-color": "hsl(0, 100%, 49%)",
-                "text-halo-color": "hsla(0, 0%, 100%, 0.72)",
-                "text-halo-width": 1,
-                "text-halo-blur": 1
-            }
         }
     ],
     "created": "2020-11-25T16:18:56.139Z",

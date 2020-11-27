@@ -434,7 +434,7 @@ const VariablePanel = (props) => {
             {
               Object.keys(PresetVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]}>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -444,7 +444,7 @@ const VariablePanel = (props) => {
             {
               currentData.includes("county") && Object.keys(CountyVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]}>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -454,7 +454,7 @@ const VariablePanel = (props) => {
             {
               currentData.includes("state") && Object.keys(StateVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]}>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -463,7 +463,7 @@ const VariablePanel = (props) => {
           </Select>
         </StyledDropDown>
         <br/>
-        <StyledDropDown component="radios">
+        <StyledDropDown component="Radio">
           <FormLabel component="legend">Map Type</FormLabel>
           <RadioGroup 
             aria-label="maptype" 
@@ -493,9 +493,9 @@ const VariablePanel = (props) => {
         </StyledDropDown>
         <p>Visualization Type</p>
         <StyledButtonGroup color="primary" aria-label="text button group">
-          <Button className={mapParams.vizType === '2D' ? 'active' : ''} data-val="2D" onClick={() => handleVizTypeButton('2D')}>2D</Button>
-          <Button className={mapParams.vizType === '3D' ? 'active' : ''} data-val="3D" onClick={() => handleVizTypeButton('3D')}>3D</Button>
-          <Button className={mapParams.vizType === 'cartogram' ? 'active' : ''} data-val="cartogram" onClick={() => handleVizTypeButton('cartogram')}>Cartogram</Button>
+          <Button className={mapParams.vizType === '2D' ? 'active' : ''} data-val="2D" key="2D-btn" onClick={() => handleVizTypeButton('2D')}>2D</Button>
+          <Button className={mapParams.vizType === '3D' ? 'active' : ''} data-val="3D" key="3D-btn" onClick={() => handleVizTypeButton('3D')}>3D</Button>
+          <Button className={mapParams.vizType === 'cartogram' ? 'active' : ''} data-val="cartogram" key="cartogram-btn" onClick={() => handleVizTypeButton('cartogram')}>Cartogram</Button>
         </StyledButtonGroup>
         <br/>
         <TwoUp>
@@ -510,7 +510,7 @@ const VariablePanel = (props) => {
               <MenuItem value={'native_american_reservations'} key={'native_american_reservations'}>Native American Reservations</MenuItem>
               <MenuItem value={'segregated_cities'} key={'segregated_cities'}>Hypersegregated Cities<Tooltip id="Hypersegregated"/></MenuItem>
               <MenuItem value={'blackbelt'} key={'blackbelt'}>Black Belt Counties<Tooltip id="BlackBelt" /></MenuItem>
-              <MenuItem value={'congressional_districts'} key={'congressional_districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
+              <MenuItem value={'uscongressional_districts'} key={'uscongressional_districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
             </Select>
           </StyledDropDown>
           <StyledDropDown>
