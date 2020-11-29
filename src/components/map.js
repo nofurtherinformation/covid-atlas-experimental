@@ -109,6 +109,7 @@ const Map = () => {
     const currentData = useSelector(state => state.currentData);
     const storedLisaData = useSelector(state => state.storedLisaData);
     const storedCartogramData = useSelector(state => state.storedCartogramData);
+    const panelState = useSelector(state => state.panelState);
 
     const dataParams = useSelector(state => state.dataParams);
     const mapParams = useSelector(state => state.mapParams);
@@ -285,7 +286,7 @@ const Map = () => {
             filled: true,
             wireframe: mapParams.vizType === '3D',
             extruded: mapParams.vizType === '3D',
-            opacity: mapParams.vizType === '3D' ? 1 : 0.5,
+            opacity: mapParams.vizType === '3D' ? 0.9 : mapParams.resource === '' ? 0.5 : 0.25,
             getFillColor: f => GetFillColor(f, mapParams.bins, mapParams.mapType),
             getElevation: f => GetHeight(f, mapParams.bins, mapParams.mapType),
             updateTriggers: {
@@ -338,7 +339,7 @@ const Map = () => {
             getPosition: d => [d.Longitude, d.Latitude],
             sizeUnits: 'meters',
             getSize: 12500,
-            sizeMinPixels:4,
+            sizeMinPixels:6,
             sizeMaxPixels:20,
             updateTriggers: {
                 data: hospitalData,
@@ -355,7 +356,7 @@ const Map = () => {
             getPosition: d => [d.lon, d.lat],
             sizeUnits: 'meters',
             getSize: 12500,
-            sizeMinPixels:4,
+            sizeMinPixels:6,
             sizeMaxPixels:20,
             updateTriggers: {
                 data: clinicData,
@@ -500,7 +501,7 @@ const Map = () => {
                     />
                     <NavBarBacking />
                         
-                    <div style={{position: 'absolute', right: 10, bottom: 30, zIndex: 10}}>
+                    <div style={{position: 'absolute', right: panelState.info ? 317 : 10, bottom: 30, zIndex: 10, transition: '250ms all'}}>
                         {/* <NavInlineButton
                             onClick={() => setGlobalMap(prev => !prev)}
                             isActive={globalMap}

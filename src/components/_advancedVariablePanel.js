@@ -1,3 +1,8 @@
+// this component was the start of making a flexible data exploration tool
+// the idea was that the numerator and denominator columns could be selected on the fly
+// and new data could be incorporated
+// long term, this is important, but for now it remains WIP
+
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setVariableParams } from '../actions';

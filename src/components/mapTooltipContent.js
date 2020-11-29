@@ -27,6 +27,10 @@ const MapTooltipContent = (props) => {
                 </div>
             </div>
         )
+    } else {
+        return (
+            <div></div>
+        )
     }
 }
 
