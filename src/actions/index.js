@@ -250,3 +250,12 @@ export const setPanelState = ( params ) => {
         }
     }
 }
+
+export const setMapLoaded = ( loaded ) => {
+    return {
+        type: 'SET_MAP_LOADED',
+        payload: {
+            loaded
+        }
+    }
+}

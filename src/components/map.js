@@ -14,7 +14,7 @@ import Geocoder from 'react-map-gl-geocoder'
 
 import { MapTooltipContent } from '../components';
 import { colorScales } from '../config';
-import { setDataSidebar, setMapParams } from '../actions';
+import { setDataSidebar, setMapParams, setMapLoaded } from '../actions';
 import { mapFn, dataFn, getVarId, getCSV } from '../utils';
 import MAP_STYLE from '../config/style.json';
 
@@ -490,6 +490,7 @@ const Map = () => {
                     mapStyle={mapStyle} //{globalMap || mapParams.vizType === 'cartogram' ? 'mapbox://styles/lixun910/ckhtcdx4b0xyc19qzlt4b5c0d' : 'mapbox://styles/lixun910/ckhkoo8ix29s119ruodgwfxec'}
                     preventStyleDiffing={true}
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
+                    onLoad={() => dispatch(setMapLoaded(true))}
                     >
                         
                     <Geocoder

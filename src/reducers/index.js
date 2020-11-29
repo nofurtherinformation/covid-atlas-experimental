@@ -197,6 +197,11 @@ var reducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 anchorEl: action.payload.anchorEl
             }
+        case 'SET_MAP_LOADED':
+            return {
+                ...state,
+                mapLoaded: action.payload.loaded
+            }
         default:
             return state;
     }

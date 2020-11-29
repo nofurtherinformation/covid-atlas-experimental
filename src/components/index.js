@@ -9,6 +9,7 @@ import Popover from './tooltipPopper';
 import Tooltip from './tooltip';
 import MapTooltipContent from './mapTooltipContent';
 import NavBar from './navbar';
+import Preloader from './preloader';
 
 export {
     Map,
@@ -22,4 +23,5 @@ export {
     Tooltip,
     MapTooltipContent,
     BottomPanel,
+    Preloader
 }

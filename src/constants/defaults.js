@@ -64,4 +64,5 @@ export const INITIAL_STATE = {
   currentGeoid: '',
   sidebarData: {},
   anchorEl: null,
+  mapLoaded: false,
 };
