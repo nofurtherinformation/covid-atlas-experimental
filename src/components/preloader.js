@@ -1,3 +1,4 @@
+import React, {useState} from 'react';
 import styled from 'styled-components';
 
 const PreloaderContainer = styled.div`
@@ -57,14 +58,16 @@ const fixedPoints = {
     }
 }
 const Preloader = ( props ) => {
+    const [isHidden, setIsHidden] = useState(false);
 
     if (props.loaded) {
         setTimeout(() => {
-            document.querySelector('#preloaderContainer').style.display = 'none'
+            setIsHidden(true)
         }, 500)
     }
+
     return (
-        <PreloaderContainer className={props.loaded ? 'fadeOut' : ''} id="preloaderContainer">
+        <PreloaderContainer className={props.loaded ? 'fadeOut' : ''} style={{display: (isHidden ? 'none' : 'initial')}} id="preloaderContainer">
             <img src={`${process.env.PUBLIC_URL}/assets/img/preloader.gif`} alt="Preloader" />
             {/* <svg version="1.1" x="0px" y="0px" viewBox="0 0 54.5 50">
                 <g>

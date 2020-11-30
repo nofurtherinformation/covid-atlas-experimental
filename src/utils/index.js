@@ -18,6 +18,8 @@ import getGeoids from './getGeoids';
 import getGeoidIndex from './getGeoidIndex';
 import loadGeojsonToGeoda from './loadGeojsonToGeoda';
 import getCartogramValues from './getCartogramValues';
+import getCartogramCenter from './getCartogramCenter';
+import addSelectedChartData from './addSelectedChartData';
 
 export {
     getJson,
@@ -38,5 +40,7 @@ export {
     getVarId,
     getGeoids,
     getGeoidIndex,
-    loadGeojsonToGeoda
+    loadGeojsonToGeoda,
+    getCartogramCenter,
+    addSelectedChartData
 }

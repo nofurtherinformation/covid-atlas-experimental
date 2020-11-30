@@ -29,6 +29,7 @@ export const INITIAL_STATE = {
     dRange:null,
     dIndex:null,
     scale:100000,
+    binIndex: '',
   },
   mapParams: {
     mapType: 'natural_breaks',
@@ -59,6 +60,7 @@ export const INITIAL_STATE = {
     variables:true,
     info:false,
     chart:true,
+    tutorial:true,
   },
   storedRange: null,
   currentGeoid: '',

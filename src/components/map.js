@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import {fromJS} from 'immutable';
+import {find} from 'lodash';
 
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView, FlyToInterpolator} from '@deck.gl/core';
@@ -14,8 +15,8 @@ import Geocoder from 'react-map-gl-geocoder'
 
 import { MapTooltipContent } from '../components';
 import { colorScales } from '../config';
-import { setDataSidebar, setMapParams, setMapLoaded } from '../actions';
-import { mapFn, dataFn, getVarId, getCSV } from '../utils';
+import { setDataSidebar, setMapParams, setMapLoaded, setPanelState, setChartData } from '../actions';
+import { mapFn, dataFn, getVarId, getCSV, getCartogramCenter, addSelectedChartData } from '../utils';
 import MAP_STYLE from '../config/style.json';
 
 // const cartoGeom = new IcoSphereGeometry({
@@ -54,6 +55,7 @@ const HoverDiv = styled.div`
     color:white;
     box-shadow: 0px 0px 5px rgba(0,0,0,0.7);
     border-radius:0.5vh 0.5vh 0 0;
+    transition:0s all;
     h3 {
         margin:2px 0;
     }
@@ -73,6 +75,7 @@ const NavInlineButton = styled.button`
     outline:none;
     border:none;
     transition:250ms all;
+    cursor:pointer;
 `
 
 const NavBarBacking = styled.div`
@@ -113,6 +116,8 @@ const Map = () => {
 
     const dataParams = useSelector(state => state.dataParams);
     const mapParams = useSelector(state => state.mapParams);
+    const startDateIndex = useSelector(state => state.startDateIndex);
+    const chartData = useSelector(state => state.chartData);
     
     const dispatch = useDispatch();
 
@@ -153,20 +158,24 @@ const Map = () => {
                     pitch:30
                 }));
                 break
-            case 'cartogram':
-                setViewState(view => ({
-                    ...view,
-                    latitude: 11.673,
-                    longitude: -31.061,
-                    zoom: 4.2,
-                    bearing:0,
-                    pitch:0
-                }));
-                break
             default:
                 //
         }
     }, [mapParams.vizType])
+
+    useEffect(() => {
+        if (mapParams.vizType === 'cartogram'){
+            let center = getCartogramCenter(storedCartogramData[getVarId(currentData, dataParams)])
+            setViewState(view => ({
+                ...view,
+                latitude: center[1],
+                longitude: center[0],
+                zoom: 5,
+                bearing:0,
+                pitch:0
+            }));
+        }
+    }, [storedCartogramData])
 
     useEffect(() => {
         let tempData = storedLisaData[getVarId(currentData, dataParams)]
@@ -174,20 +183,25 @@ const Map = () => {
     }, [storedLisaData, dataParams, mapParams])
 
     useEffect(() => {
-
         const defaultLayers = defaultMapStyle.get('layers');
+        let tempLayers;
 
-        let tempLayers = defaultLayers.map(layer => {
-            if (mapParams.resource.includes(layer.get('id')) || mapParams.overlay.includes(layer.get('id'))) {
-                return layer.setIn(['layout', 'visibility'], 'visible');
-            } else {
-                return layer;
-            }
-        })
+        if (mapParams.vizType === 'cartogram') {
+            tempLayers = defaultLayers.map(layer => {
+                return layer.setIn(['layout', 'visibility'], 'none');
+            });
+        } else {
+            tempLayers = defaultLayers.map(layer => {
+                if (mapParams.resource.includes(layer.get('id')) || mapParams.overlay.includes(layer.get('id'))) {
+                    return layer.setIn(['layout', 'visibility'], 'visible');
+                } else {
+                    return layer;
+                }
+            });
+        }
+        setMapStyle(defaultMapStyle.set('layers', tempLayers));
 
-        setMapStyle(defaultMapStyle.set('layers', tempLayers))
-
-    }, [mapParams.overlay])
+    }, [mapParams.overlay, mapParams.vizType])
 
     useEffect(() => {
         if (hospitalData === null) {
@@ -251,11 +265,12 @@ const Map = () => {
 
     const getCartogramPosition = (data) => data.position;
     const getCartogramScale = (data) => [data.radius, data.radius, data.radius*10];
-    const getCartogramFillColor = (val, bins, mapType) => {
+    const getCartogramFillColor = (val, id, bins, mapType) => {
+        
         if (!bins.hasOwnProperty("bins")) {
             return [0,0,0]
-        // } else if (mapType === 'lisa') {
-        //     return colorScales.lisa[currLisaData[storedGeojson[currentData]['geoidOrder'][f.properties.GEOID]]]
+        } else if (mapType === 'lisa') {
+            return colorScales.lisa[currLisaData[id]]
         } else {
             return mapFn(val, bins.breaks, mapParams.colorScale, mapParams.mapType) 
         }
@@ -280,17 +295,18 @@ const Map = () => {
                 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
                 "features": storedData[currentData] ? storedData[currentData] : [],
             },
-            visible: mapParams.mapType !== 'cartogram',
-            pickable: true,
+            visible: mapParams.vizType !== 'cartogram',
+            pickable: mapParams.vizType !== 'cartogram',
             stroked: false,
             filled: true,
             wireframe: mapParams.vizType === '3D',
             extruded: mapParams.vizType === '3D',
-            opacity: mapParams.vizType === '3D' ? 0.9 : mapParams.resource === '' ? 0.5 : 0.25,
+            opacity: mapParams.vizType === '3D' ? 0.9 : 0.7,
             getFillColor: f => GetFillColor(f, mapParams.bins, mapParams.mapType),
             getElevation: f => GetHeight(f, mapParams.bins, mapParams.mapType),
             updateTriggers: {
                 data: currentData,
+                pickable: mapParams.vizType,
                 getFillColor: [dataParams, mapParams],
                 getElevation: [dataParams, mapParams],
             },
@@ -305,6 +321,7 @@ const Map = () => {
                 try {
                     dispatch(setDataSidebar(info.object));
                     setHighlightGeog(info.object.properties.GEOID);
+                    dispatch(setChartData(addSelectedChartData(chartData, info.object.cases.slice(startDateIndex,))));
                 } catch {}
 
             }
@@ -332,36 +349,52 @@ const Map = () => {
         new IconLayer({
             id: 'hospital-layer',
             data: hospitalData,
+            pickable:true,
             visible: mapParams.resource.includes('hospital'),
             iconAtlas: `${process.env.PUBLIC_URL}/assets/img/icon_atlas.png`,
             iconMapping: ICON_MAPPING,
             getIcon: d => 'hospital',
             getPosition: d => [d.Longitude, d.Latitude],
             sizeUnits: 'meters',
-            getSize: 12500,
-            sizeMinPixels:6,
-            sizeMaxPixels:20,
+            getSize: 20000,
+            sizeMinPixels:12,
+            sizeMaxPixels:24,
             updateTriggers: {
                 data: hospitalData,
                 visible: mapParams
-            }
+            },
+            onHover: info => {
+                try {
+                    setHoverInfo(info)
+                } catch {
+                    setHoverInfo(null)
+                }
+            },
         }),
         new IconLayer({
             id: 'clinics-layer',
             data: clinicData,
+            pickable:true,
             visible: mapParams.resource.includes('clinic'),
             iconAtlas: `${process.env.PUBLIC_URL}/assets/img/icon_atlas.png`,
             iconMapping: ICON_MAPPING,
             getIcon: d => 'clinic',
+            getSize: 20000,
             getPosition: d => [d.lon, d.lat],
             sizeUnits: 'meters',
-            getSize: 12500,
-            sizeMinPixels:6,
+            sizeMinPixels:7,
             sizeMaxPixels:20,
             updateTriggers: {
                 data: clinicData,
                 visible: mapParams
-            }
+            },
+            onHover: info => {
+                try {
+                    setHoverInfo(info)
+                } catch {
+                    setHoverInfo(null)
+                }
+            },
         }),
         new GeoJsonLayer({
             id: 'blackbelt',
@@ -434,15 +467,28 @@ const Map = () => {
         new ScatterplotLayer({
             id: 'cartogram layer',
             data: cartogramData,
+            pickable:true,
             visible: mapParams.vizType === 'cartogram',
             getPosition: f => storedCartogramData[currVarId][f.id].position,
-            getFillColor: f => getCartogramFillColor(storedCartogramData[currVarId][f.id].value, mapParams.bins, mapParams.mapType),
+            getFillColor: f => getCartogramFillColor(storedCartogramData[currVarId][f.id].value, f.id, mapParams.bins, mapParams.mapType),
             getRadius: f => storedCartogramData[currVarId][f.id].radius*10,
             transitions: {
                 getPosition: 150,
                 getFillColor: 150,
                 getRadius: 150
             },   
+            onHover: f => {
+                try {
+                    setHoverInfo(
+                        {
+                            ...f,
+                            object: find(storedData[currentData], o => o.properties.GEOID === storedGeojson[currentData]['indexOrder'][f.object?.id]),
+                        }
+                    )
+                } catch {
+                    setHoverInfo(null)
+                }
+            },
             updateTriggers: {
                 getPosition: [storedCartogramData, mapParams, dataParams, currVarId],
                 getFillColor: [storedCartogramData, mapParams, dataParams, currVarId],
@@ -525,7 +571,7 @@ const Map = () => {
                             </svg>
                         </NavInlineButton> */}
                         {/* <NavInlineButton
-                            onClick={() => handle3dButton(mapParams.use3d)}
+                            onClick={() => console.log( getCartogramCenter(storedCartogramData[getVarId(currentData, dataParams)]))}
                             isActive={mapParams.use3d}
                         >
                             <svg x="0px" y="0px" viewBox="0 0 100 100">
@@ -538,6 +584,16 @@ const Map = () => {
                                 </g>
                             </svg>
                         </NavInlineButton> */}
+                        <NavInlineButton
+                            onClick={() => dispatch(setPanelState({tutorial: true}))}
+                        >
+                            <svg viewBox="0 0 100 100" x="0px" y="0px">
+                                <g>
+                                    <path d="M 62.0763 27.4552 C 64.0258 25.642 65 23.4406 65 20.8589 C 65 18.2815 64.0258 16.0809 62.0763 14.2511 C 60.1273 12.4207 57.7859 11.5 55.0413 11.5 C 52.3076 11.5 49.9438 12.4207 47.9833 14.2511 C 46.0343 16.0809 45.0487 18.2815 45.0487 20.8589 C 45.0487 23.4406 46.0343 25.642 47.9833 27.4552 C 49.9438 29.2682 52.3076 30.178 55.0413 30.178 C 57.7859 30.178 60.1273 29.2682 62.0763 27.4552 ZM 57.5841 88.0802 C 61.1017 86.4348 62.9616 83.3419 61.1353 81.9274 C 60.0823 81.1132 58.7041 82.4604 57.6963 82.4604 C 55.5343 82.4604 54.0103 82.1065 53.1367 81.3939 C 52.2518 80.6754 51.8261 79.3446 51.8261 77.3796 C 51.8261 76.5942 51.9493 75.4433 52.2182 73.9213 C 52.487 72.395 52.8007 71.0302 53.1367 69.8404 L 57.3153 55.0418 C 57.7073 53.683 57.9988 52.1893 58.1554 50.5672 C 58.301 48.9276 58.3798 47.7935 58.3798 47.1533 C 58.3798 44.0378 57.2817 41.5004 55.0971 39.5465 C 52.9237 37.5991 49.8094 36.6159 45.7765 36.6159 C 43.5361 36.6159 41.1501 36.9472 38.652 37.8117 C 33.7564 39.5293 34.8432 43.7968 35.9296 43.7968 C 38.1364 43.7968 39.6152 44.1722 40.3995 44.9193 C 41.1837 45.6604 41.5868 46.9796 41.5868 48.8828 C 41.5868 49.9269 41.4413 51.1007 41.1947 52.3689 C 40.9369 53.6381 40.635 54.9909 40.2541 56.4111 L 36.053 71.2659 C 35.6947 72.8267 35.4253 74.2246 35.2463 75.4648 C 35.0784 76.7058 35 77.9187 35 79.1091 C 35 82.1578 36.12 84.6722 38.3716 86.6596 C 40.6238 88.6528 44.0854 90.5 48.1405 90.5 C 50.7731 90.5 54.537 89.518 57.5841 88.0802 Z">
+                                    </path>
+                                </g>
+                            </svg>
+                        </NavInlineButton>
                         <GeolocateControl
                             positionOptions={{enableHighAccuracy: false}}
                             trackUserLocation={false}

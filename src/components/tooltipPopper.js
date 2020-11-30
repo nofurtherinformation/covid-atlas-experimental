@@ -1,8 +1,34 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+
+import styled from 'styled-components';
 import Popper from '@material-ui/core/Popper';
+
 import { tooltipInfo } from '../config';
 import { setAnchorEl } from '../actions';
+
+const TooltipContentDiv = styled(Popper)`
+    z-index:10000;
+    max-width:200px;
+    background:none;
+    padding:0;
+    margin:0;
+    pointer-events: none;
+    div.tooltipContentContainer {
+        background:black;
+        padding:1px 10px;
+        margin:0;
+        borderRadius: 4px;
+        color:white;
+        // transform:translateX(65%);
+        box-shadow: 0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12);
+        pointer-events: all;
+        a {
+            color: #FFCE00;
+            text-decoration:none;
+        }
+    }
+`
 
 const Popover = () => {
 
@@ -21,7 +47,7 @@ const Popover = () => {
     }
     
     return (
-        <Popper 
+        <TooltipContentDiv 
             id={id} 
             open={open} 
             anchorEl={anchorEl}
@@ -36,31 +62,13 @@ const Popover = () => {
                 boundariesElement: 'scrollParent',
                 }
             }}
-            style={{ 
-                zIndex:10000,
-                maxWidth:'200px',
-                background:'none',
-                padding:0,
-                margin:0,
-                pointerEvents: 'none'
-            }}
             onMouseEnter={handleMouseOver} 
             onMouseLeave={handleMouseLeave}
             >
-            <div style={{
-                background:'black',
-                padding:'1px 10px',
-                margin:0,
-                borderRadius: '4px',
-                color:'white',
-                transform:'translateX(65%)',
-                boxShadow: '0px 5px 5px -3px rgba(0,0,0,0.2), 0px 8px 10px 1px rgba(0,0,0,0.14), 0px 3px 14px 2px rgba(0,0,0,0.12)',
-                pointerEvents: 'all'
-                }}
-                >
+            <div className="tooltipContentContainer">
                 {anchorEl && tooltipInfo[anchorEl.id]}
             </div>
-        </Popper>
+        </TooltipContentDiv>
     )
 }
 

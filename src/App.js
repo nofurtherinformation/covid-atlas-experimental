@@ -3,7 +3,7 @@ import { setCentroids, storeData, setCurrentData, setDates, setColumnNames, setD
 import { useSelector, useDispatch } from 'react-redux';
 import GeodaProxy from './GeodaProxy.js';
 import { getParseCSV, getJson, mergeData, colIndex, findDates, getDataForBins, getDataForCharts, dataFn, getLisaValues, getVarId, getGeoids, getDataForLisa, getCartogramValues } from './utils';
-import { Map, VariablePanel, BottomPanel, DataPanel, Popover, NavBar, Preloader } from './components';
+import { Map, VariablePanel, BottomPanel, DataPanel, Popover, NavBar, Preloader, InfoBox } from './components';
 import { colorScales, fixedScales, dataPresets } from './config';
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
   const mapParams = useSelector(state => state.mapParams);
   const dataParams = useSelector(state => state.dataParams);
   const startDateIndex = useSelector(state => state.startDateIndex);
-  const mapLoaded = useSelector(state => state.mapLoaded)
+  const mapLoaded = useSelector(state => state.mapLoaded);
   
   const [gda_proxy, set_gda_proxy] = useState(null); 
   
@@ -28,8 +28,11 @@ function App() {
   const getDates = (data, table, geojson) =>  {
     let dates = findDates(data[table])
     dispatch(setDates(dates[0], geojson))
-    dispatch(setDate(dates[0].slice(-1,)[0]))
-    dispatch(setVariableParams({nIndex: colIndex(data, table, dates[0].slice(-1,)[0])}))
+    dispatch(setDate(dates[0][dates[0].length]))
+    dispatch(setVariableParams({
+      nIndex: data['cases'].length-1,
+      binIndex: data['cases'].length-1
+    }))
     dispatch(setStartDateIndex(dates[1]))
   }
 
@@ -109,7 +112,7 @@ function App() {
         getCentroids(currentData, gda_proxy)
         getDates(columnNames[currentData], 'cases', currentData)
       }
-    } 
+    }
   },[columnNames])
 
   useEffect(() => {
@@ -124,12 +127,46 @@ function App() {
           )
         )
       )
+      let nb = gda_proxy.custom_breaks(
+        currentData, 
+        mapParams.mapType,
+        mapParams.nBins,
+        null, 
+        getDataForBins(
+          storedData[currentData], 
+          dataParams.numerator, 
+          dataParams.nType,
+          dataParams.nProperty, 
+          dataParams.nIndex, 
+          dataParams.nRange, 
+          dataParams.denominator, 
+          dataParams.dType,
+          dataParams.dProperty, 
+          dataParams.dIndex, 
+          dataParams.dRange, 
+          dataParams.scale
+          ), 
+        )
+      dispatch(
+        setMapParams({
+          bins: {
+            bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
+            breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+          },
+          colorScale: colorScales[mapParams.customScale || mapParams.mapType]
+        })
+      )
+      dispatch(
+        setVariableParams({
+          binIndex: dataParams.nIndex, 
+        })
+      )
     }
-  }, [startDateIndex])
+    
+  }, [dates])
 
   // get lisa values on change, if map type set to lisa
   useEffect(() => {
-    console.log('map or data params')
     if (gda_proxy !== null && mapParams.mapType === "lisa"){
       let tempId = getVarId(currentData, dataParams)
       if (!(storedLisaData.hasOwnProperty(tempId))) {
@@ -192,7 +229,7 @@ function App() {
 
   // trigger on parameter change for metric values
   useEffect(() => {
-    if (gda_proxy !== null && currentData !== '' && mapParams.mapType !== "lisa"){
+    if (gda_proxy !== null && currentData !== '' && mapParams.mapType !== "lisa" && mapParams.binMode !== 'dynamic'){
       if (mapParams.fixedScale !== null) {
         dispatch(
           setMapParams({
@@ -211,12 +248,12 @@ function App() {
             dataParams.numerator, 
             dataParams.nType,
             dataParams.nProperty, 
-            mapParams.binMode === 'dynamic' ? dataParams.nIndex : null,
+            dataParams.binIndex,
             dataParams.nRange, 
             dataParams.denominator,
             dataParams.dType,
             dataParams.dProperty, 
-            mapParams.binMode === 'dynamic' ? dataParams.dIndex : null, 
+            dataParams.binIndex, 
             dataParams.dRange, 
             dataParams.scale
           )
@@ -228,12 +265,12 @@ function App() {
               bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
               breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
             },
-            colorScale: colorScales[mapParams.mapType]
+            colorScale: colorScales[mapParams.customScale || mapParams.mapType]
           })
         )
       }
     }
-  }, [dates, dataParams.numerator, dataParams.nProperty, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dRange, dataParams.scale, mapParams.mapType])
+  }, [dates, dataParams.numerator, dataParams.nProperty, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dRange, dataParams.scale, dataParams.binIndex, mapParams.mapType])
 
   // trigger on date (index) change for dynamic binning
   useEffect(() => {
@@ -264,7 +301,12 @@ function App() {
             bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
             breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
           },
-          colorScale: colorScales[mapParams.mapType]
+          colorScale: colorScales[mapParams.customScale || mapParams.mapType]
+        })
+      )
+      dispatch(
+        setVariableParams({
+          binIndex: dataParams.nIndex, 
         })
       )
     }
@@ -275,36 +317,15 @@ function App() {
     <div className="App">
       <Preloader loaded={mapLoaded} />
       <NavBar />
-      {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'20px', zIndex:10}}>
-        <button onClick={() => console.log(gda_proxy.custom_breaks(
-          currentData, 
-          mapParams.mapType, 
-          mapParams.nBins, 
-          null, 
-          getDataForBins(
-            storedData[currentData], 
-            dataParams.numerator, 
-            dataParams.nType,
-            dataParams.nProperty, 
-            298,
-            dataParams.nRange, 
-            dataParams.denominator,
-            dataParams.dType,
-            dataParams.dProperty, 
-            298, 
-            dataParams.dRange, 
-            dataParams.scale
-          )
-        )
-
-
-        )}>dummy button for testing</button>
+      {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'100px', zIndex:10}}>
+        <button onClick={() => dispatch(setVariableParams({binIndex: storedData[currentData][0]['cases'].length}))}>dummy button for testing</button>
       </header> */}
       <div id="mainContainer">
         <Map />
         <VariablePanel />
         <DataPanel />
         <BottomPanel />
+        <InfoBox />
         <Popover />
       </div>
     </div>

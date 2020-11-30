@@ -110,13 +110,15 @@ const Legend =  () => {
                         }
                     </BinLabels>
                 </Grid>
-                <SwitchContainer item xs={12} lg={2}>
+                <SwitchContainer item xs={12} lg={2} 
+                    style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none')}}
+                >
                     <Switch
                         checked={mapParams.binMode === 'dynamic'}
                         onChange={handleSwitch}
                         name="bin chart switch"
                     />
-                    <p>{mapParams.binMode === 'dynamic' ? 'Daily Bins' : 'Fixed Bins'}</p>
+                    <p>{mapParams.binMode === 'dynamic' ? 'Dynamic Bins' : 'Fixed Bins'}</p>
                 </SwitchContainer>
             </Grid>
         </LegendContainer>

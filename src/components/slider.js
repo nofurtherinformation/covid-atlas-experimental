@@ -64,8 +64,7 @@ const PlayPauseButton = styled(Button)`
 
 const LineSlider = styled(Slider)`
     box-sizing:border-box;
-    padding-right:8px;
-    transform:translateY(34px);
+    transform:translateY(28px);
     span.MuiSlider-rail {
         color:white;
         height:1px;
@@ -78,6 +77,7 @@ const LineSlider = styled(Slider)`
         .MuiSlider-valueLabel {
             transform:translateY(-10px);
             pointer-events:none;
+            font-size:11px;
             span {
                 background: none;
             }
@@ -117,6 +117,45 @@ const RangeSlider = styled(Slider)`
     }
 `
 
+const BinSlider = styled(LineSlider)`
+    span.MuiSlider-rail,span.MuiSlider-track {
+        display:none;
+    }
+    
+    span.MuiSlider-thumb {
+        color:white;
+        background:none;
+        &:before{
+            content:'△';
+            color:white;
+            opacity:0.5;
+            position:relative;
+            left:0;
+            right:0;
+        }
+        overflow: visible;
+        border-radius:0;
+        .MuiSlider-valueLabel {
+            opacity:0;
+            transition:250ms all;
+            transform:translate(-100%, 24px);
+            pointer-events:none;
+            span {
+                background: none;
+                width:200px;
+                text-align:right;
+            }
+        }
+    }
+    &:hover { 
+        span.MuiSlider-thumb {
+            .MuiSlider-valueLabel {
+                opacity:1;
+            }
+        }
+    }
+`
+
 const DateSlider = () => {
     const dispatch = useDispatch();  
     
@@ -130,7 +169,6 @@ const DateSlider = () => {
     const [rangeSelectVal, setRangeSelectVal] = useState(7);
     
     const handleChange = (event, newValue) => {
-        console.log(newValue)
         if (dataParams.nType === "time-series" && dataParams.dType === "time-series") {
             dispatch(setVariableParams({nIndex: newValue, dIndex: newValue}))
         } else if (dataParams.nType === "time-series") {
@@ -141,8 +179,16 @@ const DateSlider = () => {
         dispatch(setDate(dates[currentData][newValue]));
     };
 
-    const handleRangeChange = (event, newValue) => {   
-        console.log(newValue)
+    
+    const handleBinChange = (event, newValue) => {
+        dispatch(setVariableParams(
+            {
+                binIndex: newValue 
+            }
+        ))
+    }
+    
+    const handleRangeChange = (event, newValue) => { 
         if (dataParams.dRange) {
             dispatch(setVariableParams(
                 {
@@ -198,10 +244,11 @@ const DateSlider = () => {
     }
 
     const valuetext = (value) => `${dates[currentData][value-startDateIndex]}`;
+    const binValuetext = (value) => `Bins relative to: ${dates[currentData][value-startDateIndex]}`;
 
     if (dates[currentData] !== undefined) {
         return (
-            <SliderContainer style={{visibility: (dataParams.nType === 'time-series' ? 'visible' : 'hidden')}}>
+            <SliderContainer style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none')}}>
                 <Grid container spacing={2}>
                     {/* <Grid item xs={12}>
                         <h4 style={{textAlign:"center", color:"white"}}>{dates[currentData][dataParams.nIndex]||dates[currentData].slice(-1,)[0]}</h4>
@@ -236,18 +283,34 @@ const DateSlider = () => {
                             }
                         </PlayPauseButton>
                     </Grid>
-                    <Grid item xs={11} lg={9}>
-                        {!customRange && <LineSlider 
-                            value={dataParams.nIndex} 
-                            valueLabelDisplay="on"
-                            onChange={handleChange} 
-                            getAriaValueText={valuetext}
-                            valueLabelFormat={valuetext}
-                            aria-labelledby="aria-valuetext"
-                            min={startDateIndex}
-                            step={1}
-                            max={startDateIndex+dates[currentData].length-1}
+                    <Grid item xs={11} lg={9}> {/* Sliders Grid Item */}
+                        {/* Main Slider for changing date */}
+                        {!customRange && 
+                            <LineSlider 
+                                value={dataParams.nIndex} 
+                                valueLabelDisplay="on"
+                                onChange={handleChange} 
+                                getAriaValueText={valuetext}
+                                valueLabelFormat={valuetext}
+                                aria-labelledby="aria-valuetext"
+                                min={startDateIndex}
+                                step={1}
+                                max={startDateIndex+dates[currentData].length-1}
                         />}
+                        {/* Slider for bin date */}
+                        {!customRange && 
+                            <BinSlider 
+                                value={dataParams.binIndex} 
+                                valueLabelDisplay="auto"
+                                onChange={handleBinChange} 
+                                getAriaValueText={binValuetext}
+                                valueLabelFormat={binValuetext}
+                                aria-labelledby="aria-valuetext"
+                                min={startDateIndex}
+                                step={1}
+                                max={startDateIndex+dates[currentData].length-1}
+                        />}
+                        {/* Slider for changing date range */}
                         {customRange && <RangeSlider 
                             value={[dataParams.nIndex-dataParams.nRange, dataParams.nIndex]} 
                             valueLabelDisplay="on"

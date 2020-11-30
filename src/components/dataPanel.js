@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import styled from 'styled-components';
 
+import Tooltip from './tooltip';
 import { setPanelState } from '../actions';
 import {dataFn, colLookup} from '../utils';
 
@@ -15,7 +16,7 @@ const DataPanelContainer = styled.div`
   right:0;
   top:50px;
   height:calc(100vh - 50px);
-  min-width:200px;
+  min-width:20vw;
   background-color: #2b2b2b;
   box-shadow: -2px 0px 5px rgba(0,0,0,0.7);
   padding:20px;
@@ -79,6 +80,28 @@ const DataPanelContainer = styled.div`
       opacity:1;
     }
   }
+  div {
+    div {
+      p {
+        line-height:1.5;
+        margin:0;
+        display:inline-block;
+      }
+    }
+  }
+  h2 {
+    padding:15px 0 5px 0;
+    margin:0;
+    display:inline-block;
+  }
+  h6 {
+    padding:0 0 15px 0;
+    margin:0;
+    a {
+      color:#FFCE00;
+      text-decoration:none;
+    }
+  }
 `
 
 const DataPanel = () => {
@@ -89,6 +112,7 @@ const DataPanel = () => {
   const { properties, cases, deaths, predictions,
     chr_health_factors, chr_life, chr_health_context } = useSelector(state => state.sidebarData);
   // name of current data set
+
   const currentData = useSelector(state => state.currentData);
   // panels open/close state
   const panelState = useSelector(state => state.panelState);
@@ -104,78 +128,71 @@ const DataPanel = () => {
   return (
     <DataPanelContainer style={{transform: (panelState.info ? '' : 'translateX(100%)')}} id="data-panel">
       <div className="container">
-        {properties && <h2>{properties.NAME}, {properties.state_name}</h2>}
+        {properties && <h2>{properties.NAME}{properties.state_name && `, ${properties.state_name}`}</h2>}
         {properties && 
           <div>
-            <p>Population: {properties.population.toLocaleString('en')}</p>
+            <p>Population: {properties.population?.toLocaleString('en')}</p>
           </div>
         }
         {(cases && deaths) && 
           <div>
-            <p>
-              Total Cases: {cases.slice(-1,)[0].toLocaleString('en')}<br/>
-              Total Deaths: {deaths.slice(-1,)[0].toLocaleString('en')}<br/>
-              Cases per 100k Population: {dataFn(cases, null, cases.length-1, null, properties, 'population', null, null, 100000).toFixed(2).toLocaleString('en')}<br/>
-              Deaths per 100k Population: {dataFn(deaths, null, deaths.length-1, null, properties, 'population', null, null, 100000).toFixed(2).toLocaleString('en')}<br/>
-              New Cases per 100k Population: {dataFn(cases, null, cases.length-1, 1, properties, 'population', null, null, 100000).toFixed(2).toLocaleString('en')}<br/>
-              New Deaths per 100k Population: {dataFn(deaths, null, deaths.length-1, 1, properties, 'population', null, null, 100000).toFixed(2).toLocaleString('en')}<br/>
-              Licensed Hospital Beds: {properties.beds.toLocaleString('en')}<br/>
-              Cases per Bed: {dataFn(cases, null, cases.length-1, null, properties, 'beds', null, null, 1).toFixed(2).toLocaleString('en')}<br/>
-            </p>
+            <p>Total Cases: {cases.slice(-1,)[0]?.toLocaleString('en')}</p><br/>
+            <p>Total Deaths: {deaths.slice(-1,)[0]?.toLocaleString('en')}</p><br/>
+            <p>Cases per 100k Population: {dataFn(cases, null, cases.length-1, null, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>Deaths per 100k Population: {dataFn(deaths, null, deaths.length-1, null, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>New Cases per 100k Population: {dataFn(cases, null, cases.length-1, 1, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>New Deaths per 100k Population: {dataFn(deaths, null, deaths.length-1, 1, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>Licensed Hospital Beds: {properties.beds?.toLocaleString('en')}</p><br/>
+            <p>Cases per Bed: {dataFn(cases, null, cases.length-1, null, properties, 'beds', null, null, 1)?.toFixed(2)?.toLocaleString('en')}</p><br/>
           </div>
         }
         {chr_health_factors &&
           <div>
-            <h2>Community Health Factors</h2>
-            <p>
-              Children in poverty %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PovChldPrc')]}<br/>
-              Income inequality: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'IncRt')]}<br/>
-              Median household income: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'MedianHouseholdIncome')].toLocaleString('en')}<br/>
-              Food insecurity %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'FdInsPrc')]}<br/>
-              Unemployment %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'UnEmplyPrc')]}<br/>
-              Uninsured %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'UnInPrc')]}<br/>
-              Primary care physicians: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PrmPhysRt')]}<br/>
-              Preventable hospital stays: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PrevHospRt')].toLocaleString('en')}<br/>
-              Residential segregation-black/white: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'RsiSgrBlckRt')]}<br/>
-              Severe housing problems %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'SvrHsngPrbRt')]}<br/>
-            </p>
+            <h2>Community Health Factors<Tooltip id="healthfactor"/></h2>
+            <h6>Source: <a href="https://www.countyhealthrankings.org/" target="_blank" rel="noopener noreferrer">County Health Rankings</a></h6>
+            <p>Children in poverty %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PovChldPrc')]}<Tooltip id="PovChldPrc"/></p><br/>
+            <p>Income inequality: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'IncRt')]}<Tooltip id="IncRt"/></p><br/>
+            <p>Median household income: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'MedianHouseholdIncome')]?.toLocaleString('en')}<Tooltip id="MedianHouseholdIncome"/></p><br/>
+            <p>Food insecurity %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'FdInsPrc')]}<Tooltip id="FdInsPrc"/></p><br/>
+            <p>Unemployment %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'UnEmplyPrc')]}<Tooltip id="UnEmplyPrc"/></p><br/>
+            <p>Uninsured %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'UnInPrc')]}<Tooltip id="UnInPrc"/></p><br/>
+            <p>Primary care physicians: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PrmPhysRt')]}<Tooltip id="PrmPhysRt"/></p><br/>
+            <p>Preventable hospital stays: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PrevHospRt')]?.toLocaleString('en')}<Tooltip id="PrevHospRt"/></p><br/>
+            <p>Residential segregation-black/white: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'RsiSgrBlckRt')]}</p><br/>
+            <p>Severe housing problems %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'SvrHsngPrbRt')]}<Tooltip id="SvrHsngPrbRt"/></p><br/>
           </div>
         }
         {chr_health_context &&
           <div>
-            <h2>Community Health Context</h2>
-            <p>
-              % 65 and older: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'Over65YearsPrc')]} <br/>
-              Adult obesity %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'AdObPrc')]} <br/>
-              Diabetes prevalence %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'AdDibPrc')]} <br/>
-              Adult smoking %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'SmkPrc')]} <br/>
-              Excessive drinking %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'ExcDrkPrc')]} <br/>
-              Drug overdose deaths: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'DrOverdMrtRt')]||'0'} <br/>
-            </p>
+            <h2>Community Health Context</h2><Tooltip id="healthcontext"/>
+            <h6>Source: <a href="https://www.countyhealthrankings.org/" target="_blank" rel="noopener noreferrer">County Health Rankings</a></h6>
+            <p>% 65 and older: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'Over65YearsPrc')]}<Tooltip id="Over65YearsPrc"/></p><br/>
+            <p>Adult obesity %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'AdObPrc')]}<Tooltip id="AdObPrc"/></p><br/>
+            <p>Diabetes prevalence %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'AdDibPrc')]}<Tooltip id="AdDibPrc"/></p><br/>
+            <p>Adult smoking %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'SmkPrc')]}<Tooltip id="SmkPrc"/></p><br/>
+            <p>Excessive drinking %: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'ExcDrkPrc')]}<Tooltip id="ExcDrkPrc"/></p><br/>
+            <p>Drug overdose deaths: {chr_health_context[colLookup(cols, currentData, 'chr_health_context', 'DrOverdMrtRt')]||'0'}<Tooltip id="DrOverdMrtRt"/></p><br/>
           </div>
         }
         {chr_life && 
           <div>
-            <h2>Length and Quality of Life</h2>
-            <p>
-              Life expectancy: {chr_life[colLookup(cols, currentData, 'chr_life', 'LfExpRt')]} <br/>
-              Self-rated health %: {chr_life[colLookup(cols, currentData, 'chr_life', 'SlfHlthPrc')]} <br/>
-            </p>
+            <h2>Length and Quality of Life<Tooltip id="healthlife"/></h2>
+            <h6>Source: <a href="https://www.countyhealthrankings.org/" target="_blank" rel="noopener noreferrer">County Health Rankings</a></h6>
+            <p>Life expectancy: {chr_life[colLookup(cols, currentData, 'chr_life', 'LfExpRt')]}<Tooltip id="LfExpRt"/></p><br/>
+            <p>Self-rated health %: {chr_life[colLookup(cols, currentData, 'chr_life', 'SlfHlthPrc')]}<Tooltip id="SlfHlthPrc"/></p><br/>
           </div>
         }
-        {predictions && 
+        {(predictions && cols[currentData] && cols[currentData].predictions) &&  
           <div>
             <h2>Predictions</h2>
-            <p>
-              5-Day Severity Index: {['','High','Medium','Low'][predictions[1]]} <br />
-              Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[2].split('_'))}: {predictions[2]} <br/>
-              Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[4].split('_'))}: {predictions[4]} <br/>
-              Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[6].split('_'))}: {predictions[6]} <br/>
-              Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[8].split('_'))}: {predictions[8]} <br/>
-              Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[10].split('_'))}: {predictions[10]} <br/>
-              Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[12].split('_'))}: {predictions[12]} <br/>
-              Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[14].split('_'))}: {predictions[14]} <br/>
-            </p>
+            <p>5-Day Severity Index: {['','High','Medium','Low'][predictions[1]]}<Tooltip id="SeverityIndex"/></p><br />
+            <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[2].split('_'))}: {predictions[2]}<Tooltip id="PredictedDeaths"/></p><br/>
+            <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[4].split('_'))}: {predictions[4]}<Tooltip id="PredictedDeaths"/></p><br/>
+            <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[6].split('_'))}: {predictions[6]}<Tooltip id="PredictedDeaths"/></p><br/>
+            <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[8].split('_'))}: {predictions[8]}<Tooltip id="PredictedDeaths"/></p><br/>
+            <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[10].split('_'))}: {predictions[10]}<Tooltip id="PredictedDeaths"/></p><br/>
+            <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[12].split('_'))}: {predictions[12]}<Tooltip id="PredictedDeaths"/></p><br/>
+            <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[14].split('_'))}: {predictions[14]}<Tooltip id="PredictedDeaths"/></p><br/>
           </div>
         }
         

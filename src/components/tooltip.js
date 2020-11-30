@@ -23,7 +23,7 @@ const Tooltip = (props) => {
     }
 
     const handleMouseLeave = () => {
-        // dispatch(setAnchorEl(null))
+        dispatch(setAnchorEl(null))
     }
 
     return (

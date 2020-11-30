@@ -10,6 +10,7 @@ import Tooltip from './tooltip';
 import MapTooltipContent from './mapTooltipContent';
 import NavBar from './navbar';
 import Preloader from './preloader';
+import InfoBox from './infoBox';
 
 export {
     Map,
@@ -23,5 +24,6 @@ export {
     Tooltip,
     MapTooltipContent,
     BottomPanel,
-    Preloader
+    Preloader,
+    InfoBox
 }

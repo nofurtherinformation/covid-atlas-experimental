@@ -49,6 +49,16 @@ export const StyledDropDown = styled(FormControl)`
   .MuiRadio-colorSecondary.Mui-checked {
     color:white;
   }
+  div.radioContainer {
+    display:block;
+      .MuiFormControlLabel-root {
+        margin-right:0;
+      }
+      button {
+        transform:translateY(4px);
+      }
+    }
+  }
 `
 
 export const SwitchContainer = styled(Grid)`

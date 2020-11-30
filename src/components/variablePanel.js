@@ -229,7 +229,7 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
-      colorScale: colorScales['uninsured']
+      colorScale: 'uninsured'
 
     },
     "Over 65 Years % (Community Health Context)":{
@@ -243,7 +243,7 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
-      colorScale: colorScales['over65']
+      colorScale: 'over65'
     },
     "Life expectancy (Length and Quality of Life)":{
       numerator: 'chr_life',
@@ -256,7 +256,7 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
-      colorScale: colorScales['lifeExp']
+      colorScale: 'lifeExp'
     }
   }
 
@@ -273,6 +273,7 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
+      colorScale: 'forecasting'
     }
   }
 
@@ -320,23 +321,10 @@ const VariablePanel = (props) => {
     let variable = event.target.value;
     dispatch(setVariableName(variable))
 
-    let tempParams = 
-      PresetVariables.hasOwnProperty(variable) ? 
-        PresetVariables[variable] : 
-      CountyVariables.hasOwnProperty(variable) ?
-        CountyVariables[variable] :
-      StateVariables.hasOwnProperty(variable) ?
-        StateVariables[variable] :
-      null;
-
+    let tempParams = PresetVariables[variable] || CountyVariables[variable] || StateVariables[variable] || null;
+      
+    dispatch(setMapParams({customScale: tempParams.colorScale || ''}))
     dispatch(setVariableParams({...tempParams}))
-    if (mapParams.mapType === "natural_breaks") {
-      if (tempParams.hasOwnProperty('colorScale')) {
-        dispatch(setMapParams({colorScale: tempParams.colorScale}))
-      } else {
-        dispatch(setMapParams({colorScale: colorScales['natural_breaks']}))
-      }
-    }
   };
 
   const handleDataSource = (event) => {
@@ -463,32 +451,36 @@ const VariablePanel = (props) => {
           </Select>
         </StyledDropDown>
         <br/>
-        <StyledDropDown component="Radio">
+        <StyledDropDown component="Radio" >
           <FormLabel component="legend">Map Type</FormLabel>
           <RadioGroup 
             aria-label="maptype" 
             name="maptype1" 
             onChange={handleMapType} 
             value={mapParams.mapType}
+            className="radioContainer"
             >
             <FormControlLabel 
               value="natural_breaks" 
               key="natural_breaks" 
               control={<Radio />} 
-              label="Natural Breaks" 
-            />
+              label="Natural Breaks"
+            /><Tooltip id="NaturalBreaks"/>
+            <br/>
             <FormControlLabel 
               value="hinge15_breaks" 
               key="hinge15_breaks" 
               control={<Radio />} 
               label="Box Map" 
-            />
+            /><Tooltip id="BoxMap"/>
+            <br/>
             <FormControlLabel 
               value="lisa" 
               key="lisa" 
               control={<Radio />} 
               label="Local Moran" 
-            />
+            /><Tooltip id="LocalMoran"/>
+            <br/>
           </RadioGroup>
         </StyledDropDown>
         <p>Visualization Type</p>

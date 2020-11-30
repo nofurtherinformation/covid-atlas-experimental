@@ -107,10 +107,8 @@ const MainLineChart = () => {
                             top: 20, right: 10, left: 22, bottom: 20,
                         }}
                     >
-                        {/* <CartesianGrid strokeDasharray="3 3" /> */}
                         <XAxis 
                             dataKey="date"
-                            // ticks={['2/1/2020','3/1/2020','4/1/2020','5/1/2020','6/1/2020']}
                             tick={
                                 <CustomTick
                                 style={{
@@ -170,6 +168,7 @@ const MainLineChart = () => {
                         />
                         <Line type="monotone" yAxisId="left" dataKey="count" name="Total Count" stroke="#D8D8D8" dot={false} />
                         <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="Daily Count" stroke="#FFCE00" dot={false} />
+                        <Line type="monotone" yAxisId="right" dataKey="selectedGeog" name="Selected Geography Count" stroke="#FFF" dot={false} />
                     </LineChart>
                 </ResponsiveContainer>
             </Grid>
