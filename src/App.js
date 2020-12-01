@@ -26,14 +26,15 @@ function App() {
   const getCentroids = (geojson, gda_proxy) =>  dispatch(setCentroids(gda_proxy.GetCentroids(geojson), geojson))
   
   const getDates = (data, table, geojson) =>  {
-    let dates = findDates(data[table])
-    dispatch(setDates(dates[0], geojson))
-    dispatch(setDate(dates[0][dates[0].length]))
+    let dates = findDates(data[table]);
+    console.log(dates);
+    dispatch(setDates(dates[0], geojson));
+    dispatch(setDate(dates[0][dates[0].length]));
     dispatch(setVariableParams({
       nIndex: data['cases'].length-1,
       binIndex: data['cases'].length-1
-    }))
-    dispatch(setStartDateIndex(dates[1]))
+    }));
+    dispatch(setStartDateIndex(dates[1]));
   }
 
   const getColumns = (data, names) => {
@@ -116,7 +117,7 @@ function App() {
   },[columnNames])
 
   useEffect(() => {
-    if (storedData[currentData]){
+    if (storedData[currentData] && dates[currentData]){
       dispatch(
         setChartData(
           getDataForCharts(
@@ -163,7 +164,7 @@ function App() {
       )
     }
     
-  }, [dates])
+  }, [dates, currentData])
 
   // get lisa values on change, if map type set to lisa
   useEffect(() => {

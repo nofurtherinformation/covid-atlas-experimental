@@ -469,9 +469,27 @@ const Map = () => {
             data: cartogramData,
             pickable:true,
             visible: mapParams.vizType === 'cartogram',
-            getPosition: f => storedCartogramData[currVarId][f.id].position,
-            getFillColor: f => getCartogramFillColor(storedCartogramData[currVarId][f.id].value, f.id, mapParams.bins, mapParams.mapType),
-            getRadius: f => storedCartogramData[currVarId][f.id].radius*10,
+            getPosition: f => {
+                try {
+                    return storedCartogramData[currVarId][f.id].position;
+                } catch {
+                    return [0,0];
+                }
+            },
+            getFillColor: f => {
+                try {
+                    return getCartogramFillColor(storedCartogramData[currVarId][f.id].value, f.id, mapParams.bins, mapParams.mapType);
+                } catch {
+                    return [0,0,0];
+                }
+            },
+            getRadius: f => {
+                try {
+                    return storedCartogramData[currVarId][f.id].radius*10;
+                } catch {
+                    return 0;
+                }
+            },
             transitions: {
                 getPosition: 150,
                 getFillColor: 150,
