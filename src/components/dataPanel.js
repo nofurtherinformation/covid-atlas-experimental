@@ -37,6 +37,9 @@ const DataPanelContainer = styled.div`
       padding-right:20px;
       box-sizing:border-box;
     }
+    div:last-of-type {
+      margin-bottom:20vh;
+    }
   }
   button#showHideRight {
     position:absolute;    
@@ -197,7 +200,7 @@ const DataPanel = () => {
         }
         {(predictions && cols[currentData] && cols[currentData].predictions) &&  
           <div>
-            <h2>Predictions</h2>
+            <h2>Predictions</h2><br/>
             <p>5-Day Severity Index: {['','High','Medium','Low'][predictions[1]]}<Tooltip id="SeverityIndex"/></p><br />
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[2].split('_'))}: {predictions[2]}<Tooltip id="PredictedDeaths"/></p><br/>
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[4].split('_'))}: {predictions[4]}<Tooltip id="PredictedDeaths"/></p><br/>

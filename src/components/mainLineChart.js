@@ -71,8 +71,8 @@ const CustomTooltip = props => {
             }}> 
             <p style={{color:'white', padding:0,}}>{data[0].payload.date}</p>
                 {data.map(data => 
-                    <p style={{color: data.color, textShadow: '2px 2px 4px #2e2e2e', fontWeight:600}}>{data.name}: {Number.isInteger(data.payload[data.dataKey]) ? 
-                        data.payload[data.dataKey].toLocaleString('en') 
+                    <p style={{color: data.color, textShadow: '2px 2px 4px #2e2e2e', fontWeight:600}}>{data.name}: {Number.isInteger(Math.floor(data.payload[data.dataKey])) ? 
+                        Math.floor(data.payload[data.dataKey]).toLocaleString('en') 
                         : data.payload[data.dataKey]}
                     </p>
                     
@@ -88,8 +88,10 @@ const MainLineChart = () => {
     const chartData = useSelector(state => state.chartData);
     const dataParams = useSelector(state => state.dataParams);
     const startDateIndex = useSelector(state => state.startDateIndex);
+    const sidebarData = useSelector(state => state.sidebarData);
     const [logChart, setLogChart] = useState(false)
-    
+    const { properties
+       } = useSelector(state => state.sidebarData);
 
     const handleSwitch = () => {
         setLogChart(prev => !prev);
@@ -98,7 +100,7 @@ const MainLineChart = () => {
     return (
         <ChartContainer container spacing={2} id="main-chart-container">
             <Grid item xs={12}>
-                <ChartTitle>Total Cases and Daily Cases</ChartTitle>
+                <ChartTitle>Total and Weekly Average Cases{properties && <span>: {properties.NAME}{properties.state_name && `, ${properties.state_name}`}</span>}</ChartTitle>
             </Grid>
             <Grid item xs={12} style={{height:'20vh'}}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -125,7 +127,7 @@ const MainLineChart = () => {
                         />
                         {/* <YAxis type="number" /> */}
                         <YAxis yAxisId="left" type="number" dataKey="count"  scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow 
-                            ticks={[2000000,4000000,6000000,8000000,10000000]} 
+                            // ticks={Object.keys(sidebarData).length === 0 ? [2000000,4000000,6000000,8000000,10000000] : []} 
                             tick={
                                 <CustomTick
                                 style={{
@@ -134,14 +136,14 @@ const MainLineChart = () => {
                                     fontFamily: "Lato",
                                     fontWeight: 600
                                 }}
-                                labelFormatter={millionFormatter}
+                                labelFormatter={Object.keys(sidebarData).length === 0 ? millionFormatter : thousandFormatter}
                                 />
                             }
                             >
                             <Label value="Total Cases" position='insideLeft' style={{marginTop:10, fill:'#D8D8D8', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
                         </YAxis>
                         <YAxis yAxisId="right" orientation="right" dataKey="dailyNew" scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow 
-                            ticks={[20000,40000,60000,80000,100000, 120000, 140000]} 
+                            // ticks={[20000,40000,60000,80000,100000, 120000, 140000]} 
                             tick={
                                 <CustomTick
                                     style={{
@@ -154,7 +156,7 @@ const MainLineChart = () => {
                                 />
                             }
                             >
-                            <Label value="Daily Cases" position='insideTopRight' style={{marginTop:10, fill:'#FFCE00', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
+                            <Label value="Weekly Average" position='insideTopRight' style={{marginTop:10, fill:'#FFCE00', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
                         </YAxis>
                         <Tooltip
                             content={CustomTooltip}
@@ -168,7 +170,7 @@ const MainLineChart = () => {
                             isAnimationActive={false}
                         />
                         <Line type="monotone" yAxisId="left" dataKey="count" name="Total Count" stroke="#D8D8D8" dot={false} />
-                        <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="Daily Count" stroke="#FFCE00" dot={false} />
+                        <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="Weekly Average" stroke="#FFCE00" dot={false} />
                         <Line type="monotone" yAxisId="right" dataKey="selectedGeog" name="Selected Geography Count" stroke="#FFF" dot={false} />
                     </LineChart>
                 </ResponsiveContainer>

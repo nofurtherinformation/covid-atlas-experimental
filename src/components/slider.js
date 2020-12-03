@@ -63,8 +63,12 @@ const PlayPauseButton = styled(Button)`
 `
 
 const LineSlider = styled(Slider)`
-    box-sizing:border-box;
     transform:translateY(28px);
+    &.MuiSlider-root {
+        width:95%;
+        margin-left:3%;
+        box-sizing:border-box;
+    }
     span.MuiSlider-rail {
         color:white;
         height:1px;

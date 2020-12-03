@@ -16,7 +16,7 @@ import Geocoder from 'react-map-gl-geocoder'
 import { MapTooltipContent } from '../components';
 import { colorScales } from '../config';
 import { setDataSidebar, setMapParams, setMapLoaded, setPanelState, setChartData } from '../actions';
-import { mapFn, dataFn, getVarId, getCSV, getCartogramCenter, addSelectedChartData } from '../utils';
+import { mapFn, dataFn, getVarId, getCSV, getCartogramCenter, addSelectedChartData, getDataForCharts } from '../utils';
 import MAP_STYLE from '../config/style.json';
 
 // const cartoGeom = new IcoSphereGeometry({
@@ -113,7 +113,8 @@ const Map = () => {
     const storedLisaData = useSelector(state => state.storedLisaData);
     const storedCartogramData = useSelector(state => state.storedCartogramData);
     const panelState = useSelector(state => state.panelState);
-
+    const dates = useSelector(state => state.dates);
+    
     const dataParams = useSelector(state => state.dataParams);
     const mapParams = useSelector(state => state.mapParams);
     const startDateIndex = useSelector(state => state.startDateIndex);
@@ -321,7 +322,7 @@ const Map = () => {
                 try {
                     dispatch(setDataSidebar(info.object));
                     setHighlightGeog(info.object.properties.GEOID);
-                    dispatch(setChartData(addSelectedChartData(chartData, info.object.cases.slice(startDateIndex,))));
+                    dispatch(setChartData(getDataForCharts({data: info.object}, 'cases', startDateIndex, dates[currentData])));
                 } catch {}
 
             }

@@ -17,8 +17,9 @@ import {
 // third row: map and variable parameters
 import { 
   storeData, storeGeojson, storeLisaValues, storeCartogramData,
-  setCentroids, setCurrentData, setChartData, setDates, setColumnNames, setDate, 
-  setMapParams, setVariableParams, setStartDateIndex } from './actions';
+  setCentroids, setCurrentData, setChartData, setDates, setColumnNames, setDate,
+  setMapParams, setVariableParams, setStartDateIndex,
+  setPanelState, setDataSidebar } from './actions';
 
 import { Map, VariablePanel, BottomPanel, DataPanel, Popover, NavBar, Preloader, InfoBox } from './components';
 import { colorScales, fixedScales, dataPresets, defaultData } from './config';
@@ -202,6 +203,8 @@ function App() {
       dispatch(setChartData(getDataForCharts(storedData[currentData],'cases',dateIndex,dates[currentData])))
       updateBins();
     }
+    dispatch(setDataSidebar({}));
+    dispatch(setPanelState({info:false}));
   },[gda_proxy, currentData])
 
   // This listens for gda_proxy events for LISA and Cartogram calculations
@@ -282,9 +285,9 @@ function App() {
     <div className="App">
       <Preloader loaded={mapLoaded} />
       <NavBar />
-      <header className="App-header" style={{position:'fixed', left: '20vw', top:'100px', zIndex:10}}>
+      {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'100px', zIndex:10}}>
         <button onClick={() => updateBins()}>Hi</button>
-      </header>
+      </header> */}
       <div id="mainContainer">
         <Map />
         <VariablePanel />
