@@ -4,6 +4,8 @@ const loadGeojsonToGeoda = async (data, url, gda_proxy) => {
   gda_proxy.ReadGeojsonMap(url.split('/').slice(-1,)[0], {
       result: arrayBuffer,
   });
+  
+  return true;
 }
 
 export default loadGeojsonToGeoda;

@@ -16,7 +16,7 @@ const getLisaValues = (gda_proxy, dataset, data, geoids) => {
       sig.push(0);
     }
   } else {
-    var lisa = gda_proxy.local_moran1(w.map_uuid, w.w_uuid, data);
+    var lisa = gda_proxy.local_moran(w.map_uuid, w.w_uuid, data);
     clusters = gda_proxy.parseVecDouble(lisa.clusters());
     sig = gda_proxy.parseVecDouble(lisa.significances());
   }

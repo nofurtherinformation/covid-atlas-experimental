@@ -290,6 +290,8 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
+      fixedScale: 'testing',
+      colorScale: 'testing'
     },
     "7 Day Testing Capacity": {
       numerator: 'testing_tcap',
@@ -302,6 +304,8 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
+      fixedScale: 'testingCap',
+      colorScale: 'testingCap'
     }, 
     "7 Day Confirmed Cases per Testing %":{
       numerator: 'testing_ccpt',
@@ -314,6 +318,8 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
+      fixedScale: 'testing',
+      colorScale: 'testing'
     }
   }
 
@@ -323,7 +329,7 @@ const VariablePanel = (props) => {
 
     let tempParams = PresetVariables[variable] || CountyVariables[variable] || StateVariables[variable] || null;
       
-    dispatch(setMapParams({customScale: tempParams.colorScale || ''}))
+    dispatch(setMapParams({customScale: tempParams.colorScale || '', fixedScale: tempParams.fixedScale || null}))
     dispatch(setVariableParams({...tempParams}))
   };
 
@@ -403,12 +409,12 @@ const VariablePanel = (props) => {
           >
             
           <ListSubheader>county data</ListSubheader>
-            <MenuItem value={'county_usfacts.geojson'} key={'county_usfacts.geojson'}>USA Facts</MenuItem>
-            <MenuItem value={'county_nyt.geojson'} key={'county_nyt.geojson'}>New York Times</MenuItem>
-            <MenuItem value={'county_1p3a.geojson'} key={'county_1p3a.geojson'}>1point3acres</MenuItem>
+            <MenuItem value={'county_usfacts.geojson'} key={'county_usfacts.geojson'}>USA Facts (County)</MenuItem>
+            <MenuItem value={'county_nyt.geojson'} key={'county_nyt.geojson'}>New York Times (County)</MenuItem>
+            <MenuItem value={'county_1p3a.geojson'} key={'county_1p3a.geojson'}>1point3acres (County)</MenuItem>
           <ListSubheader>state data</ListSubheader>
-            <MenuItem value={'state_1p3a.geojson'} key={'state_1p3a.geojson'}>1point3acres</MenuItem>
-            <MenuItem value={'state_nyt.geojson'} key={'state_nyt.geojson'} disabled>New York Times</MenuItem>
+            <MenuItem value={'state_usafacts.geojson'} key={'state_usafacts.geojson'}>USA Facts (State)</MenuItem>
+            <MenuItem value={'state_nyt.geojson'} key={'state_nyt.geojson'} disabled>New York Times (State)</MenuItem>
           </Select>
         </StyledDropDown>
         <br />
@@ -422,7 +428,7 @@ const VariablePanel = (props) => {
             {
               Object.keys(PresetVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader key={variable.split(':')[1]}>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]} style={{pointerEvents:'none'}}>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -432,7 +438,7 @@ const VariablePanel = (props) => {
             {
               currentData.includes("county") && Object.keys(CountyVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader key={variable.split(':')[1]}>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]} style={{pointerEvents:'none'}}>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -442,7 +448,7 @@ const VariablePanel = (props) => {
             {
               currentData.includes("state") && Object.keys(StateVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader key={variable.split(':')[1]}>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]} style={{pointerEvents:'none'}}>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -478,8 +484,8 @@ const VariablePanel = (props) => {
               value="lisa" 
               key="lisa" 
               control={<Radio />} 
-              label="Local Moran" 
-            /><Tooltip id="LocalMoran"/>
+              label="Hotspot" 
+            /><Tooltip id="Hotspot"/>
             <br/>
           </RadioGroup>
         </StyledDropDown>

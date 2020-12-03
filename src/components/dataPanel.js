@@ -110,7 +110,9 @@ const DataPanel = () => {
 
   // de-structure sidebarData, which houses selected geography data
   const { properties, cases, deaths, predictions,
-    chr_health_factors, chr_life, chr_health_context } = useSelector(state => state.sidebarData);
+    chr_health_factors, chr_life, chr_health_context,
+    testing_ccpt, testing_tcap, testing_wk_pos, testing
+   } = useSelector(state => state.sidebarData);
   // name of current data set
 
   const currentData = useSelector(state => state.currentData);
@@ -138,13 +140,24 @@ const DataPanel = () => {
           <div>
             <p>Total Cases: {cases.slice(-1,)[0]?.toLocaleString('en')}</p><br/>
             <p>Total Deaths: {deaths.slice(-1,)[0]?.toLocaleString('en')}</p><br/>
-            <p>Cases per 100k Population: {dataFn(cases, null, cases.length-1, null, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
-            <p>Deaths per 100k Population: {dataFn(deaths, null, deaths.length-1, null, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
-            <p>New Cases per 100k Population: {dataFn(cases, null, cases.length-1, 1, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
-            <p>New Deaths per 100k Population: {dataFn(deaths, null, deaths.length-1, 1, properties, 'population', null, null, 100000)?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>Cases per 100k Population: {dataFn(cases, properties, {nProperty: null, nIndex: cases.length-1, nRange: null, dProperty: 'population', dIndex: null, dRange: null, scale: 100000})?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>Deaths per 100k Population: {dataFn(deaths, properties, {nProperty: null, nIndex: deaths.length-1, nRange: null, dProperty: 'population', dIndex: null, dRange: null, scale: 100000})?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>New Cases per 100k Population: {dataFn(cases, properties, {nProperty: null, nIndex: cases.length-1, nRange: 1, dProperty: 'population', dIndex: null, dRange: null, scale: 100000})?.toFixed(2).toLocaleString('en')}</p><br/>
+            <p>New Deaths per 100k Population: {dataFn(deaths, properties, {nProperty: null, nIndex: deaths.length-1, nRange: 1, dProperty: 'population', dIndex: null, dRange: null, scale: 100000})?.toFixed(2).toLocaleString('en')}</p><br/>
             <p>Licensed Hospital Beds: {properties.beds?.toLocaleString('en')}</p><br/>
-            <p>Cases per Bed: {dataFn(cases, null, cases.length-1, null, properties, 'beds', null, null, 1)?.toFixed(2)?.toLocaleString('en')}</p><br/>
+            {/* <p>Cases per Bed: {dataFn(cases, null, cases.length-1, null, properties, 'beds', null, null, 1)?.toFixed(2)?.toLocaleString('en')}</p><br/> */}
           </div>
+        }
+        {testing &&
+          <div>
+            <h2>Testing</h2><br/>
+            <p>Total Testing: {(testing[testing.length-1]).toLocaleString('en')}</p><br/>
+            <p>7-Day Positivity Rate: {(testing_wk_pos[testing_wk_pos.length-1]*100).toFixed(2)}%</p><br/>
+            <p>7-Day Testing Capacity: {(testing_tcap[testing_tcap.length-1]).toFixed(2)}</p><br/>
+            <p>7-Day Confirmed Cases per Testing: {(testing_ccpt[testing_ccpt.length-1]*100).toFixed(2)}%</p><br/>
+            <p>Testing Criterion: {properties.criteria}</p><br/>
+          </div>
+
         }
         {chr_health_factors &&
           <div>

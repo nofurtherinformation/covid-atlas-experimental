@@ -216,6 +216,7 @@ const DateSlider = () => {
             setTimerId(null)
         }
     }
+    
 
     const handleRangeButton = (event) => {
         let val = event.target.value;
@@ -298,7 +299,7 @@ const DateSlider = () => {
                                 max={startDateIndex+dates[currentData].length-1}
                         />}
                         {/* Slider for bin date */}
-                        {!customRange && 
+                        {/* {!customRange && 
                             <BinSlider 
                                 value={dataParams.binIndex} 
                                 valueLabelDisplay="auto"
@@ -309,7 +310,7 @@ const DateSlider = () => {
                                 min={startDateIndex}
                                 step={1}
                                 max={startDateIndex+dates[currentData].length-1}
-                        />}
+                        />} */}
                         {/* Slider for changing date range */}
                         {customRange && <RangeSlider 
                             value={[dataParams.nIndex-dataParams.nRange, dataParams.nIndex]} 

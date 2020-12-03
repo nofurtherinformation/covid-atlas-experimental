@@ -87,6 +87,7 @@ const MainLineChart = () => {
     
     const chartData = useSelector(state => state.chartData);
     const dataParams = useSelector(state => state.dataParams);
+    const startDateIndex = useSelector(state => state.startDateIndex);
     const [logChart, setLogChart] = useState(false)
     
 
@@ -160,8 +161,8 @@ const MainLineChart = () => {
                         />
                         <ReferenceArea 
                             yAxisId="left"
-                            x1={getStartDate(dataParams.nRange, dataParams.nIndex, chartData)}
-                            x2={getEndDate(dataParams.nIndex, chartData)} 
+                            x1={getStartDate(dataParams.nRange, dataParams.nIndex-startDateIndex, chartData)}
+                            x2={getEndDate(dataParams.nIndex-startDateIndex, chartData)} 
                             fill="white" 
                             fillOpacity={0.15}
                             isAnimationActive={false}

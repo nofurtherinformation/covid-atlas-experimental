@@ -37,19 +37,31 @@
 
 // export default dataFn;
 
-const dataFn = (numeratorData, numeratorProperty, index, range, denominatorData, denominatorProperty, denominatorIndex, denominatorRange, scale)  => {
+const dataFn = (numeratorData, denominatorData, dataParams)  => {
+  const { 
+    nProperty, nIndex, nRange,
+    dProperty, dIndex, dRange, 
+    scale
+  } = dataParams;
+
   if (numeratorData === undefined) {
     return 0;
-  } else if (denominatorProperty===null&&range===null){ // whole count or number -- no range, no normalization
-    return (numeratorData[numeratorProperty]||numeratorData[index])*scale
-  } else if (denominatorProperty===null&&range!==null){ // range number, daily or weekly count -- no normalization
-    return (numeratorData[index]-numeratorData[index-range])/range*scale
-  } else if (denominatorProperty!==null&&range===null){ // whole count or number normalized -- no range
-    return (numeratorData[numeratorProperty]||numeratorData[index])/(denominatorData[denominatorProperty]||denominatorData[denominatorIndex])*scale
-  } else if (denominatorProperty!==null&&range!==null&&denominatorRange===null){ // range number, daily or weekly count, normalized to a single value
-    return ((numeratorData[index]-numeratorData[index-range])/range)/(denominatorData[denominatorProperty]||denominatorData[denominatorIndex])*scale
-  } else if (denominatorProperty!==null&&range!==null&&denominatorRange!==null){ // range number, daily or weekly count, normalized to a range number, daily or weekly count
-    return ((numeratorData[index]-numeratorData[index-range])/range)/((denominatorData[denominatorIndex]-denominatorData[denominatorIndex-denominatorRange])/denominatorRange)*scale
+  } else if (dProperty===null&&nRange===null){ // whole count or number -- no range, no normalization
+    return (numeratorData[nProperty]||numeratorData[nIndex])*scale
+  } else if (dProperty===null&&nRange!==null){ // range number, daily or weekly count -- no normalization
+    return (numeratorData[nIndex]-numeratorData[nIndex-nRange])/nRange*scale
+  } else if (dProperty!==null&&nRange===null){ // whole count or number normalized -- no range
+    return (numeratorData[nProperty]||numeratorData[nIndex])/(denominatorData[dProperty]||denominatorData[dIndex])*scale
+  } else if (dProperty!==null&&nRange!==null&&dRange===null){ // range number, daily or weekly count, normalized to a single value
+    return (
+      (numeratorData[nIndex]-numeratorData[nIndex-nRange])/nRange)/(denominatorData[dProperty]||denominatorData[dIndex]
+        )*scale
+  } else if (dProperty!==null&&nRange!==null&&dRange!==null){ // range number, daily or weekly count, normalized to a range number, daily or weekly count
+    return (
+      (numeratorData[nIndex]-numeratorData[nIndex-nRange])/nRange)
+      /
+      ((denominatorData[dIndex]-denominatorData[dIndex-nRange])/nRange)
+      *scale
   } else {      
     return 0;
   }

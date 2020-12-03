@@ -95,14 +95,14 @@ const Legend =  () => {
                     </LegendTitle>
                 </Grid>
                 <Grid item xs={12} lg={6}>
-                    <BinBars firstBinZero={`${mapParams.colorScale[0]}` === `240,240,240`}>
+                    <BinBars firstBinZero={`${mapParams.colorScale[0]}` === `240,240,240` && mapParams.fixedScale === null}>
                         {
                             mapParams.colorScale !== undefined && 
                             mapParams.colorScale.map(color => <div className="bin color" key={`${color[0]}${color[1]}`}style={{backgroundColor:`rgb(${color[0]},${color[1]},${color[2]})`}}></div>)
                         }
                     </BinBars>
                     <BinLabels firstBinZero={`${mapParams.colorScale[0]}` === `240,240,240`} binLength={mapParams.bins.bins.length}>
-                        {`${mapParams.colorScale[0]}` === `240,240,240` && <div className="bin firstBin">0</div>}
+                        {(`${mapParams.colorScale[0]}` === `240,240,240` && mapParams.fixedScale === null) && <div className="bin firstBin">0</div>}
 
                         {
                             mapParams.bins.bins !== undefined && 

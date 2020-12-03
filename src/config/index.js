@@ -69,7 +69,7 @@ export const colorScales = {
         [253,187,132],
         [227,74,51],
     ],
-    'testings' : [
+    'testing' : [
         [240,240,240],
         [13,8,135],
         [92,1,166],
@@ -96,7 +96,7 @@ export const colorScales = {
 export const fixedScales = {
     'testing': {
         bins: ['No Data','<3%','5%','10%','15%','20%','>25%'],
-        breaks:[0,3,5,10,15,20,25,Math.pow(10, 12)]
+        breaks:[0,.03,.05,.10,.15,.20,.25,Math.pow(10, 12)]
     },
     'testingCap': {
         bins: ['No Data','<50','100','150','200','250','300','350','>400'],
@@ -107,34 +107,36 @@ export const fixedScales = {
     }
 }
 
+export const defaultData = 'county_usfacts.geojson';
+
 export const dataPresets = {
     'county_usfacts.geojson': {
         geojson: 'county_usfacts.geojson', 
-        csv: ['covid_confirmed_usafacts','covid_deaths_usafacts', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
+        csvs: ['covid_confirmed_usafacts','covid_deaths_usafacts', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
         joinCols: ['GEOID', 'FIPS'], 
         tableNames: ['cases','deaths', 'predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'],
         accumulate: []
     },
     'county_1p3a.geojson': {
         geojson: 'county_1p3a.geojson', 
-        csv: ['covid_confirmed_1p3a','covid_deaths_1p3a', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
+        csvs: ['covid_confirmed_1p3a','covid_deaths_1p3a', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
         joinCols: ['GEOID', 'FIPS'], 
         tableNames: ['cases','deaths', 'predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'],
         accumulate: ['covid_confirmed_1p3a','covid_deaths_1p3a']
     },
     'county_nyt.geojson': {
         geojson: 'county_nyt.geojson', 
-        csv: ['covid_confirmed_nyt', 'covid_deaths_nyt', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
+        csvs: ['covid_confirmed_nyt', 'covid_deaths_nyt', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
         joinCols: ['GEOID', 'FIPS'], 
         tableNames: ['cases', 'deaths', 'predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'],
         accumulate: []
     },
-    'state_1p3a.geojson': {
-        geojson: 'state_1p3a.geojson', 
-        csv: ['covid_confirmed_1p3a_state','covid_deaths_1p3a_state', 'chr_health_context_state', 'chr_life_state', 'chr_health_factors_state', 'covid_testing_1p3a_state', 'covid_wk_pos_1p3a_state', 'covid_tcap_1p3a_state', 'covid_ccpt_1p3a_state'], 
+    'state_usafacts.geojson': {
+        geojson: 'state_usafacts.geojson', 
+        csvs: ['covid_confirmed_usafacts_state','covid_deaths_usafacts_state', 'chr_health_context_state', 'chr_life_state', 'chr_health_factors_state', 'covid_testing_usafacts_state', 'covid_wk_pos_usafacts_state', 'covid_tcap_usafacts_state', 'covid_ccpt_usafacts_state'], 
         joinCols: ['GEOID', 'FIPS'], 
         tableNames: ['cases', 'deaths', 'chr_health_context', 'chr_life', 'chr_health_factors', 'testing', 'testing_wk_pos', 'testing_tcap', 'testing_ccpt'],
-        accumulate: ['covid_confirmed_1p3a_state','covid_deaths_1p3a_state']
+        accumulate: []
     } 
 }
 
