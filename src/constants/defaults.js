@@ -67,4 +67,6 @@ export const INITIAL_STATE = {
   sidebarData: {},
   anchorEl: null,
   mapLoaded: false,
+  notification: null,
+  urlParams: {}
 };

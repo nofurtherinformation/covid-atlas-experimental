@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import FormLabel from '@material-ui/core/FormLabel';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Select from '@material-ui/core/Select';
@@ -16,9 +15,9 @@ import styled from 'styled-components';
 
 import { colLookup } from '../utils';
 import Tooltip from './tooltip';
-import { fixedScales, colorScales } from '../config';
+import { fixedScales, colorScales, dataPresets } from '../config';
 import { StyledDropDown } from '../styled_components';
-import { setVariableParams, setVariableName, setMapParams, setCurrentData, setPanelState } from '../actions';
+import { setVariableParams, setVariableName, setMapParams, setCurrentData, setPanelState, setNotification } from '../actions';
 
 const VariablePanelContainer = styled.div`
   position:fixed;
@@ -137,6 +136,11 @@ const TwoUp = styled.div`
 
 const ControlsContainer = styled.div`
   
+`
+
+const ListSubheader = styled(MenuItem)`
+  font-variant: small-caps;
+  font-weight:800;
 `
 
 const VariablePanel = (props) => {
@@ -273,7 +277,8 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
-      colorScale: 'forecasting'
+      colorScale: 'forecasting',
+      fixedScale: 'forecasting',
     }
   }
 
@@ -323,6 +328,12 @@ const VariablePanel = (props) => {
     }
   }
 
+  const resetVariable = () => {
+    dispatch(setMapParams({customScale: '', fixedScale: null}))
+    dispatch(setVariableParams({...PresetVariables["Confirmed Count per 100K Population"]}))
+    dispatch(setVariableName("Confirmed Count per 100K Population"))
+  }
+
   const handleVariable = (event) => {
     let variable = event.target.value;
     dispatch(setVariableName(variable))
@@ -334,7 +345,16 @@ const VariablePanel = (props) => {
   };
 
   const handleDataSource = (event) => {
-    dispatch(setCurrentData(event.target.value)) ;  
+    let newDataSet = event.target.value
+    if ((newDataSet.includes("state") && CountyVariables.hasOwnProperty(currentVariable))||(newDataSet.includes("county") && StateVariables.hasOwnProperty(currentVariable))) {
+      resetVariable()
+      dispatch(setNotification(`${dataPresets[newDataSet].plainName} data do not have ${currentVariable}. The Atlas will default to Confirmed Cases Per 100k People.`))
+      
+      setTimeout(() => {dispatch(setCurrentData(newDataSet))}, 250);
+      setTimeout(() => {dispatch(setNotification(null))},10000);
+    } else {
+      dispatch(setCurrentData(newDataSet)); 
+    }
   };
 
   const handleMapType = (event, newValue) => {
@@ -408,11 +428,11 @@ const VariablePanel = (props) => {
             onChange={handleDataSource}
           >
             
-          <ListSubheader>county data</ListSubheader>
+          <ListSubheader disabled>county data</ListSubheader>
             <MenuItem value={'county_usfacts.geojson'} key={'county_usfacts.geojson'}>USA Facts (County)</MenuItem>
             <MenuItem value={'county_nyt.geojson'} key={'county_nyt.geojson'}>New York Times (County)</MenuItem>
             <MenuItem value={'county_1p3a.geojson'} key={'county_1p3a.geojson'}>1point3acres (County)</MenuItem>
-          <ListSubheader>state data</ListSubheader>
+          <ListSubheader disabled>state data</ListSubheader>
             <MenuItem value={'state_usafacts.geojson'} key={'state_usafacts.geojson'}>USA Facts (State)</MenuItem>
             <MenuItem value={'state_nyt.geojson'} key={'state_nyt.geojson'} disabled>New York Times (State)</MenuItem>
           </Select>
@@ -428,7 +448,7 @@ const VariablePanel = (props) => {
             {
               Object.keys(PresetVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader key={variable.split(':')[1]} style={{pointerEvents:'none'}}>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]} disabled>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -438,7 +458,7 @@ const VariablePanel = (props) => {
             {
               currentData.includes("county") && Object.keys(CountyVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader key={variable.split(':')[1]} style={{pointerEvents:'none'}}>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]} disabled>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }
@@ -448,7 +468,7 @@ const VariablePanel = (props) => {
             {
               currentData.includes("state") && Object.keys(StateVariables).map((variable) => {
                 if (variable.split(':')[0]==="HEADER") {
-                  return <ListSubheader key={variable.split(':')[1]} style={{pointerEvents:'none'}}>{variable.split(':')[1]}</ListSubheader>
+                  return <ListSubheader key={variable.split(':')[1]} disabled>{variable.split(':')[1]}</ListSubheader>
                 } else {
                   return <MenuItem value={variable} key={variable}>{variable}</MenuItem> 
                 }

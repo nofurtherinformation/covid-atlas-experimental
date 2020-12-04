@@ -201,7 +201,7 @@ const DataPanel = () => {
         {(predictions && cols[currentData] && cols[currentData].predictions) &&  
           <div>
             <h2>Predictions</h2><br/>
-            <p>5-Day Severity Index: {['','High','Medium','Low'][predictions[1]]}<Tooltip id="SeverityIndex"/></p><br />
+            <p>5-Day Severity Index: {['','Low','Medium','High'][predictions[1]]}<Tooltip id="SeverityIndex"/></p><br />
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[2].split('_'))}: {predictions[2]}<Tooltip id="PredictedDeaths"/></p><br/>
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[4].split('_'))}: {predictions[4]}<Tooltip id="PredictedDeaths"/></p><br/>
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[6].split('_'))}: {predictions[6]}<Tooltip id="PredictedDeaths"/></p><br/>

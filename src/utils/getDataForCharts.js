@@ -1,7 +1,4 @@
-import dataFn from './dataFunction';
-
 const getDataForCharts = (data, table, startIndex, dates) => {
-    let t0 = performance.now()
     let features = Object.keys(data);
     let n = startIndex;
     let rtn = []
@@ -18,6 +15,7 @@ const getDataForCharts = (data, table, startIndex, dates) => {
             i++;
         }
         tempObj.count = sum
+        // dates[n-startIndex]
         tempObj.date = dates[n-startIndex]
         if (j<0) {
             tempObj.dailyNew = sum
@@ -29,7 +27,6 @@ const getDataForCharts = (data, table, startIndex, dates) => {
         j++;
     }
     
-    console.log(performance.now() - t0);
     return rtn;
 
 }

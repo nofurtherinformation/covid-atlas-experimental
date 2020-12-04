@@ -64,7 +64,7 @@ export const colorScales = {
         // [8,64,129],
     ],
     'forecasting': [
-        [240, 240, 240],
+        [239, 239, 239],
         [254,232,200],
         [253,187,132],
         [227,74,51],
@@ -104,6 +104,11 @@ export const fixedScales = {
     },
     'lisa':{
         bins: ["Not significant", "High-High", "Low-Low", "Low-High", "High-Low"] //"Undefined", "Isolated"
+    },
+    'forecasting': {
+        bins: ['N/A','Low', 'Medium', 'High'],
+        breaks:[1,2,3,4]
+
     }
 }
 
@@ -111,6 +116,7 @@ export const defaultData = 'county_usfacts.geojson';
 
 export const dataPresets = {
     'county_usfacts.geojson': {
+        plainName: 'USA Facts County',
         geojson: 'county_usfacts.geojson', 
         csvs: ['covid_confirmed_usafacts','covid_deaths_usafacts', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
         joinCols: ['GEOID', 'FIPS'], 
@@ -118,6 +124,7 @@ export const dataPresets = {
         accumulate: []
     },
     'county_1p3a.geojson': {
+        plainName: '1Point3Acres County',
         geojson: 'county_1p3a.geojson', 
         csvs: ['covid_confirmed_1p3a','covid_deaths_1p3a', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
         joinCols: ['GEOID', 'FIPS'], 
@@ -125,6 +132,7 @@ export const dataPresets = {
         accumulate: ['covid_confirmed_1p3a','covid_deaths_1p3a']
     },
     'county_nyt.geojson': {
+        plainName: 'New York Times County',
         geojson: 'county_nyt.geojson', 
         csvs: ['covid_confirmed_nyt', 'covid_deaths_nyt', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
         joinCols: ['GEOID', 'FIPS'], 
@@ -132,6 +140,7 @@ export const dataPresets = {
         accumulate: []
     },
     'state_usafacts.geojson': {
+        plainName: 'USA Facts State',
         geojson: 'state_usafacts.geojson', 
         csvs: ['covid_confirmed_usafacts_state','covid_deaths_usafacts_state', 'chr_health_context_state', 'chr_life_state', 'chr_health_factors_state', 'covid_testing_usafacts_state', 'covid_wk_pos_usafacts_state', 'covid_tcap_usafacts_state', 'covid_ccpt_usafacts_state'], 
         joinCols: ['GEOID', 'FIPS'], 
@@ -145,7 +154,7 @@ export const tooltipInfo = {
   NaturalBreaksFixed: <p>A nonlinear algorithm used to group observations such that the within-group homogeneity is maximized for the latest date, bins fixed over time</p>,
   NaturalBreaks: <p>A nonlinear algorithm used to group observations such that the within-group homogeneity is maximized for every day, bins change over time</p>,
   BoxMap: <p>Mapping counterpart of the idea behind a box plot</p>,
-  LocalClustering: <p>A map showing statisically significant spatial cluster and outlier locations, color coded by type.</p>,
+  Hotspot: <p>A map showing statisically significant spatial cluster and outlier locations, color coded by type.</p>,
   LocalMoran: <p>Local Moran used to identify local clusters and outliers</p>,
   NotSig:	<p>Area was not statistically signficant as a spatial cluster core or outlier using given parameters.</p>,
   HighHigh: <p>Hot Spot Cluster: area with high values, neighbored by areas with high values</p>,

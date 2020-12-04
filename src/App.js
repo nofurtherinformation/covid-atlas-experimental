@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import * as jsgeoda from 'jsgeoda';
 
+
 // Helper and Utility functions //
 // first row: data loading
 // second row: data parsing for specific outputs
@@ -19,9 +20,12 @@ import {
   storeData, storeGeojson, storeLisaValues, storeCartogramData,
   setCentroids, setCurrentData, setChartData, setDates, setColumnNames, setDate,
   setMapParams, setVariableParams, setStartDateIndex,
-  setPanelState, setDataSidebar } from './actions';
+  setPanelState, setDataSidebar, setUrlParams } from './actions';
 
-import { Map, VariablePanel, BottomPanel, DataPanel, Popover, NavBar, Preloader, InfoBox } from './components';
+import { Map, NavBar,
+  VariablePanel, BottomPanel, DataPanel, 
+  Popover, Preloader, InfoBox, NotificationBox 
+} from './components';  
 import { colorScales, fixedScales, dataPresets, defaultData } from './config';
 
 // Main function, App. This function does 2 things:
@@ -33,8 +37,9 @@ import { colorScales, fixedScales, dataPresets, defaultData } from './config';
 //    and then dispatches new data to the store.
 // 2: App assembles all of the components together and sends Props down
 //    (as of 12/1 only Preloader uses props and is a higher order component)
-function App() {
 
+
+function App() {
   // These selectors access different pieces of the store. While App mainly
   // dispatches to the store, we need checks to make sure side effects
   // are OK to trigger. Issues arise with missing data, columns, etc.
@@ -106,7 +111,7 @@ function App() {
       let tempDates = findDates(ColNames.cases);
       // set centroids and dates
       getCentroids(geojson, gda_proxy);
-      getDates(tempDates, ColNames, 'cases', geojson);
+      getDates(tempDates, ColNames, 'cases', geojson);    
 
       // calculate breaks
       let nb = gda_proxy.custom_breaks(
@@ -118,9 +123,9 @@ function App() {
           tempData, 
           dataParams
         ) 
-      ) 
+      )
       // while calculating breaks, store chart data
-      dispatch(setChartData(getDataForCharts(tempData,'cases',tempDates[1],tempDates)))
+      dispatch(setChartData(getDataForCharts(tempData,'cases',tempDates[1],tempDates[0])))
       // return breaks
       return nb;
     }).then(nb => {
@@ -148,7 +153,6 @@ function App() {
           })
         )
       } else {
-        console.log('Parameter Change: Getting Bins.')
         let nb = gda_proxy.custom_breaks(
           currentData, 
           mapParams.mapType, 
@@ -172,6 +176,14 @@ function App() {
   // After runtime is initialized, this loads in gda_proxy to the state
   // TODO: Recompile WebGeoda and load it into a worker
   useEffect(() => {
+    
+    var params_dict = {}; 
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    for (const [key, value] of urlParams ) { params_dict[key] = value; }
+
+    dispatch(setUrlParams(params_dict));
+
     const newGeoda = async () => {
       let geoda = await jsgeoda.New();
       set_gda_proxy(geoda);
@@ -180,7 +192,7 @@ function App() {
     newGeoda()
   },[])
 
-  
+
   // On initial load and after gda_proxy has been initialized, this loads in the default data sets (USA Facts)
   // Otherwise, this side-effect loads the selected data.
   // Each conditions checks to make sure gda_proxy is working.
@@ -279,15 +291,15 @@ function App() {
     }
 
   }, [dataParams.nIndex, dataParams.dIndex, mapParams.binMode])
-
   
   return (
     <div className="App">
       <Preloader loaded={mapLoaded} />
       <NavBar />
-      {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'100px', zIndex:10}}>
-        <button onClick={() => updateBins()}>Hi</button>
-      </header> */}
+      <header className="App-header" style={{position:'fixed', left: '20vw', top:'100px', zIndex:10}}>
+        {/* <button onClick={() => console.log(gda_proxy.wasm.GetNeighbors('county_usfacts.geojson','w_queencounty_usfacts.geojson100',100))}>LOG NEIGHBORS</button> */}
+        {/* <button onClick={() => total(5)}>test wasm</button> */}
+      </header>
       <div id="mainContainer">
         <Map />
         <VariablePanel />
@@ -295,6 +307,7 @@ function App() {
         <BottomPanel />
         <InfoBox />
         <Popover />
+        <NotificationBox />
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import MapTooltipContent from './mapTooltipContent';
 import NavBar from './navbar';
 import Preloader from './preloader';
 import InfoBox from './infoBox';
+import NotificationBox from './notificationBox';
 
 export {
     Map,
@@ -25,5 +26,6 @@ export {
     MapTooltipContent,
     BottomPanel,
     Preloader,
-    InfoBox
+    InfoBox,
+    NotificationBox
 }

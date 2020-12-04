@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import {fromJS} from 'immutable';
@@ -106,6 +106,7 @@ const Map = () => {
     const [currVarId, setCurrVarId] = useState(null);
     const [hospitalData, setHospitalData] = useState(null);
     const [clinicData, setClinicData] = useState(null);
+    const [storedCenter, setStoredCenter] = useState(null);
 
     const storedData = useSelector(state => state.storedData);
     const storedGeojson = useSelector(state => state.storedGeojson);
@@ -148,6 +149,7 @@ const Map = () => {
                     bearing:0,
                     pitch:0
                 }));
+                setStoredCenter(null)
                 break
             case '3D':
                 setViewState(view => ({
@@ -158,25 +160,25 @@ const Map = () => {
                     bearing:-30,
                     pitch:30
                 }));
+                setStoredCenter(null)
                 break
+            // case 'cartogram':
+            //     useCallback(() => {
+            //         let center = getCartogramCenter(storedCartogramData[getVarId(currentData, dataParams)])
+            //         setViewState(view => ({
+            //             ...view,
+            //             latitude: center[1],
+            //             longitude: center[0],
+            //             zoom: 5,
+            //             bearing:0,
+            //             pitch:0
+            //         }));
+            //     }, [cartogramData])
+            //     break
             default:
                 //
         }
-    }, [mapParams.vizType])
-
-    useEffect(() => {
-        if (mapParams.vizType === 'cartogram'){
-            let center = getCartogramCenter(storedCartogramData[getVarId(currentData, dataParams)])
-            setViewState(view => ({
-                ...view,
-                latitude: center[1],
-                longitude: center[0],
-                zoom: 5,
-                bearing:0,
-                pitch:0
-            }));
-        }
-    }, [storedCartogramData])
+    }, [mapParams.vizType, currentData])
 
     useEffect(() => {
         let tempData = storedLisaData[getVarId(currentData, dataParams)]
@@ -215,6 +217,25 @@ const Map = () => {
             .then(values => setClinicData(values))
         }
     },[])
+
+    useEffect(() => {
+        if (storedCartogramData[getVarId(currentData, dataParams)]){
+            let center = getCartogramCenter(storedCartogramData[getVarId(currentData, dataParams)])
+            let roundedCenter = [Math.floor(center[0]),Math.floor(center[1])]
+            if (storedCenter === null || roundedCenter[0] !== storedCenter[0]) {
+                setViewState(view => ({
+                    ...view,
+                    latitude: center[1],
+                    longitude: center[0],
+                    zoom: 5,
+                    bearing:0,
+                    pitch:0
+                }));
+                setStoredCenter(roundedCenter)
+            }
+        }
+    }, [storedCartogramData])
+
     const mapRef = useRef();
     
     const GetFillColor = (f, bins, mapType) => {
@@ -302,9 +323,14 @@ const Map = () => {
             filled: true,
             wireframe: mapParams.vizType === '3D',
             extruded: mapParams.vizType === '3D',
-            opacity: mapParams.vizType === '3D' ? 0.9 : 0.7,
+            opacity: 0.8,
+            material:false,
             getFillColor: f => GetFillColor(f, mapParams.bins, mapParams.mapType),
             getElevation: f => GetHeight(f, mapParams.bins, mapParams.mapType),
+            // getLineColor: [255, 80, 80],
+            // getLineWidth:50,
+            // minLineWidth:20,
+            // lineWidthScale: 20,
             updateTriggers: {
                 data: currentData,
                 pickable: mapParams.vizType,
@@ -322,10 +348,13 @@ const Map = () => {
                 try {
                     dispatch(setDataSidebar(info.object));
                     setHighlightGeog(info.object.properties.GEOID);
-                    dispatch(setChartData(getDataForCharts({data: info.object}, 'cases', startDateIndex, dates[currentData])));
+                    dispatch(setChartData(getDataForCharts({data: info.object}, 'cases', startDateIndex, dates[currentData], info.object?.properties?.population/100000||1)));
                 } catch {}
 
-            }
+            },
+                // parameters: {
+                //     depthTest: false
+                // }
         }),
         new GeoJsonLayer({
             id: 'highlightLayer',
@@ -491,11 +520,11 @@ const Map = () => {
                     return 0;
                 }
             },
-            transitions: {
-                getPosition: 150,
-                getFillColor: 150,
-                getRadius: 150
-            },   
+            // transitions: {
+            //     getPosition: 1,
+            //     getFillColor: 1,
+            //     getRadius: 1
+            // },   
             onHover: f => {
                 try {
                     setHoverInfo(
@@ -509,10 +538,10 @@ const Map = () => {
                 }
             },
             updateTriggers: {
-                getPosition: [storedCartogramData, mapParams, dataParams, currVarId],
-                getFillColor: [storedCartogramData, mapParams, dataParams, currVarId],
-                getRadius: [storedCartogramData, mapParams, dataParams, currVarId],
-                visible: [storedCartogramData, mapParams, dataParams, currVarId]
+                getPosition: [cartogramData, mapParams, dataParams, currVarId],
+                getFillColor: [cartogramData, mapParams, dataParams, currVarId],
+                getRadius: [cartogramData, mapParams, dataParams, currVarId],
+                visible: [cartogramData, mapParams, dataParams, currVarId]
             }
           }),
         // new SimpleMeshLayer({

@@ -100,7 +100,7 @@ const MainLineChart = () => {
     return (
         <ChartContainer container spacing={2} id="main-chart-container">
             <Grid item xs={12}>
-                <ChartTitle>Total and Weekly Average Cases{properties && <span>: {properties.NAME}{properties.state_name && `, ${properties.state_name}`}</span>}</ChartTitle>
+                <ChartTitle>Total Cases and 7-Day Average New Cases{properties && <span>: {properties.NAME}{properties.state_name && `, ${properties.state_name}`}</span>}</ChartTitle>
             </Grid>
             <Grid item xs={12} style={{height:'20vh'}}>
                 <ResponsiveContainer width="100%" height="100%">
@@ -127,7 +127,7 @@ const MainLineChart = () => {
                         />
                         {/* <YAxis type="number" /> */}
                         <YAxis yAxisId="left" type="number" dataKey="count"  scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow 
-                            // ticks={Object.keys(sidebarData).length === 0 ? [2000000,4000000,6000000,8000000,10000000] : []} 
+                            ticks={Object.keys(sidebarData).length === 0 ? [2000000,4000000,6000000,8000000,10000000] : []} 
                             tick={
                                 <CustomTick
                                 style={{
@@ -156,7 +156,7 @@ const MainLineChart = () => {
                                 />
                             }
                             >
-                            <Label value="Weekly Average" position='insideTopRight' style={{marginTop:10, fill:'#FFCE00', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
+                            <Label value="7-Day Average New Cases" position='insideTopRight' style={{marginTop:10, fill:'#FFCE00', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
                         </YAxis>
                         <Tooltip
                             content={CustomTooltip}
@@ -169,8 +169,8 @@ const MainLineChart = () => {
                             fillOpacity={0.15}
                             isAnimationActive={false}
                         />
-                        <Line type="monotone" yAxisId="left" dataKey="count" name="Total Count" stroke="#D8D8D8" dot={false} />
-                        <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="Weekly Average" stroke="#FFCE00" dot={false} />
+                        <Line type="monotone" yAxisId="left" dataKey="count" name="Total Cases" stroke="#D8D8D8" dot={false} />
+                        <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="7-Day Average New Cases" stroke="#FFCE00" dot={false} />
                         <Line type="monotone" yAxisId="right" dataKey="selectedGeog" name="Selected Geography Count" stroke="#FFF" dot={false} />
                     </LineChart>
                 </ResponsiveContainer>

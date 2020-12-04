@@ -202,6 +202,16 @@ var reducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 mapLoaded: action.payload.loaded
             }
+        case 'SET_NOTIFICATION':
+            return {
+                ...state,
+                notification: action.payload.info
+            }
+        case 'SET_URL_PARAMS':
+            return {
+                ...state,
+                urlParams: action.payload.params
+            }
         default:
             return state;
     }

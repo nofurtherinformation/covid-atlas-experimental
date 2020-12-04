@@ -259,3 +259,21 @@ export const setMapLoaded = ( loaded ) => {
         }
     }
 }
+
+export const setNotification = ( info ) => {
+    return {
+        type: 'SET_NOTIFICATION',
+        payload: {
+            info
+        }
+    }
+}
+
+export const setUrlParams = ( params ) => {
+    return {
+        type: 'SET_URL_PARAMS',
+        payload: {
+            params
+        }
+    }
+}
