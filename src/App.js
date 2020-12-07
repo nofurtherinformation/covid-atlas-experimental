@@ -18,14 +18,14 @@ import {
 // third row: map and variable parameters
 import { 
   dataLoad, dataLoadExisting, storeLisaValues, storeCartogramData,
-  setCentroids, setMapParams, setNewBins, setUrlParams } from './actions';
+  setCentroids, setMapParams, setNewBins, setUrlParams, setPanelState } from './actions';
 
 import { Map, NavBar,
   VariablePanel, BottomPanel, DataPanel, 
   Popover, Preloader, InfoBox, NotificationBox 
 } from './components';  
 import { colorScales, fixedScales, dataPresets, 
-  legacyOverlayOrder, legacyResourceOrder } from './config';
+  legacyOverlayOrder, legacyResourceOrder, legacySourceOrder } from './config';
 
 // Main function, App. This function does 2 things:
 // 1: App manages the majority of the side effects when the state changes.
@@ -172,7 +172,7 @@ function App() {
 
     dispatch(
       setUrlParams({
-        currentData: paramsDict['src'] || 'county_usfacts.geojson',
+        currentData: paramsDict['src'] ? legacySourceOrder[decodeURI(paramsDict['src'])] : 'county_usfacts.geojson',
         paramsDict,
         mapParams: {
           vizType: paramsDict['cartogram'] ? 'cartogram' : paramsDict['3d'] ? '3D' : '2D',
@@ -182,6 +182,14 @@ function App() {
         }
       })
     );
+
+    if (window.innerWidth <= 1024) {
+      dispatch(setPanelState({
+        variables:false,
+        info:false,
+        tutorial:false,
+      }))
+    }
 
     const newGeoda = async () => {
       let geoda = await jsgeoda.New();

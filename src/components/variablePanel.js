@@ -36,16 +36,24 @@ const VariablePanelContainer = styled.div`
   z-index:50;
   @media (max-width:1024px) {
     min-width:50vw;
+  }  
+  @media (max-width:600px) {
+    width:100%;
+    display: ${props => props.otherPanels ? 'none' : 'initial'};
   }
   p.note {
     position: absolute;
     
     bottom:60px;
-    left:20px;
-    width:calc(100% - 40px);
+    left:0px;
+    padding:20px;
+    box-sizing:border-box;
+    background:#2b2b2b;
+    width:calc(100%);
     font-family: 'Lato', sans-serif;
     font-weight:300;
     font-size:90%;
+    box-shadow: 0px -5px 10px rgba(0,0,0,0.25);
     a {
       color:#FFCE00;
       text-decoration: none;
@@ -63,7 +71,6 @@ const VariablePanelContainer = styled.div`
     @media (max-height:900px){
       bottom:10px;
       right:10px;
-
     }
     a {
       color:white;
@@ -84,6 +91,7 @@ const VariablePanelContainer = styled.div`
     top:20px;
     width:40px;
     height:40px;
+    box-sizing:border-box;
     padding:0;
     margin:0;
     background-color: #2b2b2b;
@@ -93,8 +101,14 @@ const VariablePanelContainer = styled.div`
     cursor: pointer;
     transition:500ms all;
     svg { 
-      padding:0;
-      margin:0;
+      width:30px;
+      height:30px;
+      margin:5px 0 0 0;
+      @media (max-width:600px){
+        width:20px;
+        height:20px;
+        margin:5px;
+      }
       fill:white;
       transform:rotate(0deg);
       transition:500ms all;
@@ -106,15 +120,25 @@ const VariablePanelContainer = styled.div`
       color:white;
       position: relative;
       right:-50px;
-      top:-30px;
+      top:-27px;
       transition:500ms all;
       z-index:4;
+    }
+    
+    @media (max-width:600px) {
+      left:90%;
+      width:30px;
+      height:30px;
+      top:10px;
+      :after {
+        display:none;
+      }
     }
   }
   button#showHideLeft.hidden {
     left:100%;
     svg {
-      transform:rotate(180deg);
+      transform:rotate(90deg);
     }
     :after {
       opacity:1;
@@ -153,6 +177,11 @@ const ControlsContainer = styled.div`
   @media (max-height:1080px){
     overflow-y:scroll;
     padding-bottom:40px;
+  }
+  
+  @media (max-width:600px) {
+    width:100%;
+    padding:0 10px;
   }
 `
 
@@ -350,18 +379,21 @@ const VariablePanel = (props) => {
       }}})
   },[])
 
-  const resetVariable = () => {
-    dispatch(setMapParams({customScale: '', fixedScale: null}))
-    dispatch(setVariableParams({...PresetVariables["Confirmed Count per 100K Population"]}))
-    dispatch(setVariableName("Confirmed Count per 100K Population"))
-  }
-
   const handleVariable = (event) => {
     let variable = event.target.value;
-    dispatch(setVariableName(variable))
-
     let tempParams = PresetVariables[variable] || CountyVariables[variable] || StateVariables[variable] || null;
-      
+    
+    // dispatch(variableChange({
+    //   variable,
+    //   mapParams: {
+    //     customScale: tempParams.colorScale || '', 
+    //     fixedScale: tempParams.fixedScale || null
+    //   },
+    //   variableParams: {
+    //     ...tempParams
+    //   }
+    // }))
+    dispatch(setVariableName(variable))
     dispatch(setMapParams({customScale: tempParams.colorScale || '', fixedScale: tempParams.fixedScale || null}))
     dispatch(setVariableParams({...tempParams}))
   };
@@ -369,15 +401,31 @@ const VariablePanel = (props) => {
   const handleDataSource = (event) => {
     let newDataSet = event.target.value
     if ((newDataSet.includes("state") && CountyVariables.hasOwnProperty(currentVariable))||(newDataSet.includes("county") && StateVariables.hasOwnProperty(currentVariable))) {
-      resetVariable()
-      dispatch(setNotification(`${dataPresets[newDataSet].plainName} data do not have ${currentVariable}. The Atlas will default to Confirmed Cases Per 100k People.`))
-      
+
+      // dispatch(resetVariable({
+      //   mapParams: {
+      //     customScale: '', 
+      //     fixedScale: null
+      //   },
+      //   variableParams: {
+      //     ...PresetVariables["Confirmed Count per 100K Population"]
+      //   },
+      //   variable: "Confirmed Count per 100K Population",
+      //   notification: `${dataPresets[newDataSet].plainName} data do not have ${currentVariable}. The Atlas will default to Confirmed Cases Per 100k People.`
+      // }))
+
+      dispatch(setMapParams({customScale: '', fixedScale: null}))
+      dispatch(setVariableParams({...PresetVariables["Confirmed Count per 100K Population"]}))
+      dispatch(setVariableName("Confirmed Count per 100K Population"))
+      dispatch(setNotification(`${dataPresets[newDataSet].plainName} data do not have ${currentVariable}. The Atlas will default to Confirmed Cases Per 100k People.`))  
+
       setTimeout(() => {dispatch(setCurrentData(newDataSet))}, 250);
       setTimeout(() => {dispatch(setNotification(null))},10000);
     } else {
       dispatch(setCurrentData(newDataSet)); 
     }
   };
+
 
   const handleMapType = (event, newValue) => {
     let nBins = newValue === 'hinge15_breaks' ? 6 : 8
@@ -439,7 +487,7 @@ const VariablePanel = (props) => {
   }
 
   return (
-    <VariablePanelContainer style={{transform: (panelState.variables ? '' : 'translateX(-100%)')}}>
+    <VariablePanelContainer style={{transform: (panelState.variables ? '' : 'translateX(-100%)')}} otherPanels={panelState.info}>
       <ControlsContainer>
         <h2>Data Sources &amp;<br/> Map Variables</h2>
         <StyledDropDown>
@@ -581,13 +629,13 @@ const VariablePanel = (props) => {
             </a>
         </div>
       <button onClick={handleOpenClose} id="showHideLeft" className={panelState.variables ? 'active' : 'hidden'}>
-        <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
+        {/* <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
           <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
             <path d="M38,33.8L23.9,47.9c-1.2,1.2-1.2,3.1,0,4.2L38,66.2l4.2-4.2l-9-9H71v17c0,0.6-0.4,1-1,1H59v6h11
               c3.9,0,7-3.1,7-7V30c0-3.9-3.1-7-7-7H59v6h11c0.6,0,1,0.4,1,1v17H33.2l9-9L38,33.8z"/>
           </g>
-        </svg>
-
+        </svg> */}
+        <svg viewBox="0 0 100 100" x="0px" y="0px"><g><path d="M46,44.8V89.5h8V44.8a12,12,0,0,0,0-22.6V10.5H46V22.2a12,12,0,0,0,0,22.6Zm4-15.3a4,4,0,1,1-4,4A4,4,0,0,1,50,29.5Z"></path><path d="M81.5,55.2V10.5h-8V55.2a12,12,0,0,0,0,22.6V89.5h8V77.8a12,12,0,0,0,0-22.6Zm-4,15.3a4,4,0,1,1,4-4A4,4,0,0,1,77.5,70.5Z"></path><path d="M18.5,77.8V89.5h8V77.8a12,12,0,0,0,0-22.6V10.5h-8V55.2a12,12,0,0,0,0,22.6Zm4-15.3a4,4,0,1,1-4,4A4,4,0,0,1,22.5,62.5Z"></path></g></svg>
       </button>
 
     </VariablePanelContainer>

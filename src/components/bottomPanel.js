@@ -49,6 +49,16 @@ const BottomDrawer = styled.div`
             top: 10px !important;
         }
     }
+    
+    @media (max-width:600px){
+    
+        #binModeSwitch, #dateRangeSelector {
+            display:none !important;
+        }
+    }
+    @media (max-width:750px) and (orientation: landscape) {
+        // bottom all the way down for landscape phone
+    }
 `
 const OpenCloseButton = styled.button`
     background: none;
@@ -58,7 +68,7 @@ const OpenCloseButton = styled.button`
     width:40px;
     height:40px;
     padding:0;
-    transform:${props => props.bottom===5?'rotate(270deg)':'rotate(90deg)'};
+    transform:${props => props.bottom===5?'rotate(180deg)':'rotate(0deg)'};
     border:none;
     outline:none;
     transition:250ms all;
@@ -92,6 +102,10 @@ const OpenCloseButton = styled.button`
             transition:500ms all;
         }
     }
+    @media (max-width:600px){
+        width:30px;
+        height:30px;
+    }
 `
 
 const BottomPanel = () => {
@@ -124,12 +138,22 @@ const BottomPanel = () => {
             <hr />
             <MainLineChart />
             <OpenCloseButton onClick={handleBottomOpen} bottom={panelState.chart ? 5 : bottomMargin}>
-                <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
+                {/* <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
                     <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
                         <path d="M38,33.8L23.9,47.9c-1.2,1.2-1.2,3.1,0,4.2L38,66.2l4.2-4.2l-9-9H71v17c0,0.6-0.4,1-1,1H59v6h11
                         c3.9,0,7-3.1,7-7V30c0-3.9-3.1-7-7-7H59v6h11c0.6,0,1,0.4,1,1v17H33.2l9-9L38,33.8z"/>
                     </g>
+                </svg> */}
+                <svg x="0px" y="0px" viewBox="0 0 100 100">
+                    <g>
+                        <path d="M52.5,21.4c-1.9,0-3.6,1.3-4.1,3.1L37.9,63.7l-6.4-11.1c-1.2-2-3.7-2.7-5.7-1.5c-0.3,0.2-0.6,0.4-0.9,0.7
+                            L10.1,66.6c-1.7,1.6-1.7,4.2-0.2,5.9c1.6,1.7,4.2,1.7,5.9,0.2c0.1,0,0.1-0.1,0.1-0.1L27,61.5l8.7,15.1c1.2,2,3.7,2.7,5.7,1.5
+                            c0.9-0.6,1.6-1.5,1.9-2.5l9.1-33.9l4.6,17.2c0.6,2.2,2.9,3.5,5.1,2.9c1.1-0.3,2-1,2.5-1.9l10.4-18l8.9,9.4c1.6,1.7,4.2,1.8,5.9,0.3
+                            s1.8-4.2,0.3-5.9c0,0-0.1-0.1-0.1-0.1L77.3,32.1c-1.6-1.7-4.2-1.8-5.9-0.2c-0.3,0.3-0.6,0.6-0.8,1L62.5,47l-6-22.5
+                            C56,22.7,54.4,21.4,52.5,21.4L52.5,21.4z"/>
+                    </g>
                 </svg>
+
             </OpenCloseButton>
         </BottomDrawer>
     )

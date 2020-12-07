@@ -27,8 +27,22 @@ const DataPanelContainer = styled.div`
   font-size:100%;
   padding:0;
   z-index:5;
+  transform: translateX(100%);
+  &.open {
+    transform:none;
+  }
   @media (max-width:1024px) {
     min-width:50vw;
+  }  
+  @media (max-width:600px) {
+    width:100%;
+    left:0;
+    transform:translateX(-100%);
+    z-index:51;
+    &.open {
+      transform:none;
+    }
+    display: ${props => props.otherPanels ? 'none' : 'initial'};
   }
   div.container {
     width:100%;
@@ -59,10 +73,16 @@ const DataPanelContainer = styled.div`
     cursor: pointer;
     transition:500ms all;
     svg {
-      padding:0;
-      margin:0;
+      width:30px;
+      height:30px;
+      margin:5px 0 0 0;
+      @media (max-width:600px){
+        width:20px;
+        height:20px;
+        margin:5px;
+      }
       fill:white;
-      transform:rotate(180deg);
+      transform:rotate(90deg);
       transition:500ms all;
     }
     :after {
@@ -70,23 +90,42 @@ const DataPanelContainer = styled.div`
       font-weight:bold;
       color:white;
       position: relative;
-      top:-30px;
+      top:-27px;
       transition:500ms all;
       content: 'Info';
       right:40px;
       z-index:4;
+    }  
+    &.hidden {
+      right:100%;
+      svg {
+        transform:rotate(0deg);
+      }
+      :after {
+        opacity:1;
+      }
+    }
+    @media (max-width:600px) {
+      left:100%;
+      width:30px;
+      height:30px;
+      top:45px;
+      &.hidden svg {
+        transform:rotate(0deg);
+      }
+      :after {
+        display:none;
+      }
+      &.active {
+        left:90%;
+      }
+      &.active svg {
+        transform:rotate(90deg);
+      }
     }
   }
   
-  button#showHideRight.hidden {
-    right:100%;
-    svg {
-      transform:rotate(0deg);
-    }
-    :after {
-      opacity:1;
-    }
-  }
+
   div {
     div {
       p {
@@ -135,7 +174,7 @@ const DataPanel = () => {
   const handleOpenClose = () => panelState.info ? dispatch(setPanelState({info:false})) : dispatch(setPanelState({info:true}))
   
   return (
-    <DataPanelContainer style={{transform: (panelState.info ? '' : 'translateX(100%)')}} id="data-panel">
+    <DataPanelContainer className={panelState.info ? 'open' : ''} id="data-panel" otherPanels={panelState.variables}>
       <div className="container">
         {properties && <h2>{properties.NAME}{properties.state_name && `, ${properties.state_name}`}</h2>}
         {properties && 
@@ -217,12 +256,20 @@ const DataPanel = () => {
         }
         
         {cases && <button onClick={handleOpenClose} id="showHideRight" className={panelState.info ? 'active' : 'hidden'}>
-          <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
+          {/* <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
             <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
               <path d="M38,33.8L23.9,47.9c-1.2,1.2-1.2,3.1,0,4.2L38,66.2l4.2-4.2l-9-9H71v17c0,0.6-0.4,1-1,1H59v6h11
                 c3.9,0,7-3.1,7-7V30c0-3.9-3.1-7-7-7H59v6h11c0.6,0,1,0.4,1,1v17H33.2l9-9L38,33.8z"/>
             </g>
+          </svg> */}
+          <svg x="0px" y="0px" viewBox="0 0 100 100" >
+            <path d="M61.7,14.1H22.8c-4.8,0-8.7,3.9-8.7,8.7v54.4c0,4.8,3.9,8.7,8.7,8.7h54.4c4.8,0,8.7-3.9,8.7-8.7V38.3
+              c0-2.3-0.9-4.5-2.5-6.2L67.9,16.6C66.2,15,64,14.1,61.7,14.1z M64.2,30.4c0-1.2,0.7-1.5,1.5-0.7l4.4,4.4c0.8,0.8,0.5,1.5-0.7,1.5
+              h-3.1c-1.2,0-2.2-1-2.2-2.2V30.4z M27.1,75c-1.2,0-2.2-1-2.2-2.2V27.1c0-1.2,1-2.2,2.2-2.2h23.9c1.2,0,2.2,1,2.2,2.2V38
+              c0,4.8,3.9,8.7,8.7,8.7h10.9c1.2,0,2.2,1,2.2,2.2v23.9c0,1.2-1,2.2-2.2,2.2H27.1z"/>
           </svg>
+
+
 
         </button>}
       </div>

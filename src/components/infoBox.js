@@ -39,6 +39,15 @@ const InfoContainer = styled.div`
        color: #FFCE00; 
        text-decoration:none;
     }
+    @media (max-width:1024px) {
+        right:50%;
+        bottom:50%;
+        transform: translate(50%, 50%);
+        overflow:hidden;
+        -moz-box-shadow: 0 0 5px rgba(0,0,0,.2);
+        -webkit-box-shadow: 0 0 5px rgba(0,0,0,.2);
+        box-shadow: 0 0 0 5px rgba(0,0,0,.2);
+    }
 `
 
 const PanelContainer = styled.div`

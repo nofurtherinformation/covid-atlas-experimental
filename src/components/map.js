@@ -50,6 +50,19 @@ const DATA_URL = {
     RESERVATIONS:`${process.env.PUBLIC_URL}/geojson/reservations.geojson`
 };
 
+const MapContainer = styled.div`
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    @media (max-width:600px) {
+        div.mapboxgl-ctrl-geocoder {
+            display:none;
+        }
+    }
+`
+
 const HoverDiv = styled.div`
     background:#2b2b2b;
     padding:20px;
@@ -80,15 +93,42 @@ const NavInlineButton = styled.button`
 `
 
 const NavBarBacking = styled.div`
-width:100%;
-height:50px;
-position:absolute;
-top:0;
-left:0;
-background:#2b2b2b;
--moz-box-shadow: 0 0 2px rgba(0,0,0,.1);
--webkit-box-shadow: 0 0 2px rgba(0,0,0,.1);
-box-shadow: 0 0 0 2px rgba(0,0,0,.1);
+    width:100%;
+    height:50px;
+    position:absolute;
+    top:0;
+    left:0;
+    background:#2b2b2b;
+    -moz-box-shadow: 0 0 2px rgba(0,0,0,.1);
+    -webkit-box-shadow: 0 0 2px rgba(0,0,0,.1);
+    box-shadow: 0 0 0 2px rgba(0,0,0,.1);
+`
+
+const MapGeocoder = styled(Geocoder)`
+    @media (max-width:600px) {
+        display:none !important;
+    }
+`
+
+const MapButtonContainer = styled.div`
+    position: absolute;
+    right: ${props => props.infoPanel ? 317 : 10}px;
+    bottom: 30px;
+    zIndex: 10;
+    transition: 250ms all;
+    @media (max-width:1024px) {
+        bottom:27vh;
+    }
+    @media (max-width:768px) {
+        bottom:19vh;
+    }
+    @media (max-width: 600px) {
+        bottom: 27vh;
+    }
+    @media (max-width: 400px) {
+        bottom: 35vh;
+        transform:scale(0.75) translate(20%, 20%);
+    }
 `
 
 const viewGlobe = new GlobeView({id: 'globe', controller: false, resolution:1});
@@ -561,7 +601,7 @@ const Map = () => {
     ]
 
     return (
-        <div id="mapContainer" style={{position:'fixed',left:0,top:0,width:'100%',height:'100%'}}>
+        <MapContainer>
             <DeckGL
                 initialViewState={viewState}
                 controller={true}
@@ -587,16 +627,17 @@ const Map = () => {
                     }}
                     >
                         
-                    <Geocoder
+                    <MapGeocoder
                     mapRef={mapRef}
                     onViewportChange={viewState  => setViewState(viewState)} 
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
                     position="top-right"
+                    id="mapGeocoder"
                     style={{transform:'translateY(-5px)'}}
                     />
                     <NavBarBacking />
                         
-                    <div style={{position: 'absolute', right: panelState.info ? 317 : 10, bottom: 30, zIndex: 10, transition: '250ms all'}}>
+                    <MapButtonContainer infoPanel={panelState.info}>
                         {/* <NavInlineButton
                             onClick={() => setGlobalMap(prev => !prev)}
                             isActive={globalMap}
@@ -651,7 +692,7 @@ const Map = () => {
                         <NavigationControl
                             onViewportChange={viewState  => setViewState(viewState)} 
                         />
-                    </div>
+                    </MapButtonContainer>
                     <div></div>
                 </ReactMapGL >
                 {hoverInfo.object && (
@@ -660,7 +701,7 @@ const Map = () => {
                 </HoverDiv>
                 )}
             </DeckGL>
-        </div>
+        </MapContainer>
     ) 
 }
 
