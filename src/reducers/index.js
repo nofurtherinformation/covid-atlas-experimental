@@ -13,7 +13,8 @@ var reducer = (state = INITIAL_STATE, action) => {
             // This is necessary to avoid mutating the state
             let [
                     dataObj, colDataObj, geoDataObj, 
-                    mapParamsDataObj, datesDataObj, variableParamsDataObj
+                    mapParamsDataObj, datesDataObj, 
+                    variableParamsDataObj, panelsDataObj
                 ] = [
                     {
                     ...state.storedData
@@ -29,6 +30,9 @@ var reducer = (state = INITIAL_STATE, action) => {
                 }, {
                     ...state.dataParams,
                     ...variableParams
+                }, {
+                    ...state.panelState,
+                    info: false
                 }];
 
                 dataObj[storeData.name] = storeData.data;
@@ -46,8 +50,47 @@ var reducer = (state = INITIAL_STATE, action) => {
                 currentData,
                 chartData,
                 currDate,
-                startDateIndex                
+                startDateIndex,
+                sidebarData: {},
+                panelState: panelsDataObj
+
             };
+        case 'DATA_LOAD_EXISTING':
+            
+            let [ variableParamsExDataObj, panelsExDataObj ] 
+                = [
+                    {
+                    ...state.dataParams,
+                    ...action.payload.load.variableParams
+                }, {
+                    ...state.panelState,
+                    info: false
+                }];
+
+            return {
+                ...state,
+                dataParams: variableParamsExDataObj,
+                chartData: action.payload.load.chartData,
+                currDate: action.payload.load.currDate,
+                startDateIndex: action.payload.load.startDateIndex,
+                sidebarData: {},
+                panelState: panelsExDataObj
+
+            };
+        case 'SET_NEW_BINS':
+            let [ binsVariableParams, binsMapParams] 
+                = [{
+                    ...state.dataParams,
+                    ...action.payload.load.variableParams
+                },{
+                    ...state.mapParams,
+                    ...action.payload.load.mapParams
+                }]
+            return {
+                ...state,
+                dataParams: binsVariableParams,
+                mapParams: binsMapParams
+            }
         case 'SET_GEOID': 
             return {
                 ...state,
@@ -254,9 +297,15 @@ var reducer = (state = INITIAL_STATE, action) => {
                 notification: action.payload.info
             }
         case 'SET_URL_PARAMS':
+            let urlMapParamsObj = {
+                ...state.mapParams,
+                ...action.payload.load.mapParams
+            }
             return {
                 ...state,
-                urlParams: action.payload.params
+                currentData: action.payload.load.currentData,
+                urlParams: action.payload.load.paramsDict,
+                mapParams: urlMapParamsObj
             }
         default:
             return state;

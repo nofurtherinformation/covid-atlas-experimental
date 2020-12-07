@@ -28,6 +28,27 @@ const BottomDrawer = styled.div`
     hr {
         opacity:0.5;
     }
+    @media (max-width:1024px){
+        width:100%;
+        max-width:100%;
+        padding:0;
+        left:0;
+        transform:none;
+        div {
+            padding-bottom:0;
+        }
+        #binModeSwitch {
+            position:absolute !important;
+            right: 10px !important;
+            top: 10px !important;
+        }
+        #dateRangeSelector {
+            position:absolute !important;
+            left: 66% !important;
+            transform:translateX(-50%) !important;
+            top: 10px !important;
+        }
+    }
 `
 const OpenCloseButton = styled.button`
     background: none;
@@ -48,6 +69,28 @@ const OpenCloseButton = styled.button`
     &.hidden {
         bottom:;
         transform:;
+    }
+    @media (max-width:1024px) {
+        position:absolute;
+        top:-20px;
+        left:50%;
+        transform:${props => props.bottom===5?'rotate(270deg)':'rotate(90deg)'} translateX(-50%)
+        width:40px;
+        height:40px;
+        padding:0;
+        margin:0;
+        background-color: #2b2b2b;
+        box-shadow: 0px 0px 6px rgba(0,0,0,1);
+        outline:none;
+        border:none;
+        cursor: pointer;
+        transition:500ms all;
+        svg {
+            padding:0;
+            margin:0;
+            fill:white;
+            transition:500ms all;
+        }
     }
 `
 

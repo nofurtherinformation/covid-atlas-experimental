@@ -27,6 +27,9 @@ const DataPanelContainer = styled.div`
   font-size:100%;
   padding:0;
   z-index:5;
+  @media (max-width:1024px) {
+    min-width:50vw;
+  }
   div.container {
     width:100%;
     height:100vh;
@@ -74,6 +77,7 @@ const DataPanelContainer = styled.div`
       z-index:4;
     }
   }
+  
   button#showHideRight.hidden {
     right:100%;
     svg {

@@ -15,7 +15,7 @@ import styled from 'styled-components';
 
 import { colLookup } from '../utils';
 import Tooltip from './tooltip';
-import { fixedScales, colorScales, dataPresets } from '../config';
+import { fixedScales, colorScales, dataPresets, legacyVariableOrder } from '../config';
 import { StyledDropDown } from '../styled_components';
 import { setVariableParams, setVariableName, setMapParams, setCurrentData, setPanelState, setNotification } from '../actions';
 
@@ -28,15 +28,20 @@ const VariablePanelContainer = styled.div`
   min-width:200px;
   background-color: #2b2b2b;
   box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
-  padding:20px;
+  padding:0;
   box-sizing: border-box;
   transition:250ms all;
   font: 'Lato', sans-serif;
   color:white;
   z-index:50;
+  @media (max-width:1024px) {
+    min-width:50vw;
+  }
   p.note {
     position: absolute;
-    bottom:100px;
+    
+    bottom:60px;
+    left:20px;
     width:calc(100% - 40px);
     font-family: 'Lato', sans-serif;
     font-weight:300;
@@ -45,14 +50,21 @@ const VariablePanelContainer = styled.div`
       color:#FFCE00;
       text-decoration: none;
     }
+    @media (max-height:900px){
+      bottom:20px;
+    }
   }
   div.poweredByGeoda {
     position: absolute;
-    bottom: 40px;
+    bottom: 20px;
     color:white;
     width:100%;
     text-align:center;
-    transform:translateX(-20px);
+    @media (max-height:900px){
+      bottom:10px;
+      right:10px;
+
+    }
     a {
       color:white;
       margin:0 auto;
@@ -135,7 +147,13 @@ const TwoUp = styled.div`
 `
 
 const ControlsContainer = styled.div`
-  
+  max-height:70vh;
+  padding:20px;
+  overflow-y:visible;
+  @media (max-height:1080px){
+    overflow-y:scroll;
+    padding-bottom:40px;
+  }
 `
 
 const ListSubheader = styled(MenuItem)`
@@ -145,11 +163,9 @@ const ListSubheader = styled(MenuItem)`
 
 const VariablePanel = (props) => {
   const dispatch = useDispatch();    
-  const columnNames = useSelector(state => state.cols);
-  const currentData = useSelector(state => state.currentData);
-  const currentVariable = useSelector(state => state.currentVariable);
-  const mapParams = useSelector(state => state.mapParams);
-  const panelState = useSelector(state => state.panelState);
+
+  const { columnNames, currentData, currentVariable,
+    mapParams, panelState, urlParams } = useSelector(state => state);
 
   const PresetVariables = {
     "HEADER:cases":{},
@@ -327,6 +343,12 @@ const VariablePanel = (props) => {
       colorScale: 'testing'
     }
   }
+
+  useEffect(() => {
+    if (urlParams.var) handleVariable({event: { target: { 
+      value: legacyVariableOrder[urlParams.src||'county_usfacts.geojson'][urlParams.var]
+      }}})
+  },[])
 
   const resetVariable = () => {
     dispatch(setMapParams({customScale: '', fixedScale: null}))

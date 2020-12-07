@@ -21,6 +21,24 @@ export const dataLoad = ( load ) => {
     }
 }
 
+export const dataLoadExisting = ( load ) => {
+    return {
+        type: 'DATA_LOAD_EXISTING',
+        payload: {
+            load
+        }
+    }
+}
+
+export const setNewBins = ( load ) => {
+    return {
+        type: 'SET_NEW_BINS',
+        payload: {
+            load
+        }
+    }
+}
+
 // main store for map and tabular data
 export const storeData = (data, name) => {
     return {
@@ -278,11 +296,11 @@ export const setNotification = ( info ) => {
     }
 }
 
-export const setUrlParams = ( params ) => {
+export const setUrlParams = ( load ) => {
     return {
         type: 'SET_URL_PARAMS',
         payload: {
-            params
+            load
         }
     }
 }

@@ -112,6 +112,7 @@ const Legend =  () => {
                 </Grid>
                 <SwitchContainer item xs={12} lg={2} 
                     style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none')}}
+                    id="binModeSwitch"
                 >
                     <Switch
                         checked={mapParams.binMode === 'dynamic'}

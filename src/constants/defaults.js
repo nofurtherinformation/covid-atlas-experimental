@@ -6,7 +6,7 @@ export const INITIAL_STATE = {
   storedCartogramData: {},
   storedCSV: {},
   cols: {},
-  currentData: '',
+  currentData: 'county_usfacts.geojson',
   chartData: [{}],
   centroids: {},
   dates: {},

@@ -190,3 +190,79 @@ export const tooltipInfo = {
   TestingCapacity: <p>New screening (e.g., antigen) and diagnostic (e.g., PCR) testing per capita rates by date. The suggested threshold is >150 daily tests per 100k people.</p>,
   USCongress: <p>Find your representative <a href="https://www.govtrack.us/" target="_blank" rel="noopener noreferrer">here</a></p>,
 };
+
+export const legacyVariableOrder = {
+    'state_usafacts.geojson': [
+        'Confirmed Count',
+        'Confirmed Count per 100K Population',
+        'Confirmed Count per Licensed Bed',
+        'Death Count',
+        'Death Count per 100K Population',
+        'Death Count/Confirmed Count',
+        'Daily New Confirmed Count',
+        'Daily New Confirmed Count per 100K Pop',
+        '7-Day Average Daily New Confirmed Count',
+        '7-Day Average Daily New Confirmed Count per 100K Pop',
+        'Daily New Death Count',
+        'Daily New Death Count per 100K Pop',
+        'Forecasting (5-Day Severity Index)',
+        '7 Day Testing Positivity Rate %',
+        '7 Day Testing Capacity',
+        '7 Day Confirmed Cases per Testing %',
+    ],      
+    'county_1p3a.geojson': [
+        'Confirmed Count',
+        'Confirmed Count per 100K Population',
+        'Confirmed Count per Licensed Bed',
+        'Death Count',
+        'Death Count per 100K Population',
+        'Death Count/Confirmed Count',
+        'Daily New Confirmed Count',
+        'Daily New Confirmed Count per 100K Pop',
+        '7-Day Average Daily New Confirmed Count',
+        '7-Day Average Daily New Confirmed Count per 100K Pop',
+        'Daily New Death Count',
+        'Daily New Death Count per 100K Pop',
+        'Forecasting (5-Day Severity Index)',
+        'Uninsured % (Community Health Factor)',
+        'Over 65 Years % (Community Health Context)',
+        'Life expectancy (Length and Quality of Life)'
+    ],
+    'county_usfacts.geojson': [
+        'Confirmed Count',
+        'Confirmed Count per 100K Population',
+        'Confirmed Count per Licensed Bed',
+        'Death Count',
+        'Death Count per 100K Population',
+        'Death Count/Confirmed Count',
+        'Daily New Confirmed Count',
+        'Daily New Confirmed Count per 100K Pop',
+        '7-Day Average Daily New Confirmed Count',
+        '7-Day Average Daily New Confirmed Count per 100K Pop',
+        'Daily New Death Count',
+        'Daily New Death Count per 100K Pop',
+        'Forecasting (5-Day Severity Index)',
+        'Uninsured % (Community Health Factor)',
+        'Over 65 Years % (Community Health Context)',
+        'Life expectancy (Length and Quality of Life)'
+    ]
+}
+
+export const legacyOverlayOrder = [
+    'native_american_reservations',
+    'segregated_cities',
+    'blackbelt',
+    'uscongressional_districts'
+]
+
+export const legacyResourceOrder = [
+  'clinic',
+  'hospital',
+  'clinic-hospitals'
+]
+
+export const legacySourceOrder = [
+    'county_usfacts.geojson', 
+    'county_1p3a.geojson', 
+    'state_usafacts.geojson'
+]

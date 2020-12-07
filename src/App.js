@@ -17,16 +17,15 @@ import {
 // second row: data and metadata handling 
 // third row: map and variable parameters
 import { 
-  dataLoad, storeData, storeGeojson, storeLisaValues, storeCartogramData,
-  setCentroids, setCurrentData, setChartData, setDates, setColumnNames, setDate,
-  setMapParams, setVariableParams, setStartDateIndex,
-  setPanelState, setDataSidebar, setUrlParams } from './actions';
+  dataLoad, dataLoadExisting, storeLisaValues, storeCartogramData,
+  setCentroids, setMapParams, setNewBins, setUrlParams } from './actions';
 
 import { Map, NavBar,
   VariablePanel, BottomPanel, DataPanel, 
   Popover, Preloader, InfoBox, NotificationBox 
 } from './components';  
-import { colorScales, fixedScales, dataPresets, defaultData } from './config';
+import { colorScales, fixedScales, dataPresets, 
+  legacyOverlayOrder, legacyResourceOrder } from './config';
 
 // Main function, App. This function does 2 things:
 // 1: App manages the majority of the side effects when the state changes.
@@ -43,17 +42,9 @@ function App() {
   // These selectors access different pieces of the store. While App mainly
   // dispatches to the store, we need checks to make sure side effects
   // are OK to trigger. Issues arise with missing data, columns, etc.
-  const storedData = useSelector(state => state.storedData);
-  const storedGeojson = useSelector(state => state.storedGeojson);
-  const storedLisaData = useSelector(state => state.storedLisaData);
-  const storedCartogramData = useSelector(state => state.storedCartogramData);
-  const currentData = useSelector(state => state.currentData);
-  const cols = useSelector(state => state.cols);
-  const dates = useSelector(state => state.dates);
-  const mapParams = useSelector(state => state.mapParams);
-  const dataParams = useSelector(state => state.dataParams);
-  const startDateIndex = useSelector(state => state.startDateIndex);
-  const mapLoaded = useSelector(state => state.mapLoaded);
+  const {storedData, storedGeojson, storedLisaData, storedCartogramData,
+    currentData, cols, dates, mapParams, dataParams, 
+    startDateIndex, mapLoaded } = useSelector(state => state);
   
   // gda_proxy is the WebGeoda proxy class. Generally, having a non-serializable
   // data in the state is poor for performance, but the App component state only
@@ -65,24 +56,6 @@ function App() {
   // Get centroid data for cartogram
   const getCentroids = (geojson, gda_proxy) =>  dispatch(setCentroids(gda_proxy.GetCentroids(geojson), geojson))
   
-  // Get dates from table (cases by default) for indexing
-  // Time-series data must be indexed by data in chronological order
-  //   They must appear in tabular data after join columns or other
-  //   metadata (eg. population, bed count)
-  // const getDates = (dates, data, table, geojson) =>  {
-  //   dispatch(setDates(dates[0], geojson));
-  //   handleCurrentDates(dates[0], dates[1], data[table].length)
-  // }
-
-  const handleCurrentDates = (dates, startDate, length) => {
-    dispatch(setDate(dates[dates.length-1]));
-    dispatch(setVariableParams({
-      nIndex: length-1,
-      binIndex: length-1
-    }));
-    dispatch(setStartDateIndex(startDate));
-  }
-
   // Main data loader
   // This functions asynchronously accesses the Geojson data and CSVs
   //   then performs a join and loads the data into the store
@@ -91,7 +64,12 @@ function App() {
     const { geojson, csvs, joinCols, tableNames, accumulate } = params
 
     // promise all data fetching - CSV and Json
-    const csvPromises = csvs.map(csv => getParseCSV(`${process.env.PUBLIC_URL}/csv/${csv}.csv`, joinCols[1], accumulate.includes(csv)).then(result => {return result}))
+    const csvPromises = csvs.map(csv => 
+      getParseCSV(
+        `${process.env.PUBLIC_URL}/csv/${csv}.csv`, 
+        joinCols[1], 
+        accumulate.includes(csv)
+      ).then(result => {return result}))
 
     Promise.all([
       loadJson(`${process.env.PUBLIC_URL}/geojson/${geojson}`, gda_proxy).then(result => {return result}),
@@ -187,12 +165,23 @@ function App() {
   // TODO: Recompile WebGeoda and load it into a worker
   useEffect(() => {
     
-    var params_dict = {}; 
+    let paramsDict = {}; 
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    for (const [key, value] of urlParams ) { params_dict[key] = value; }
+    for (const [key, value] of urlParams ) { paramsDict[key] = value; }
 
-    dispatch(setUrlParams(params_dict));
+    dispatch(
+      setUrlParams({
+        currentData: paramsDict['src'] || 'county_usfacts.geojson',
+        paramsDict,
+        mapParams: {
+          vizType: paramsDict['cartogram'] ? 'cartogram' : paramsDict['3d'] ? '3D' : '2D',
+          mapType: paramsDict['mthd'] ? decodeURI(paramsDict['mthd']) : 'natural_breaks',
+          overlay: paramsDict['ovr'] !== undefined ? legacyOverlayOrder[paramsDict['ovr']] : '',
+          resource: paramsDict['res'] !== undefined ? legacyResourceOrder[paramsDict['res']] : ''
+        }
+      })
+    );
 
     const newGeoda = async () => {
       let geoda = await jsgeoda.New();
@@ -209,9 +198,9 @@ function App() {
   useEffect(() => {
     if (gda_proxy === null) {
       return;
-    } else if (currentData === '') {
+    } else if (storedData === {}) {
       loadData(
-        dataPresets[defaultData],
+        dataPresets[currentData],
         gda_proxy
       )
     } else if (storedData[currentData] === undefined) {
@@ -224,16 +213,14 @@ function App() {
       let dataLength = cols[currentData].cases.length;
 
       dispatch(
-        loadExistingData({
-          date: dates[currentData][dates[currentData].length-1],
+        dataLoadExisting({
+          currDate: dates[currentData][dates[currentData].length-1],
           startDateIndex: dateIndex,
           variableParams: {
             nIndex: dataLength-1,
             binIndex: dataLength-1
           },
           chartData: getDataForCharts(storedData[currentData],'cases',dateIndex,dates[currentData]),
-          dataSidebar: {},
-          infoPanel: false,
         })
       )
       
@@ -263,7 +250,7 @@ function App() {
         )
       }
     } 
-    if (gda_proxy !== null && mapParams.vizType === "cartogram"){
+    if (gda_proxy !== null && mapParams.vizType === 'cartogram'){
       let tempId = getVarId(currentData, dataParams)
       if (!(storedCartogramData.hasOwnProperty(tempId))) {
         dispatch(
@@ -284,7 +271,10 @@ function App() {
   // Gets bins and sets map parameters
   useEffect(() => {
     updateBins();
-  }, [currentData, dataParams.numerator, dataParams.nProperty, dataParams.nRange, dataParams.denominator, dataParams.dProperty, dataParams.dRange, dataParams.scale, mapParams.mapType])
+  }, [currentData, dataParams.numerator, dataParams.nProperty, 
+    dataParams.nRange, dataParams.denominator, dataParams.dProperty,
+    dataParams.dRange, dataParams.scale, mapParams.mapType]
+  )
 
   // trigger on date (index) change for dynamic binning
   useEffect(() => {
@@ -297,17 +287,17 @@ function App() {
         getDataForBins( storedData[currentData], dataParams ), 
       );
       dispatch(
-        setMapParams({
-          bins: {
-            bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
-            breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+        setNewBins({
+          mapParams: {
+            bins: {
+              bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
+              breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+            },
+            colorScale: colorScales[mapParams.customScale || mapParams.mapType]
           },
-          colorScale: colorScales[mapParams.customScale || mapParams.mapType]
-        })
-      )
-      dispatch(
-        setVariableParams({
-          binIndex: dataParams.nIndex, 
+          variableParams: {
+            binIndex: dataParams.nIndex, 
+          }
         })
       )
     }

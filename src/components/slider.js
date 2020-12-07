@@ -328,7 +328,7 @@ const DateSlider = () => {
                             max={startDateIndex+dates[currentData].length-1}
                         />}
                     </Grid>
-                    <Grid item xs={12} lg={2} style={{paddingLeft:'17px'}}>
+                    <Grid item xs={12} lg={2} style={{paddingLeft:'17px'}} id="dateRangeSelector">
                         <StyledDropDown>
                             <InputLabel htmlFor="date-select">Date Range</InputLabel>
                             <Select  

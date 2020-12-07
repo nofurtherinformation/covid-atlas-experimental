@@ -23,14 +23,6 @@ import MAP_STYLE from '../config/style.json';
 //   iterations: 1
 // });
 
-const ICON_MAPPING = {
-    hospital: {x: 0, y: 0, width: 128, height: 128},
-    clinic: {x: 128, y: 0, width: 128, height: 128},
-  };
-
-const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0bTFhaTZmbnRwaiJ9.VRNeNnyb96Eo-CorkJmIqg';
-
-const defaultMapStyle = fromJS(MAP_STYLE);
 
 const initialViewState = {
     latitude: 35.850033,
@@ -39,6 +31,15 @@ const initialViewState = {
     pitch:0,
     bearing:0
 };
+
+const ICON_MAPPING = {
+    hospital: {x: 0, y: 0, width: 128, height: 128},
+    clinic: {x: 128, y: 0, width: 128, height: 128},
+  };
+
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0bTFhaTZmbnRwaiJ9.VRNeNnyb96Eo-CorkJmIqg';
+
+const defaultMapStyle = fromJS(MAP_STYLE);
 
 const DATA_URL = {
     CONTINENTS: `${process.env.PUBLIC_URL}/geojson/world50m.json`,
@@ -96,6 +97,10 @@ const view = new MapView({repeat: true});
 
 const Map = () => { 
     
+    const { storedData, storedGeojson, currentData, storedLisaData,
+        storedCartogramData, panelState, dates, dataParams, mapParams,
+        startDateIndex, chartData, urlParams } = useSelector(state => state);
+
     const [hoverInfo, setHoverInfo] = useState(false);
     const [highlightGeog, setHighlightGeog] = useState(false);
     const [globalMap, setGlobalMap] = useState(false);
@@ -107,19 +112,6 @@ const Map = () => {
     const [hospitalData, setHospitalData] = useState(null);
     const [clinicData, setClinicData] = useState(null);
     const [storedCenter, setStoredCenter] = useState(null);
-
-    const storedData = useSelector(state => state.storedData);
-    const storedGeojson = useSelector(state => state.storedGeojson);
-    const currentData = useSelector(state => state.currentData);
-    const storedLisaData = useSelector(state => state.storedLisaData);
-    const storedCartogramData = useSelector(state => state.storedCartogramData);
-    const panelState = useSelector(state => state.panelState);
-    const dates = useSelector(state => state.dates);
-    
-    const dataParams = useSelector(state => state.dataParams);
-    const mapParams = useSelector(state => state.mapParams);
-    const startDateIndex = useSelector(state => state.startDateIndex);
-    const chartData = useSelector(state => state.chartData);
     
     const dispatch = useDispatch();
 
@@ -285,8 +277,6 @@ const Map = () => {
         }))
     }
 
-    const getCartogramPosition = (data) => data.position;
-    const getCartogramScale = (data) => [data.radius, data.radius, data.radius*10];
     const getCartogramFillColor = (val, id, bins, mapType) => {
         
         if (!bins.hasOwnProperty("bins")) {
@@ -434,7 +424,7 @@ const Map = () => {
             filled:true,
             getLineColor: [0,0,0],
             opacity:0.2,
-            visible: mapParams.overlay === "blackbelt",
+            visible: mapParams.overlay === 'blackbelt',
             updateTriggers: {
                 visible: mapParams
             },
@@ -584,7 +574,17 @@ const Map = () => {
                     mapStyle={mapStyle} //{globalMap || mapParams.vizType === 'cartogram' ? 'mapbox://styles/lixun910/ckhtcdx4b0xyc19qzlt4b5c0d' : 'mapbox://styles/lixun910/ckhkoo8ix29s119ruodgwfxec'}
                     preventStyleDiffing={true}
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
-                    onLoad={() => dispatch(setMapLoaded(true))}
+                    onLoad={() => {
+                        dispatch(setMapLoaded(true))
+                        if (urlParams.lat !== undefined) {
+                            setViewState(view => ({
+                                ...view,
+                                latitude: urlParams.lat,
+                                longitude: urlParams.lon, 
+                                zoom: urlParams.z
+                            }))
+                        }
+                    }}
                     >
                         
                     <Geocoder
