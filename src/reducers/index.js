@@ -2,6 +2,52 @@ import { INITIAL_STATE } from '../constants/defaults';
 
 var reducer = (state = INITIAL_STATE, action) => {
     switch(action.type) {
+        case 'DATA_LOAD':
+            // main new data loading reducer
+            // I: Destructure payload (load) object
+            let { storeData, currentData, columnNames, 
+                storeGeojson, chartData, mapParams, 
+                dates, currDate, startDateIndex, variableParams} = action.payload.load;
+
+            // II: Create copies of existing state objects.
+            // This is necessary to avoid mutating the state
+            let [
+                    dataObj, colDataObj, geoDataObj, 
+                    mapParamsDataObj, datesDataObj, variableParamsDataObj
+                ] = [
+                    {
+                    ...state.storedData
+                }, {
+                    ...state.cols
+                }, {
+                    ...state.storedGeojson,
+                }, {
+                    ...state.mapParams,
+                    ...mapParams
+                }, {
+                    ...state.dates
+                }, {
+                    ...state.dataParams,
+                    ...variableParams
+                }];
+
+                dataObj[storeData.name] = storeData.data;
+                colDataObj[columnNames.name] = columnNames.data;
+                geoDataObj[storeGeojson.name] = storeGeojson.data;
+                datesDataObj[dates.name] = dates.data;
+            return {
+                ...state,
+                storedData: dataObj,
+                cols: colDataObj,
+                storedGeojson: geoDataObj,
+                mapParams: mapParamsDataObj,
+                dates: datesDataObj,
+                dataParams: variableParamsDataObj,
+                currentData,
+                chartData,
+                currDate,
+                startDateIndex                
+            };
         case 'SET_GEOID': 
             return {
                 ...state,

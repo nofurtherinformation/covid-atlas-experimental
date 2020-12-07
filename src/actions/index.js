@@ -12,6 +12,15 @@ export const setGeoid = (geoid) => {
     }
 }
 
+export const dataLoad = ( load ) => {
+    return {
+        type: 'DATA_LOAD',
+        payload: {
+            load
+        }
+    }
+}
+
 // main store for map and tabular data
 export const storeData = (data, name) => {
     return {

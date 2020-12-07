@@ -17,7 +17,7 @@ import {
 // second row: data and metadata handling 
 // third row: map and variable parameters
 import { 
-  storeData, storeGeojson, storeLisaValues, storeCartogramData,
+  dataLoad, storeData, storeGeojson, storeLisaValues, storeCartogramData,
   setCentroids, setCurrentData, setChartData, setDates, setColumnNames, setDate,
   setMapParams, setVariableParams, setStartDateIndex,
   setPanelState, setDataSidebar, setUrlParams } from './actions';
@@ -69,10 +69,10 @@ function App() {
   // Time-series data must be indexed by data in chronological order
   //   They must appear in tabular data after join columns or other
   //   metadata (eg. population, bed count)
-  const getDates = (dates, data, table, geojson) =>  {
-    dispatch(setDates(dates[0], geojson));
-    handleCurrentDates(dates[0], dates[1], data[table].length)
-  }
+  // const getDates = (dates, data, table, geojson) =>  {
+  //   dispatch(setDates(dates[0], geojson));
+  //   handleCurrentDates(dates[0], dates[1], data[table].length)
+  // }
 
   const handleCurrentDates = (dates, startDate, length) => {
     dispatch(setDate(dates[dates.length-1]));
@@ -86,33 +86,23 @@ function App() {
   // Main data loader
   // This functions asynchronously accesses the Geojson data and CSVs
   //   then performs a join and loads the data into the store
-  async function loadData(params, gda_proxy) {
+  const loadData = async (params, gda_proxy) => {
     // destructure parameters
     const { geojson, csvs, joinCols, tableNames, accumulate } = params
 
     // promise all data fetching - CSV and Json
     const csvPromises = csvs.map(csv => getParseCSV(`${process.env.PUBLIC_URL}/csv/${csv}.csv`, joinCols[1], accumulate.includes(csv)).then(result => {return result}))
+
     Promise.all([
       loadJson(`${process.env.PUBLIC_URL}/geojson/${geojson}`, gda_proxy).then(result => {return result}),
       ...csvPromises
     ]).then(values => {
       // store geojson lookup table
-      dispatch(storeGeojson(values[0]['geoidIndex'], geojson));
       // merge data and get results
       let tempData = mergeData(values[0]['data'], joinCols[0], values.slice(1,), tableNames, joinCols[1]);
       let ColNames = getColumns(values.slice(1,), tableNames);
-      // store data, data name, and column names
-      dispatch(storeData(tempData, geojson));
-      dispatch(setCurrentData(geojson));
-      dispatch(setColumnNames(ColNames, geojson));
-      return { ColNames, tempData };
-    }).then( data => {
-      const { ColNames, tempData } = data;
       let tempDates = findDates(ColNames.cases);
-      // set centroids and dates
-      getCentroids(geojson, gda_proxy);
-      getDates(tempDates, ColNames, 'cases', geojson);    
-
+      let chartData = getDataForCharts(tempData,'cases',tempDates[1],tempDates[0]);
       // calculate breaks
       let nb = gda_proxy.custom_breaks(
         geojson, 
@@ -123,23 +113,43 @@ function App() {
           tempData, 
           dataParams
         ) 
-      )
-      // while calculating breaks, store chart data
-      dispatch(setChartData(getDataForCharts(tempData,'cases',tempDates[1],tempDates[0])))
-      // return breaks
-      return nb;
-    }).then(nb => {
-      // dispatch breaks
+      );
+      // store data, data name, and column names
       dispatch(
-        setMapParams({
-          bins: {
-            bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
-            breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+        dataLoad({
+          storeData: {
+            data: tempData, 
+            name: geojson
           },
-          colorScale: colorScales[mapParams.customScale || mapParams.mapType]
+          currentData: geojson,
+          columnNames: {
+            data: ColNames,
+            name: geojson
+          },
+          storeGeojson: {
+            data: values[0]['geoidIndex'],
+            name: geojson
+          },
+          chartData: chartData,
+          mapParams: {
+            bins: {
+              bins: mapParams.mapType === "natural_breaks" ? nb.bins : ['Lower Outlier','< 25%','25-50%','50-75%','>75%','Upper Outlier'],
+              breaks: [-Math.pow(10, 12), ...nb.breaks.slice(1,-1), Math.pow(10, 12)]
+            },
+            colorScale: colorScales[mapParams.customScale || mapParams.mapType]
+          },
+          dates: {
+            data:tempDates[0],
+            name:geojson
+          },
+          currDate: tempDates[0][tempDates.length-1],
+          startDateIndex: tempDates[1],
+          variableParams: {
+            nIndex: ColNames['cases'].length-1,
+            binIndex: ColNames['cases'].length-1
+          }
         })
       )
-
     })
   }
 
@@ -211,12 +221,24 @@ function App() {
       )
     } else if (cols[currentData] !== undefined) {
       let dateIndex = findDates(cols[currentData].cases)[1];
-      handleCurrentDates(dates[currentData], dateIndex, cols[currentData].cases.length);
-      dispatch(setChartData(getDataForCharts(storedData[currentData],'cases',dateIndex,dates[currentData])))
+      let dataLength = cols[currentData].cases.length;
+
+      dispatch(
+        loadExistingData({
+          date: dates[currentData][dates[currentData].length-1],
+          startDateIndex: dateIndex,
+          variableParams: {
+            nIndex: dataLength-1,
+            binIndex: dataLength-1
+          },
+          chartData: getDataForCharts(storedData[currentData],'cases',dateIndex,dates[currentData]),
+          dataSidebar: {},
+          infoPanel: false,
+        })
+      )
+      
       updateBins();
     }
-    dispatch(setDataSidebar({}));
-    dispatch(setPanelState({info:false}));
   },[gda_proxy, currentData])
 
   // This listens for gda_proxy events for LISA and Cartogram calculations
