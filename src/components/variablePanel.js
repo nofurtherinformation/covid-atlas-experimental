@@ -193,7 +193,7 @@ const ListSubheader = styled(MenuItem)`
 const VariablePanel = (props) => {
   const dispatch = useDispatch();    
 
-  const { columnNames, currentData, currentVariable,
+  const { cols, currentData, currentVariable,
     mapParams, panelState, urlParams } = useSelector(state => state);
 
   const PresetVariables = {
@@ -270,7 +270,7 @@ const VariablePanel = (props) => {
     "Uninsured % (Community Health Factor)":{
       numerator: 'chr_health_factors',
       nType: 'characteristic',
-      nProperty: colLookup(columnNames, currentData, 'chr_health_factors', 'UnInPrc'),
+      nProperty: colLookup(cols, currentData, 'chr_health_factors', 'UnInPrc'),
       nRange: null,
       denominator: 'properties',
       dType: 'none',
@@ -284,7 +284,7 @@ const VariablePanel = (props) => {
     "Over 65 Years % (Community Health Context)":{
       numerator: 'chr_health_context',
       nType: 'characteristic',
-      nProperty: colLookup(columnNames, currentData, 'chr_health_context', 'Over65YearsPrc'),
+      nProperty: colLookup(cols, currentData, 'chr_health_context', 'Over65YearsPrc'),
       nRange: null,
       denominator: 'properties',
       dType: 'none',
@@ -297,7 +297,7 @@ const VariablePanel = (props) => {
     "Life expectancy (Length and Quality of Life)":{
       numerator: 'chr_life',
       nType: 'characteristic',
-      nProperty: colLookup(columnNames, currentData, 'chr_life', 'LfExpRt'),
+      nProperty: colLookup(cols, currentData, 'chr_life', 'LfExpRt'),
       nRange: null,
       denominator: 'properties',
       dType: 'none',
@@ -314,7 +314,7 @@ const VariablePanel = (props) => {
     "Forecasting (5-Day Severity Index)": {
       numerator: 'predictions',
       nType: 'characteristic',
-      nProperty: colLookup(columnNames, currentData, 'predictions', 'severity_index'),
+      nProperty: colLookup(cols, currentData, 'predictions', 'severity_index'),
       nRange: null,
       denominator: 'properties',
       dType: 'none',
@@ -485,7 +485,6 @@ const VariablePanel = (props) => {
       dispatch(setMapParams({vizType}))
     }
   }
-
   return (
     <VariablePanelContainer style={{transform: (panelState.variables ? '' : 'translateX(-100%)')}} otherPanels={panelState.info}>
       <ControlsContainer>
