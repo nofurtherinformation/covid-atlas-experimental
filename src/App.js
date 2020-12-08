@@ -54,7 +54,7 @@ function App() {
   
   // // Dispatch helper functions for side effects and data handling
   // Get centroid data for cartogram
-  const getCentroids = (geojson, gda_proxy) =>  dispatch(setCentroids(gda_proxy.GetCentroids(geojson), geojson))
+  // const getCentroids = (geojson, gda_proxy) =>  dispatch(setCentroids(gda_proxy.GetCentroids(geojson), geojson))
   
   // Main data loader
   // This functions asynchronously accesses the Geojson data and CSVs
@@ -81,17 +81,16 @@ function App() {
       let ColNames = getColumns(values.slice(1,), tableNames);
       let tempDates = findDates(ColNames.cases);
       let chartData = getDataForCharts(tempData,'cases',tempDates[1],tempDates[0]);
+      let binData = getDataForBins(tempData, {...dataParams, nIndex: null});
       // calculate breaks
       let nb = gda_proxy.custom_breaks(
         geojson, 
         mapParams.mapType,
         mapParams.nBins,
         null, 
-        getDataForBins(
-          tempData, 
-          dataParams
-        ) 
+        binData
       );
+
       // store data, data name, and column names
       dispatch(
         dataLoad({

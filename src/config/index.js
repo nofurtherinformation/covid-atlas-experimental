@@ -119,7 +119,7 @@ export const dataPresets = {
         plainName: 'USA Facts County',
         geojson: 'county_usfacts.geojson', 
         csvs: ['covid_confirmed_usafacts','covid_deaths_usafacts', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
-        joinCols: ['GEOID', 'FIPS'], 
+        joinCols: ['GEOID', ['FIPS','fips','countyFIPS']], 
         tableNames: ['cases','deaths', 'predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'],
         accumulate: []
     },
@@ -127,7 +127,7 @@ export const dataPresets = {
         plainName: '1Point3Acres County',
         geojson: 'county_1p3a.geojson', 
         csvs: ['covid_confirmed_1p3a','covid_deaths_1p3a', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
-        joinCols: ['GEOID', 'FIPS'], 
+        joinCols: ['GEOID', ['FIPS','fips','countyFIPS', 'GEOID']], 
         tableNames: ['cases','deaths', 'predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'],
         accumulate: ['covid_confirmed_1p3a','covid_deaths_1p3a']
     },
@@ -135,7 +135,7 @@ export const dataPresets = {
         plainName: 'New York Times County',
         geojson: 'county_nyt.geojson', 
         csvs: ['covid_confirmed_nyt', 'covid_deaths_nyt', 'berkeley_predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'], 
-        joinCols: ['GEOID', 'FIPS'], 
+        joinCols: ['GEOID', ['FIPS','fips','countyFIPS']], 
         tableNames: ['cases', 'deaths', 'predictions', 'chr_health_context', 'chr_life', 'chr_health_factors'],
         accumulate: []
     },
@@ -143,7 +143,7 @@ export const dataPresets = {
         plainName: 'USA Facts State',
         geojson: 'state_usafacts.geojson', 
         csvs: ['covid_confirmed_usafacts_state','covid_deaths_usafacts_state', 'chr_health_context_state', 'chr_life_state', 'chr_health_factors_state', 'covid_testing_usafacts_state', 'covid_wk_pos_usafacts_state', 'covid_tcap_usafacts_state', 'covid_ccpt_usafacts_state'], 
-        joinCols: ['GEOID', 'FIPS'], 
+        joinCols: ['GEOID', ['FIPS','fips','stateFIPS']], 
         tableNames: ['cases', 'deaths', 'chr_health_context', 'chr_life', 'chr_health_factors', 'testing', 'testing_wk_pos', 'testing_tcap', 'testing_ccpt'],
         accumulate: []
     } 

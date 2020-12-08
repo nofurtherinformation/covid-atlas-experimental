@@ -28,48 +28,92 @@
                 "collapsed": true
             }
         },
-        "mapbox:uiParadigm": "layers",
-        "mapbox:decompiler": {
-            "id": "ckhxm4ot50yk919pj8witkk2d",
-            "componentVersion": "3.0.0",
-            "strata": [
-                {
-                    "id": "basic-v1",
-                    "order": [
-                        "admin-1-boundary-bg",
-                        "admin-0-boundary-bg",
-                        "admin-1-boundary",
-                        "admin-0-boundary",
-                        "admin-0-boundary-disputed",
-                        "waterway-label",
-                        "natural-line-label",
-                        "natural-point-label",
-                        "water-line-label",
-                        "water-point-label",
-                        "poi-label",
-                        "settlement-minor-label",
-                        "settlement-major-label",
-                        "state-label",
-                        "uscongress",
-                        "hospitals"
-                    ]
-                }
-            ]
-        }
+        "mapbox:uiParadigm": "layers"
     },
-    "center": [-96.38621628026743, 42.006438147652375],
-    "zoom": 4.801038256974055,
+    "center": [-93.62777095816318, 43.632179398017826],
+    "zoom": 4.024576258381017,
     "bearing": 0,
     "pitch": 0,
     "sources": {
         "composite": {
-            "url": "mapbox://lixun910.2hah9aqq,mapbox.mapbox-streets-v8,lixun910.5bmq1hai",
+            "url": "mapbox://lixun910.5k6jyt33,lixun910.7s0ljdc6,mapbox.mapbox-streets-v8,lixun910.5bmq1hai,lixun910.c1k7tmzy,lixun910.62ab73ca,mapbox.mapbox-terrain-v2",
             "type": "vector"
         }
     },
     "sprite": "mapbox://sprites/lixun910/ckhxm4ot50yk919pj8witkk2d/ei6q81b5ywryaykkp3eopmi80",
     "glyphs": "mapbox://fonts/lixun910/{fontstack}/{range}.pbf",
     "layers": [
+        {
+            "id": "blackbelt",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "blackbelt-highlight-3vhzb8",
+            "layout": {"visibility": "none"},
+            "paint": {
+                "fill-color": "hsla(0, 0%, 0%, 0.5)",
+                "fill-outline-color": "hsla(0, 0%, 0%, 0)"
+            }
+        },
+        {
+            "id": "segregated_cities",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "segregated_cities-9w47nz",
+            "layout": {"visibility": "none"},
+            "paint": {
+                "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+                "fill-color": "hsla(0, 0%, 0%, 0.5)"
+            }
+        },
+        {
+            "id": "native_american_reservations",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "nativeamericanreservations-hi-4aqk3l",
+            "layout": {"visibility": "none"},
+            "paint": {
+                "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+                "fill-color": "hsla(0, 0%, 0%, 0.5)"
+            }
+        },
+        {
+            "id": "uscongress-districts",
+            "type": "line",
+            "source": "composite",
+            "source-layer": "US_Congressional_Districts-4jecfj",
+            "layout": {"visibility": "none"},
+            "paint": {"line-color": "hsl(0, 0%, 12%)"}
+        },
+        {
+            "id": "hillshade",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "hillshade",
+            "layout": {},
+            "paint": {
+                "fill-color": [
+                    "match",
+                    ["get", "class"],
+                    ["shadow"],
+                    "hsl(0, 0%, 10%)",
+                    "hsl(0, 0%, 100%)"
+                ],
+                "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+                "fill-opacity": 0.02
+            }
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "water",
+            "layout": {},
+            "paint": {
+                "fill-color": "hsl(0, 0%, 6%)",
+                "fill-outline-color": "hsla(0, 0%, 0%, 0)",
+                "fill-antialias": false
+            }
+        },
         {
             "id": "admin-1-boundary-bg",
             "type": "line",
@@ -1218,7 +1262,7 @@
         }
     ],
     "created": "2020-11-25T16:18:56.139Z",
-    "modified": "2020-11-25T16:28:40.413Z",
+    "modified": "2020-12-07T21:56:04.405Z",
     "id": "ckhxm4ot50yk919pj8witkk2d",
     "owner": "lixun910",
     "visibility": "private",

@@ -598,7 +598,7 @@ const VariablePanel = (props) => {
               <MenuItem value={'native_american_reservations'} key={'native_american_reservations'}>Native American Reservations</MenuItem>
               <MenuItem value={'segregated_cities'} key={'segregated_cities'}>Hypersegregated Cities<Tooltip id="Hypersegregated"/></MenuItem>
               <MenuItem value={'blackbelt'} key={'blackbelt'}>Black Belt Counties<Tooltip id="BlackBelt" /></MenuItem>
-              <MenuItem value={'uscongressional_districts'} key={'uscongressional_districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
+              <MenuItem value={'uscongress-districts'} key={'uscongress-districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
             </Select>
           </StyledDropDown>
           <StyledDropDown>

@@ -6,7 +6,7 @@ import {find} from 'lodash';
 
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView, FlyToInterpolator} from '@deck.gl/core';
-import { GeoJsonLayer, PolygonLayer, ScatterplotLayer,  IconLayer } from '@deck.gl/layers';
+import { GeoJsonLayer, PolygonLayer, ScatterplotLayer,  IconLayer, TextLayer } from '@deck.gl/layers';
 // import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 // import {IcoSphereGeometry} from '@luma.gl/engine';
 
@@ -41,21 +41,13 @@ const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1IjoibGl4dW45MTAiLCJhIjoiY2locXMxcWFqMDAwenQ0
 
 const defaultMapStyle = fromJS(MAP_STYLE);
 
-const DATA_URL = {
-    CONTINENTS: `${process.env.PUBLIC_URL}/geojson/world50m.json`,
-    BLACKBELT:`${process.env.PUBLIC_URL}/geojson/blackbelt_highlight.geojson`,
-    SEG_CITIES:`${process.env.PUBLIC_URL}/geojson/seg_cities.geojson`,
-    CONGRESS_DISTRICTS:`${process.env.PUBLIC_URL}/geojson/districts.geojson`,
-    CONGRESS_CENTROIDS:`${process.env.PUBLIC_URL}/geojson/district_centroids.geojson`,
-    RESERVATIONS:`${process.env.PUBLIC_URL}/geojson/reservations.geojson`
-};
-
 const MapContainer = styled.div`
     position:fixed;
     left:0;
     top:0;
     width:100%;
     height:100%;
+    background:#1a1a1a;
     @media (max-width:600px) {
         div.mapboxgl-ctrl-geocoder {
             display:none;
@@ -327,18 +319,7 @@ const Map = () => {
             return mapFn(val, bins.breaks, mapParams.colorScale, mapParams.mapType) 
         }
     }
-    const getCartogramTranslation = (data) => [0, 0, data.radius*30];
-    // const getCartogramColor = () => mapFn(, bins.breaks, mapParams.colorScale, mapParams.mapType)
     const Layers = [
-        new GeoJsonLayer({
-            id: 'base continents',
-            data: DATA_URL.CONTINENTS,
-            pickable: false,
-            stroked: false,
-            filled: true,
-            wireframe: false,
-            getFillColor: [30,30,30]
-        }),
         new GeoJsonLayer({
             id: 'choropleth',
             data: {
@@ -456,58 +437,6 @@ const Map = () => {
                 }
             },
         }),
-        new GeoJsonLayer({
-            id: 'blackbelt',
-            data: DATA_URL.BLACKBELT,
-            pickable: false,
-            stroked: false,
-            filled:true,
-            getLineColor: [0,0,0],
-            opacity:0.2,
-            visible: mapParams.overlay === 'blackbelt',
-            updateTriggers: {
-                visible: mapParams
-            },
-        }),
-        new GeoJsonLayer({
-            id: 'segregated cities',
-            data: DATA_URL.SEG_CITIES,
-            pickable: false,
-            stroked: false,
-            filled:true,
-            getLineColor: [0,0,0],
-            opacity:0.2,
-            visible: mapParams.overlay === "segregated_cities",
-            updateTriggers: {
-                visible: mapParams
-            },
-        }),
-        new GeoJsonLayer({
-            id: 'native american reservations',
-            data: DATA_URL.RESERVATIONS,
-            pickable: false,
-            stroked: false,
-            filled:true,
-            getLineColor: [0,0,0],
-            opacity:0.2,
-            visible: mapParams.overlay === "native_american_reservations",
-            updateTriggers: {
-                visible: mapParams
-            },
-        }),
-        new GeoJsonLayer({
-            id: 'uscongressional_districts',
-            data: DATA_URL.CONGRESS_DISTRICTS,
-            pickable: false,
-            stroked: true,
-            filled:false,
-            getLineColor: [0,0,0],
-            lineWidthMinPixels:1,
-            visible: mapParams.overlay === "uscongressional_districts",
-            updateTriggers: {
-                visible: mapParams
-            },
-        }),
         new PolygonLayer({
             id: 'background',
             data: [
@@ -574,6 +503,37 @@ const Map = () => {
                 visible: [cartogramData, mapParams, dataParams, currVarId]
             }
           }),
+          new TextLayer({
+            id: 'cartogram text layer',
+            data: cartogramData,
+            pickable:false,
+            visible: mapParams.vizType === 'cartogram' && currentData.includes('state'),
+            getPosition: f => {
+                try {
+                    return storedCartogramData[currVarId][f.id].position;
+                } catch {
+                    return [0,0];
+                }
+            },
+            getSize: 24,
+            fontWeight: 'bold',
+            getTextAnchor: 'middle',
+            getAlignmentBaseline: 'center',
+            getText: f => {
+                try {
+                    if (currentData.includes('state')) return find(storedData[currentData], o => +o.properties.GEOID == storedGeojson[currentData].indexOrder[f.id]).properties.NAME;
+                    return '';
+                } catch {
+                    return '';
+                }
+            },
+            updateTriggers: {
+                getPosition: [cartogramData, mapParams, dataParams, currVarId],
+                getFillColor: [cartogramData, mapParams, dataParams, currVarId],
+                getRadius: [cartogramData, mapParams, dataParams, currVarId],
+                visible: [cartogramData, mapParams, dataParams, currVarId]
+            }
+          }),
         // new SimpleMeshLayer({
         //     id: 'cartogram layer',
         //     data: cartogramData,
@@ -627,7 +587,7 @@ const Map = () => {
                     }}
                     >
                         
-                    <MapGeocoder
+                    <MapGeocoder 
                     mapRef={mapRef}
                     onViewportChange={viewState  => setViewState(viewState)} 
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}

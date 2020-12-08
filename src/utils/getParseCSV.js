@@ -9,6 +9,11 @@ async function getParseCSV(url, joinCol, accumulate){
         let data = d3.csvParse(text, d3.autoType)
         let rtn = {};
         let n = data.length;
+        let selectedJoinColumn;
+        
+        joinCol.forEach(colOption => {
+          if (data[0].hasOwnProperty(colOption)) selectedJoinColumn = colOption;
+        })
 
         if (accumulate) {
           let indexStart = findDates(Object.keys(data[0]))[1]
@@ -30,12 +35,12 @@ async function getParseCSV(url, joinCol, accumulate){
             for (let i = 0; i < indexStart; i++) {
               tempArr.unshift(vals[i])
             }
-            rtn[data[n][joinCol]] = tempArr
+            rtn[data[n][selectedJoinColumn]] = tempArr
           }
         } else {
           while (n>0){
             n--;
-            rtn[data[n][joinCol]] = Object.values(data[n])
+            rtn[data[n][selectedJoinColumn]] = Object.values(data[n])
           }
         }
         return [rtn, Object.keys(data[0])]
