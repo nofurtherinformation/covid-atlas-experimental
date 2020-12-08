@@ -17,7 +17,7 @@ const DataPanelContainer = styled.div`
   right:0;
   top:50px;
   height:calc(100vh - 50px);
-  background-color: #2b2b2b;
+  background-color: #2b2b2bfa;
   box-shadow: -2px 0px 5px rgba(0,0,0,0.7);
   padding:20px;
   box-sizing: border-box;
@@ -102,11 +102,14 @@ const DataPanelContainer = styled.div`
         opacity:1;
       }
     }
+    @media (max-width:768px){
+      top:120px;
+    }
     @media (max-width:600px) {
       left:100%;
       width:30px;
       height:30px;
-      top:45px;
+      top:160px;
       &.hidden svg {
         transform:rotate(0deg);
       }

@@ -66,6 +66,9 @@ export const StyledDropDownNoLabel = styled(StyledDropDown)`
     display:none;
   }
   padding:10px 0 5px 20px !important;
+  label + .MuiInput-formControl {
+    margin-top:0;
+  }
 `
 
 export const SwitchContainer = styled(Grid)`

@@ -7,6 +7,7 @@ import {find} from 'lodash';
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView, FlyToInterpolator} from '@deck.gl/core';
 import { GeoJsonLayer, PolygonLayer, ScatterplotLayer,  IconLayer, TextLayer } from '@deck.gl/layers';
+import {fitBounds} from '@math.gl/web-mercator';
 // import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 // import {IcoSphereGeometry} from '@luma.gl/engine';
 
@@ -22,15 +23,11 @@ import MAP_STYLE from '../config/style.json';
 // const cartoGeom = new IcoSphereGeometry({
 //   iterations: 1
 // });
-
-
-const initialViewState = {
-    latitude: 35.850033,
-    longitude: -105.6500523,
-    zoom: 3.5,
-    pitch:0,
-    bearing:0
-};
+const bounds = fitBounds({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    bounds: [[-130.14, 53.96],[-67.12, 19]]
+})
 
 const ICON_MAPPING = {
     hospital: {x: 0, y: 0, width: 128, height: 128},
@@ -108,17 +105,10 @@ const MapButtonContainer = styled.div`
     bottom: 30px;
     zIndex: 10;
     transition: 250ms all;
-    @media (max-width:1024px) {
-        bottom:27vh;
-    }
     @media (max-width:768px) {
-        bottom:19vh;
-    }
-    @media (max-width: 600px) {
-        bottom: 27vh;
+        bottom:100px;
     }
     @media (max-width: 400px) {
-        bottom: 35vh;
         transform:scale(0.75) translate(20%, 20%);
     }
 `
@@ -138,7 +128,13 @@ const Map = () => {
     const [globalMap, setGlobalMap] = useState(false);
     const [mapStyle, setMapStyle] = useState(defaultMapStyle);
     const [currLisaData, setCurrLisaData] = useState({})
-    const [viewState, setViewState] = useState(initialViewState)
+    const [viewState, setViewState] = useState({
+        latitude: bounds.latitude,
+        longitude: bounds.longitude,
+        zoom: bounds.zoom,
+        pitch:0,
+        bearing:0
+    })
     const [cartogramData, setCartogramData] = useState([]);
     const [currVarId, setCurrVarId] = useState(null);
     const [hospitalData, setHospitalData] = useState(null);
@@ -167,9 +163,9 @@ const Map = () => {
             case '2D': 
                 setViewState(view => ({
                     ...view,
-                    latitude: 35.850033,
-                    longitude: -105.6500523,
-                    zoom: 3.5,
+                    latitude: bounds.latitude,
+                    longitude: bounds.longitude,
+                    zoom: bounds.zoom,
                     bearing:0,
                     pitch:0
                 }));
@@ -178,9 +174,9 @@ const Map = () => {
             case '3D':
                 setViewState(view => ({
                     ...view,
-                    latitude: 35.850033,
-                    longitude: -105.6500523,
-                    zoom: 3.5,
+                    latitude: bounds.latitude,
+                    longitude: bounds.longitude,
+                    zoom: bounds.zoom,
                     bearing:-30,
                     pitch:30
                 }));
@@ -515,10 +511,19 @@ const Map = () => {
                     return [0,0];
                 }
             },
-            getSize: 24,
+            sizeUnits: 'meters',
             fontWeight: 'bold',
             getTextAnchor: 'middle',
             getAlignmentBaseline: 'center',
+            maxWidth: 500,
+            wordBreak: 'break-word',
+            getSize: f => {
+                try {
+                    return storedCartogramData[currVarId][f.id].radius*5;
+                } catch {
+                    return 0;
+                }
+            },
             getText: f => {
                 try {
                     if (currentData.includes('state')) return find(storedData[currentData], o => +o.properties.GEOID == storedGeojson[currentData].indexOrder[f.id]).properties.NAME;
@@ -530,6 +535,7 @@ const Map = () => {
             updateTriggers: {
                 getPosition: [cartogramData, mapParams, dataParams, currVarId],
                 getFillColor: [cartogramData, mapParams, dataParams, currVarId],
+                getSize: [cartogramData, mapParams, dataParams, currVarId],
                 getRadius: [cartogramData, mapParams, dataParams, currVarId],
                 visible: [cartogramData, mapParams, dataParams, currVarId]
             }

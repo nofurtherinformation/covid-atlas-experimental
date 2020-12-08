@@ -26,7 +26,7 @@ const VariablePanelContainer = styled.div`
   height:auto;
   min-height:calc(100vh - 50px);
   min-width:200px;
-  background-color: #2b2b2b;
+  background-color: #2b2b2bfa;
   box-shadow: 2px 0px 5px rgba(0,0,0,0.7);
   padding:0;
   box-sizing: border-box;
@@ -43,8 +43,7 @@ const VariablePanelContainer = styled.div`
   }
   p.note {
     position: absolute;
-    
-    bottom:60px;
+    top:73vh;
     left:0px;
     padding:20px;
     box-sizing:border-box;
@@ -124,12 +123,13 @@ const VariablePanelContainer = styled.div`
       transition:500ms all;
       z-index:4;
     }
-    
+    @media (max-width:768px){
+      top:120px;
+    }
     @media (max-width:600px) {
       left:90%;
       width:30px;
       height:30px;
-      top:10px;
       :after {
         display:none;
       }
@@ -171,9 +171,10 @@ const TwoUp = styled.div`
 `
 
 const ControlsContainer = styled.div`
-  max-height:70vh;
+  max-height:74vh;
   padding:20px;
   overflow-y:visible;
+  box-sizing:border-box;
   @media (max-height:1080px){
     overflow-y:scroll;
     padding-bottom:40px;

@@ -52,7 +52,7 @@ const PlayPauseButton = styled(Button)`
     background:none;
     padding:0;
     margin:0;
-    transform:translateY(21px);
+    transform:translateY(16px);
     svg {
         width: 30px;
         height:30px;
@@ -69,7 +69,7 @@ const PlayPauseButton = styled(Button)`
 `
 
 const LineSlider = styled(Slider)`
-    transform:translateY(28px);
+transform:translateY(22px);
     &.MuiSlider-root {
         width:90%;
         margin-left:3%;
@@ -107,19 +107,24 @@ const LineSlider = styled(Slider)`
 
 const RangeSlider = styled(Slider)`
     box-sizing:border-box;
-    padding-right:8px;
-    transform:translateY(34px);
+    transform:translateY(22px);
+    &.MuiSlider-root {
+        width:90%;
+        margin-left:3%;
+        box-sizing:border-box;
+    }
     span.MuiSlider-rail {
         color:white;
-        height:2px;
+        height:4px;
     }
     span.MuiSlider-track {
         color:white;
+        height:4px;
     }
     span.MuiSlider-thumb {
         color:white;
         .MuiSlider-valueLabel {
-            transform:translateY(-10px);
+            transform:translateY(0px);
             pointer-events:none;
             span {
                 background: none;
@@ -170,10 +175,11 @@ const BinSlider = styled(LineSlider)`
     }
 `
 
-const DateTitle = styled.h2`
+const DateTitle = styled.h3`
     width:100%;
     position:absolute;
-    top:0;
+    font-size:1.05rem;
+    top:-5px;
     left:0;
     text-align:center;
     pointer-events:none;
@@ -268,11 +274,11 @@ const DateSlider = () => {
         if (val === 'custom') { // if swapping over to a custom range, which will use a 2-part slider to scrub the range
             setCustomRange(true)
             if (dataParams.nType === "time-series" && dataParams.dType === "time-series") {
-                dispatch(setVariableParams({nRange: 14, dRange: 14}))
+                dispatch(setVariableParams({nRange: 30, dRange: 30}))
             } else if (dataParams.nType === "time-series") {
-                dispatch(setVariableParams({nRange: 14}))
+                dispatch(setVariableParams({nRange: 30}))
             } else if (dataParams.dType === "time-series") {
-                dispatch(setVariableParams({dRange: 14}))
+                dispatch(setVariableParams({dRange: 30}))
             } 
         } else { // use the new value -- null for cumulative, 1 for daily, 7 for weekly
             setCustomRange(false)
@@ -288,14 +294,19 @@ const DateSlider = () => {
         setRangeSelectVal(val);
     }
 
-    const valuetext = (value) => `${dates[currentData][value-startDateIndex]}`;
-    const binValuetext = (value) => `Bins relative to: ${dates[currentData][value-startDateIndex]}`;
+    const valuetext = (value) => `${dates[currentData][value-startDateIndex].slice(0,-3)}`;
+    
+    const formatDate = (date) => {
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        let rawDate = new Date(date);
+        return rawDate.toLocaleDateString('en-US', options);
+    }
 
     if (dates[currentData] !== undefined) {
         return (
             <SliderContainer style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none')}}>
                 <Grid container spacing={2} style={{display:'flex'}}>
-                    <DateTitle>{dates[currentData][dataParams.nIndex-startDateIndex]}</DateTitle>
+                    {!customRange && <DateTitle>{formatDate(dates[currentData][dataParams.nIndex-startDateIndex])}</DateTitle>}
                     <Grid item xs={1}>
                         <PlayPauseButton id="playPause" onClick={() => handlePlayPause(timerId, 1, 100)}>
                             {timerId === null ? 
@@ -376,7 +387,7 @@ const DateSlider = () => {
                         </StyledDropDownNoLabel>
                     </Grid>
                     <SwitchContainer item xs={6} 
-                        style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none'), float:'right', transform:'translate(25%, 20px)'}}
+                        style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none'), float:'right', transform:'translate(25%, 5px)'}}
                         id="binModeSwitch"
                     >
                         <Switch
@@ -386,8 +397,8 @@ const DateSlider = () => {
                         />
                         <p>{mapParams.binMode === 'dynamic' ? 'Dynamic Bins' : 'Fixed Bins'}</p>
                     </SwitchContainer>
-                    <InitialDate>{dates[currentData][0]}</InitialDate>
-                    <EndDate>{dates[currentData][dates[currentData].length-1]}</EndDate>
+                    {!customRange && <InitialDate>{dates[currentData][0]}</InitialDate>}
+                    {!customRange && <EndDate>{dates[currentData][dates[currentData].length-1]}</EndDate>}
                 </Grid>
             </SliderContainer>
         );

@@ -13,7 +13,7 @@ const getChartHeight = () => { try { return document.querySelector('#main-chart-
 // Styled components
 const BottomDrawer = styled.div`
     position: fixed;
-    bottom:-${props => props.bottom}px;
+    bottom:0;
     left:50%;
     background:#2b2b2b;
     transform:translateX(-50%);
@@ -29,13 +29,8 @@ const BottomDrawer = styled.div`
         opacity:0.5;
     }
     @media (max-width:1024px){
-        width:100%;
-        max-width:100%;
-        padding:0;
-        left:0;
-        transform:none;
         div {
-            padding-bottom:0;
+            padding-bottom:5px;
         }
         #binModeSwitch {
             position:absolute !important;
@@ -50,11 +45,13 @@ const BottomDrawer = styled.div`
         }
     }
     
-    @media (max-width:600px){
+    @media (max-width:768px){
     
-        #binModeSwitch, #dateRangeSelector {
-            display:none !important;
-        }
+        width:100%;
+        max-width:100%;
+        padding:0;
+        left:0;
+        transform:none;
     }
     @media (max-width:750px) and (orientation: landscape) {
         // bottom all the way down for landscape phone
