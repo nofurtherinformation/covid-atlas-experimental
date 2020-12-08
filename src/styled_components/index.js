@@ -61,6 +61,13 @@ export const StyledDropDown = styled(FormControl)`
   }
 `
 
+export const StyledDropDownNoLabel = styled(StyledDropDown)`
+  .MuiFormLabel-root {
+    display:none;
+  }
+  padding:10px 0 5px 20px !important;
+`
+
 export const SwitchContainer = styled(Grid)`
   padding-top:4px !important;
   p { 

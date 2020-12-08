@@ -7,8 +7,9 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import styled from 'styled-components';
-import { setDate, setVariableParams, incrementDate } from '../actions';
-import { StyledDropDown } from '../styled_components';
+import { setDate, setVariableParams, incrementDate, setMapParams } from '../actions';
+import Switch from '@material-ui/core/Switch';
+import { StyledDropDownNoLabel, SwitchContainer } from '../styled_components';
 // import { getParseCSV, getJson, mergeData, colIndex, getDataForBins } from './utils';
 
 const SliderContainer = styled.div`
@@ -51,10 +52,15 @@ const PlayPauseButton = styled(Button)`
     background:none;
     padding:0;
     margin:0;
+    transform:translateY(21px);
     svg {
-        width: 75%;
+        width: 30px;
+        height:30px;
         g {
             fill: white;
+        },
+        path {
+            fill:white;
         }
     }
     &.MuiButton-text {
@@ -65,23 +71,27 @@ const PlayPauseButton = styled(Button)`
 const LineSlider = styled(Slider)`
     transform:translateY(28px);
     &.MuiSlider-root {
-        width:95%;
+        width:90%;
         margin-left:3%;
         box-sizing:border-box;
     }
     span.MuiSlider-rail {
         color:white;
-        height:1px;
+        height:4px;
     }
     span.MuiSlider-track {
         color:white;
+        height:4px;
     }
     span.MuiSlider-thumb {
         color:white;
+        width:15px;
+        height:15px;
+        transform:translate(-1.5px, -1.5px);
         .MuiSlider-valueLabel {
             transform:translateY(-10px);
             pointer-events:none;
-            font-size:11px;
+            font-size:15px;
             span {
                 background: none;
             }
@@ -101,7 +111,7 @@ const RangeSlider = styled(Slider)`
     transform:translateY(34px);
     span.MuiSlider-rail {
         color:white;
-        height:1px;
+        height:2px;
     }
     span.MuiSlider-track {
         color:white;
@@ -160,13 +170,35 @@ const BinSlider = styled(LineSlider)`
     }
 `
 
+const DateTitle = styled.h2`
+    width:100%;
+    position:absolute;
+    top:0;
+    left:0;
+    text-align:center;
+    pointer-events:none;
+
+`
+const InitialDate = styled.p`
+    position:absolute;
+    left:7%;
+    top:0;
+    font-size:75%;
+`
+
+const EndDate = styled(InitialDate)`
+    left:initial;
+    right:10px;
+`
 const DateSlider = () => {
     const dispatch = useDispatch();  
     
     const currentData = useSelector(state => state.currentData);
     const dates = useSelector(state => state.dates);
+    const currDate = useSelector(state => state.currDate);
     const dataParams = useSelector(state => state.dataParams);
     const startDateIndex = useSelector(state => state.startDateIndex);
+    const mapParams = useSelector(state => state.mapParams)
     
     const [timerId, setTimerId] = useState(null);
     const [customRange, setCustomRange] = useState(false);
@@ -184,13 +216,21 @@ const DateSlider = () => {
     };
 
     
-    const handleBinChange = (event, newValue) => {
-        dispatch(setVariableParams(
-            {
-                binIndex: newValue 
-            }
-        ))
+    const handleSwitch = () => {
+        if (mapParams.binMode === 'dynamic') {
+            dispatch(setMapParams({binMode:''}))
+        } else {
+            dispatch(setMapParams({binMode:'dynamic'}))
+        }
     }
+    
+    // const handleBinChange = (event, newValue) => {
+    //     dispatch(setVariableParams(
+    //         {
+    //             binIndex: newValue 
+    //         }
+    //     ))
+    // }
     
     const handleRangeChange = (event, newValue) => { 
         if (dataParams.dRange) {
@@ -254,22 +294,12 @@ const DateSlider = () => {
     if (dates[currentData] !== undefined) {
         return (
             <SliderContainer style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none')}}>
-                <Grid container spacing={2}>
-                    {/* <Grid item xs={12}>
-                        <h4 style={{textAlign:"center", color:"white"}}>{dates[currentData][dataParams.nIndex]||dates[currentData].slice(-1,)[0]}</h4>
-                    </Grid> */}
+                <Grid container spacing={2} style={{display:'flex'}}>
+                    <DateTitle>{dates[currentData][dataParams.nIndex-startDateIndex]}</DateTitle>
                     <Grid item xs={1}>
                         <PlayPauseButton id="playPause" onClick={() => handlePlayPause(timerId, 1, 100)}>
                             {timerId === null ? 
-                                <svg x="0px" y="0px" viewBox="0 0 100 100">
-                                    <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
-                                        <g>
-                                            <path d="M74.4,58.7L40.7,92.2c-7.1,7.2-18.7,4.4-18.7-6.3V14c0-10.7,11.6-13.5,18.7-6.3l33.6,33.5
-                                                C79.1,46,79.1,53.8,74.4,58.7z M69.1,53.4c1.9-1.9,1.9-5,0-6.7L35.5,13c-2.1-2.1-6-3.2-6,1.1V86c0,4.3,3.9,3.2,6,1.1L69.1,53.4z"
-                                                />
-                                        </g>
-                                    </g>
-                                </svg>
+                                <svg x="0px" y="0px" viewBox="0 0 100 100" ><path d="M78.627,47.203L24.873,16.167c-1.082-0.625-2.227-0.625-3.311,0C20.478,16.793,20,17.948,20,19.199V81.27  c0,1.25,0.478,2.406,1.561,3.031c0.542,0.313,1.051,0.469,1.656,0.469c0.604,0,1.161-0.156,1.703-0.469l53.731-31.035  c1.083-0.625,1.738-1.781,1.738-3.031C80.389,48.984,79.71,47.829,78.627,47.203z"></path></svg>
                                 : 
                                 <svg x="0px" y="0px" viewBox="0 0 100 100">
                                     <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
@@ -288,16 +318,16 @@ const DateSlider = () => {
                             }
                         </PlayPauseButton>
                     </Grid>
-                    <Grid item xs={11} lg={9}> {/* Sliders Grid Item */}
+                    <Grid item xs={11}> {/* Sliders Grid Item */}
                         {/* Main Slider for changing date */}
                         {!customRange && 
                             <LineSlider 
                                 value={dataParams.nIndex} 
-                                valueLabelDisplay="on"
+                                // valueLabelDisplay="on"
                                 onChange={handleChange} 
-                                getAriaValueText={valuetext}
-                                valueLabelFormat={valuetext}
-                                aria-labelledby="aria-valuetext"
+                                // getAriaValueText={valuetext}
+                                // valueLabelFormat={valuetext}
+                                // aria-labelledby="aria-valuetext"
                                 min={startDateIndex}
                                 step={1}
                                 max={startDateIndex+dates[currentData].length-1}
@@ -328,21 +358,36 @@ const DateSlider = () => {
                             max={startDateIndex+dates[currentData].length-1}
                         />}
                     </Grid>
-                    <Grid item xs={12} lg={2} style={{paddingLeft:'17px'}} id="dateRangeSelector">
-                        <StyledDropDown>
+                    <Grid item xs={6} id="dateRangeSelector" style={{transform:'translateX(25%)'}}>
+                        <StyledDropDownNoLabel>
                             <InputLabel htmlFor="date-select">Date Range</InputLabel>
                             <Select  
                                 id="date-select"
                                 value={rangeSelectVal}
                                 onChange={handleRangeButton}
+                                displayEmpty
+                                inputProps={{ 'aria-label': 'Without label' }}
                             >
                                 <MenuItem value={null} key={'cumulative'}>Cumulative</MenuItem>
                                 <MenuItem value={1} key={'daily'}>New Daily</MenuItem>
                                 <MenuItem value={7} key={'weekly'}>Weekly Average</MenuItem>
                                 <MenuItem value={'custom'} key={'customRange'}>Custom Range</MenuItem>
                             </Select>
-                        </StyledDropDown>
+                        </StyledDropDownNoLabel>
                     </Grid>
+                    <SwitchContainer item xs={6} 
+                        style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none'), float:'right', transform:'translate(25%, 20px)'}}
+                        id="binModeSwitch"
+                    >
+                        <Switch
+                            checked={mapParams.binMode === 'dynamic'}
+                            onChange={handleSwitch}
+                            name="bin chart switch"
+                        />
+                        <p>{mapParams.binMode === 'dynamic' ? 'Dynamic Bins' : 'Fixed Bins'}</p>
+                    </SwitchContainer>
+                    <InitialDate>{dates[currentData][0]}</InitialDate>
+                    <EndDate>{dates[currentData][dates[currentData].length-1]}</EndDate>
                 </Grid>
             </SliderContainer>
         );

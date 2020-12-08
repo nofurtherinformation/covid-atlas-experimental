@@ -60,7 +60,7 @@ export const INITIAL_STATE = {
     variables:true,
     info:false,
     chart:true,
-    tutorial:true,
+    tutorial:false,
   },
   storedRange: null,
   currentGeoid: '',

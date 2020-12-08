@@ -2,21 +2,22 @@ import React from 'react';
 import Grid from '@material-ui/core/Grid';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
-import Switch from '@material-ui/core/Switch';
-import { SwitchContainer } from '../styled_components';
 import { setMapParams } from '../actions';
 
 const LegendContainer = styled.div`
     width:100%;
-    padding:20px;
+    padding:10px;
     margin:0;
     box-sizing: border-box;
+    div.MuiGrid-item {
+        padding:5px 5px 0 5px;
+    }
 `
 
 const LegendTitle = styled.h3`
-    text-align: left;
+    text-align: center;
     font-family:'Playfair Display', serif;
-    padding:0 0 10px 0;
+    padding:0;
     font-weight:normal;
     margin:0;
     color:white;
@@ -78,23 +79,15 @@ const Legend =  () => {
         return bins
     }
 
-    const handleSwitch = () => {
-        if (mapParams.binMode === 'dynamic') {
-            dispatch(setMapParams({binMode:''}))
-        } else {
-            dispatch(setMapParams({binMode:'dynamic'}))
-        }
-    }
-
     return (
         <LegendContainer>
             <Grid container spacing={2} id='legend-bins-container'>
-                <Grid item xs={12} lg={4}>
+                <Grid item xs={12}>
                     <LegendTitle>
                         {title}
                     </LegendTitle>
                 </Grid>
-                <Grid item xs={12} lg={6}>
+                <Grid item xs={12}>
                     <BinBars firstBinZero={`${mapParams.colorScale[0]}` === `240,240,240` && mapParams.fixedScale === null}>
                         {
                             mapParams.colorScale !== undefined && 
@@ -110,17 +103,6 @@ const Legend =  () => {
                         }
                     </BinLabels>
                 </Grid>
-                <SwitchContainer item xs={12} lg={2} 
-                    style={{display: (dataParams.nType === 'time-series' ? 'initial' : 'none')}}
-                    id="binModeSwitch"
-                >
-                    <Switch
-                        checked={mapParams.binMode === 'dynamic'}
-                        onChange={handleSwitch}
-                        name="bin chart switch"
-                    />
-                    <p>{mapParams.binMode === 'dynamic' ? 'Dynamic Bins' : 'Fixed Bins'}</p>
-                </SwitchContainer>
             </Grid>
         </LegendContainer>
     )

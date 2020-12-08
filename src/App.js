@@ -21,8 +21,8 @@ import {
   setCentroids, setMapParams, setNewBins, setUrlParams, setPanelState } from './actions';
 
 import { Map, NavBar,
-  VariablePanel, BottomPanel, DataPanel, 
-  Popover, Preloader, InfoBox, NotificationBox 
+  VariablePanel, BottomPanel, DataPanel, MainLineChart, Scaleable, Draggable, TopPanel,
+  Popover, Preloader, InfoBox, NotificationBox
 } from './components';  
 import { colorScales, fixedScales, dataPresets, 
   legacyOverlayOrder, legacyResourceOrder, legacySourceOrder } from './config';
@@ -311,6 +311,8 @@ function App() {
 
   }, [dataParams.nIndex, dataParams.dIndex, mapParams.binMode])
   
+  // const dragHandlers = {onStart: this.onStart, onStop: this.onStop};
+
   return (
     <div className="App">
       <Preloader loaded={mapLoaded} />
@@ -321,12 +323,27 @@ function App() {
       </header>
       <div id="mainContainer">
         <Map />
+        <TopPanel />
+        <BottomPanel />
         <VariablePanel />
         <DataPanel />
-        <BottomPanel />
         <InfoBox />
         <Popover />
         <NotificationBox />
+        <Draggable 
+          defaultX={window.innerWidth-400} 
+          defaultY={window.innerHeight-400}
+          title="Line Chart"
+          content={
+          <Scaleable 
+            content={
+              <MainLineChart />
+            } 
+            defaultWidth={300} 
+            defaultHeight={300}
+            minHeight={300}
+            minWidth={300} />
+        }/>
       </div>
     </div>
   );

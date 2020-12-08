@@ -12,6 +12,9 @@ import NavBar from './navbar';
 import Preloader from './preloader';
 import InfoBox from './infoBox';
 import NotificationBox from './notificationBox';
+import Scaleable from './scaleable';
+import Draggable from './draggable';
+import TopPanel from './topPanel';
 
 export {
     Map,
@@ -27,5 +30,8 @@ export {
     BottomPanel,
     Preloader,
     InfoBox,
-    NotificationBox
+    NotificationBox,
+    Scaleable,
+    Draggable,
+    TopPanel
 }

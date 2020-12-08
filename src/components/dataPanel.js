@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import Tooltip from './tooltip';
+import TwoWeekChart from './twoWeekLineChart';
 import { setPanelState } from '../actions';
 import {dataFn, colLookup} from '../utils';
 
@@ -16,7 +17,6 @@ const DataPanelContainer = styled.div`
   right:0;
   top:50px;
   height:calc(100vh - 50px);
-  min-width:20vw;
   background-color: #2b2b2b;
   box-shadow: -2px 0px 5px rgba(0,0,0,0.7);
   padding:20px;
@@ -53,9 +53,6 @@ const DataPanelContainer = styled.div`
     div {
       padding-right:20px;
       box-sizing:border-box;
-    }
-    div:last-of-type {
-      margin-bottom:20vh;
     }
   }
   button#showHideRight {
@@ -150,6 +147,17 @@ const DataPanelContainer = styled.div`
   }
 `
 
+const BigNumber = styled.h2`
+  font-size:1.5rem;
+  padding:0 0 15px 0 !important;
+`
+
+const NumberChartContainer = styled.div`
+  width:100%;
+  display:flex;
+  align-items: center;
+`
+
 const DataPanel = () => {
 
   const dispatch = useDispatch();
@@ -183,9 +191,20 @@ const DataPanel = () => {
           </div>
         }
         {(cases && deaths) && 
-          <div>
-            <p>Total Cases: {cases.slice(-1,)[0]?.toLocaleString('en')}</p><br/>
-            <p>Total Deaths: {deaths.slice(-1,)[0]?.toLocaleString('en')}</p><br/>
+          <div><br/>
+            <p>Total Cases</p><br/>
+            <NumberChartContainer>
+              <BigNumber>{cases.slice(-1,)[0]?.toLocaleString('en')}</BigNumber>
+              <TwoWeekChart data={cases.slice(-14,)} schema='cases/deaths'/>
+            </NumberChartContainer>
+            
+            <p>Total Deaths </p><br/>
+            <NumberChartContainer>
+              <BigNumber>{deaths.slice(-1,)[0]?.toLocaleString('en')}</BigNumber>
+              <TwoWeekChart data={deaths.slice(-14,)} schema='cases/deaths'/>
+            </NumberChartContainer>
+
+
             <p>Cases per 100k Population: {dataFn(cases, properties, {nProperty: null, nIndex: cases.length-1, nRange: null, dProperty: 'population', dIndex: null, dRange: null, scale: 100000})?.toFixed(2).toLocaleString('en')}</p><br/>
             <p>Deaths per 100k Population: {dataFn(deaths, properties, {nProperty: null, nIndex: deaths.length-1, nRange: null, dProperty: 'population', dIndex: null, dRange: null, scale: 100000})?.toFixed(2).toLocaleString('en')}</p><br/>
             <p>New Cases per 100k Population: {dataFn(cases, properties, {nProperty: null, nIndex: cases.length-1, nRange: 1, dProperty: 'population', dIndex: null, dRange: null, scale: 100000})?.toFixed(2).toLocaleString('en')}</p><br/>
@@ -197,9 +216,17 @@ const DataPanel = () => {
         {testing &&
           <div>
             <h2>Testing</h2><br/>
+            <p>7-Day Positivity Rate</p><br/>
+            <NumberChartContainer>
+              <BigNumber>{(testing_wk_pos[testing_wk_pos.length-1]*100).toFixed(2)}%</BigNumber>
+              <TwoWeekChart data={testing_wk_pos.slice(-14,)} schema='testingPos'/>
+            </NumberChartContainer>
+            <p>7-Day Testing Capacity per 100k People</p><br/>
+            <NumberChartContainer>
+              <BigNumber>{(testing_tcap[testing_tcap.length-1]).toLocaleString('en')}</BigNumber>
+              <TwoWeekChart data={testing_tcap.slice(-14,)} schema='testingCap'/>
+            </NumberChartContainer>
             <p>Total Testing: {(testing[testing.length-1]).toLocaleString('en')}</p><br/>
-            <p>7-Day Positivity Rate: {(testing_wk_pos[testing_wk_pos.length-1]*100).toFixed(2)}%</p><br/>
-            <p>7-Day Testing Capacity: {(testing_tcap[testing_tcap.length-1]).toFixed(2)}</p><br/>
             <p>7-Day Confirmed Cases per Testing: {(testing_ccpt[testing_ccpt.length-1]*100).toFixed(2)}%</p><br/>
             <p>Testing Criterion: {properties.criteria}</p><br/>
           </div>
@@ -217,7 +244,7 @@ const DataPanel = () => {
             <p>Uninsured %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'UnInPrc')]}<Tooltip id="UnInPrc"/></p><br/>
             <p>Primary care physicians: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PrmPhysRt')]}<Tooltip id="PrmPhysRt"/></p><br/>
             <p>Preventable hospital stays: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'PrevHospRt')]?.toLocaleString('en')}<Tooltip id="PrevHospRt"/></p><br/>
-            <p>Residential segregation-black/white: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'RsiSgrBlckRt')]}</p><br/>
+            <p>Residential segregation-black/white: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'RsiSgrBlckRt')]||'NA'}</p><br/>
             <p>Severe housing problems %: {chr_health_factors[colLookup(cols, currentData, 'chr_health_factors', 'SvrHsngPrbRt')]}<Tooltip id="SvrHsngPrbRt"/></p><br/>
           </div>
         }
@@ -243,7 +270,8 @@ const DataPanel = () => {
         }
         {(predictions && cols[currentData] && cols[currentData].predictions) &&  
           <div>
-            <h2>Predictions</h2><br/>
+            <h2>Forecasting</h2><br/>            
+            <h6>Source: <a href="https://github.com/Yu-Group/covid19-severity-prediction/" target="_blank" rel="noopener noreferrer">Yu Group at Berkeley</a></h6>            
             <p>5-Day Severity Index: {['','Low','Medium','High'][predictions[1]]}<Tooltip id="SeverityIndex"/></p><br />
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[2].split('_'))}: {predictions[2]}<Tooltip id="PredictedDeaths"/></p><br/>
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[4].split('_'))}: {predictions[4]}<Tooltip id="PredictedDeaths"/></p><br/>

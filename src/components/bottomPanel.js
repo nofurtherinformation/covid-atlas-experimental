@@ -18,9 +18,9 @@ const BottomDrawer = styled.div`
     background:#2b2b2b;
     transform:translateX(-50%);
     width:90vw;
-    max-width: 960px;
+    max-width: 500px;
     box-sizing: border-box;
-    padding:0;
+    padding:0 0 5px 0;
     margin:0;
     box-shadow: 0px 0px 5px rgba(0,0,0,0.7);
     border-radius:0.5vh 0.5vh 0 0;
@@ -134,16 +134,16 @@ const BottomPanel = () => {
     return (
         <BottomDrawer bottom={panelState.chart ? 0 : bottomMargin }>
             <Legend />
-            <DateSlider />
-            <hr />
+            {/* <DateSlider /> */}
+            {/* <hr />
             <MainLineChart />
             <OpenCloseButton onClick={handleBottomOpen} bottom={panelState.chart ? 5 : bottomMargin}>
-                {/* <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
+                <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
                     <g transform="translate(50 50) scale(0.69 0.69) rotate(0) translate(-50 -50)">
                         <path d="M38,33.8L23.9,47.9c-1.2,1.2-1.2,3.1,0,4.2L38,66.2l4.2-4.2l-9-9H71v17c0,0.6-0.4,1-1,1H59v6h11
                         c3.9,0,7-3.1,7-7V30c0-3.9-3.1-7-7-7H59v6h11c0.6,0,1,0.4,1,1v17H33.2l9-9L38,33.8z"/>
                     </g>
-                </svg> */}
+                </svg>
                 <svg x="0px" y="0px" viewBox="0 0 100 100">
                     <g>
                         <path d="M52.5,21.4c-1.9,0-3.6,1.3-4.1,3.1L37.9,63.7l-6.4-11.1c-1.2-2-3.7-2.7-5.7-1.5c-0.3,0.2-0.6,0.4-0.9,0.7
@@ -154,7 +154,7 @@ const BottomPanel = () => {
                     </g>
                 </svg>
 
-            </OpenCloseButton>
+            </OpenCloseButton> */}
         </BottomDrawer>
     )
 

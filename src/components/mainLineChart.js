@@ -5,15 +5,36 @@ import {
 } from 'recharts';
 import { useSelector } from 'react-redux';
 import Switch from '@material-ui/core/Switch';
-import { SwitchContainer } from '../styled_components';
+// import { SwitchContainer } from '../styled_components';
 import styled from 'styled-components';
 
-const ChartContainer = styled(Grid)`
-    padding:10px 11.5% 20px 20px;
+const ChartContainer = styled.span`
+    background:red;
 `
 
+const StyledSwitch = styled.div`
+    float:left;
+    p {
+        color:white;
+        display:inline;
+    }
+    span.MuiSwitch-track {
+        background-color:#ddd;
+    }
+    .MuiSwitch-colorSecondary.Mui-checked {
+        color:#A1E1E3;
+    }
+    .MuiSwitch-colorSecondary.Mui-checked + .MuiSwitch-track {
+        background-color: #A1E1E3;
+    }
+    .MuiSwitch-colorSecondary:hover {
+        background-color:#A1E1E355;
+    }
+`
+
+
 const ChartTitle = styled.h3`
-    text-align: left;
+    text-align: center;
     font-family:'Playfair Display', serif;
     padding:0;
     font-weight:normal;
@@ -98,84 +119,80 @@ const MainLineChart = () => {
     }
 
     return (
-        <ChartContainer container spacing={2} id="main-chart-container">
-            <Grid item xs={12}>
-                <ChartTitle>Total Cases and 7-Day Average New Cases{properties && <span>: {properties.NAME}{properties.state_name && `, ${properties.state_name}`}</span>}</ChartTitle>
-            </Grid>
-            <Grid item xs={12} style={{height:'20vh'}}>
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                        data={chartData}
-                        margin={{
-                            top: 20, right: 10, left: 22, bottom: 20,
-                        }}
-                    >
-                        <XAxis 
-                            dataKey="date"
-                            tick={
-                                <CustomTick
+        <ChartContainer>
+            <ChartTitle>Total Cases and 7-Day Average New Cases{properties && <span>: {properties.NAME}{properties.state_name && `, ${properties.state_name}`}</span>}</ChartTitle>
+            <ResponsiveContainer width="100%" height="80%">
+                <LineChart
+                    data={chartData}
+                    margin={{
+                        top: 0, right: 10, left: 10, bottom: 0,
+                    }}
+                >
+                    <XAxis 
+                        dataKey="date"
+                        tick={
+                            <CustomTick
+                            style={{
+                                fill: "#FFFFFF99",
+                                fontSize: "10px",
+                                fontFamily: "Lato",
+                                fontWeight: 600,
+                                transform:'translateY(10px)'
+                            }}
+                            labelFormatter={dateFormatter}
+                            />
+                        }
+                    />
+                    {/* <YAxis type="number" /> */}
+                    <YAxis yAxisId="left" type="number" dataKey="count"  scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow 
+                        ticks={Object.keys(sidebarData).length === 0 ? [2000000,4000000,6000000,8000000,10000000] : []} 
+                        tick={
+                            <CustomTick
+                            style={{
+                                fill: "#D8D8D8",
+                                fontSize: "10px",
+                                fontFamily: "Lato",
+                                fontWeight: 600
+                            }}
+                            labelFormatter={Object.keys(sidebarData).length === 0 ? millionFormatter : thousandFormatter}
+                            />
+                        }
+                        >
+                        <Label value="Total Cases" position='insideLeft' style={{marginTop:10, fill:'#D8D8D8', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
+                    </YAxis>
+                    <YAxis yAxisId="right" orientation="right" dataKey="dailyNew" scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow 
+                        // ticks={[20000,40000,60000,80000,100000, 120000, 140000]} 
+                        tick={
+                            <CustomTick
                                 style={{
-                                    fill: "#FFFFFF99",
+                                    fill: "#FFCE00",
                                     fontSize: "10px",
                                     fontFamily: "Lato",
                                     fontWeight: 600,
-                                    transform:'translateY(10px)'
                                 }}
-                                labelFormatter={dateFormatter}
-                                />
-                            }
-                        />
-                        {/* <YAxis type="number" /> */}
-                        <YAxis yAxisId="left" type="number" dataKey="count"  scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow 
-                            ticks={Object.keys(sidebarData).length === 0 ? [2000000,4000000,6000000,8000000,10000000] : []} 
-                            tick={
-                                <CustomTick
-                                style={{
-                                    fill: "#D8D8D8",
-                                    fontSize: "10px",
-                                    fontFamily: "Lato",
-                                    fontWeight: 600
-                                }}
-                                labelFormatter={Object.keys(sidebarData).length === 0 ? millionFormatter : thousandFormatter}
-                                />
-                            }
-                            >
-                            <Label value="Total Cases" position='insideLeft' style={{marginTop:10, fill:'#D8D8D8', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
-                        </YAxis>
-                        <YAxis yAxisId="right" orientation="right" dataKey="dailyNew" scale={logChart ? "log" : "linear"} domain={[0.01, 'dataMax']} allowDataOverflow 
-                            // ticks={[20000,40000,60000,80000,100000, 120000, 140000]} 
-                            tick={
-                                <CustomTick
-                                    style={{
-                                        fill: "#FFCE00",
-                                        fontSize: "10px",
-                                        fontFamily: "Lato",
-                                        fontWeight: 600,
-                                    }}
-                                    labelFormatter={thousandFormatter}
-                                />
-                            }
-                            >
-                            <Label value="7-Day Average New Cases" position='insideTopRight' style={{marginTop:10, fill:'#FFCE00', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
-                        </YAxis>
-                        <Tooltip
-                            content={CustomTooltip}
-                        />
-                        <ReferenceArea 
-                            yAxisId="left"
-                            x1={getStartDate(dataParams.nRange, dataParams.nIndex-startDateIndex, chartData)}
-                            x2={getEndDate(dataParams.nIndex-startDateIndex, chartData)} 
-                            fill="white" 
-                            fillOpacity={0.15}
-                            isAnimationActive={false}
-                        />
-                        <Line type="monotone" yAxisId="left" dataKey="count" name="Total Cases" stroke="#D8D8D8" dot={false} />
-                        <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="7-Day Average New Cases" stroke="#FFCE00" dot={false} />
-                        <Line type="monotone" yAxisId="right" dataKey="selectedGeog" name="Selected Geography Count" stroke="#FFF" dot={false} />
-                    </LineChart>
-                </ResponsiveContainer>
-            </Grid>
-            <SwitchContainer item xs={12} style={{position:'absolute', right:0, bottom:40}}>
+                                labelFormatter={thousandFormatter}
+                            />
+                        }
+                        >
+                        <Label value="7-Day Average New Cases" position='insideTopRight' style={{marginTop:10, fill:'#FFCE00', fontFamily: 'Lato', fontWeight: 600}} angle={-90}  />
+                    </YAxis>
+                    <Tooltip
+                        content={CustomTooltip}
+                    />
+                    <ReferenceArea 
+                        yAxisId="left"
+                        x1={getStartDate(dataParams.nRange, dataParams.nIndex-startDateIndex, chartData)}
+                        x2={getEndDate(dataParams.nIndex-startDateIndex, chartData)} 
+                        fill="white" 
+                        fillOpacity={0.15}
+                        isAnimationActive={false}
+                    />
+                    <Line type="monotone" yAxisId="left" dataKey="count" name="Total Cases" stroke="#D8D8D8" dot={false} />
+                    <Line type="monotone" yAxisId="right" dataKey="dailyNew" name="7-Day Average New Cases" stroke="#FFCE00" dot={false} />
+                    <Line type="monotone" yAxisId="right" dataKey="selectedGeog" name="Selected Geography Count" stroke="#FFF" dot={false} />
+                </LineChart>
+            </ResponsiveContainer>
+            <StyledSwitch>
                 <Switch
                     checked={logChart}
                     onChange={handleSwitch}
@@ -183,7 +200,7 @@ const MainLineChart = () => {
                     inputProps={{ 'aria-label': 'secondary checkbox' }}
                 />
                 <p>{logChart ? 'Log Scale' : 'Linear Scale'}</p>
-            </SwitchContainer>
+            </StyledSwitch>
         </ChartContainer>
     );
 }
