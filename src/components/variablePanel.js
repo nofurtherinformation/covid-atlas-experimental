@@ -11,6 +11,8 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 
+import {ungzip} from 'node-gzip';
+
 import styled from 'styled-components';
 
 import { colLookup } from '../utils';
@@ -192,6 +194,9 @@ const ListSubheader = styled(MenuItem)`
 `
 
 const VariablePanel = (props) => {
+
+  const getGzipData = async (url) => fetch(url).then(data => ungzip(data).then(data => data))
+
   const dispatch = useDispatch();    
 
   const { cols, currentData, currentVariable,
@@ -208,7 +213,8 @@ const VariablePanel = (props) => {
         dProperty: null,
         dRange:null,
         dIndex:null,
-        scale:1
+        scale:1,
+        scale3D: 100
     },
     "Confirmed Count per 100K Population": {
         numerator: 'cases',
@@ -219,7 +225,8 @@ const VariablePanel = (props) => {
         dProperty: 'population',
         dRange:null,
         dIndex:null,
-        scale:100000
+        scale:100000,
+        scale3D: 1000
     },
     "Confirmed Count per Licensed Bed": {
         numerator: 'cases',
@@ -230,7 +237,8 @@ const VariablePanel = (props) => {
         dProperty: 'beds',
         dRange:null,
         dIndex:null,
-        scale:1
+        scale:1,
+        scale3D: 100000
     },
     "HEADER:deaths":{},
     "Death Count":{
@@ -242,7 +250,8 @@ const VariablePanel = (props) => {
       dProperty: null,
       dRange:null,
       dIndex:null,
-      scale:1
+      scale:1,
+      scale3D: 10000
         
     }, 
     "Death Count per 100K Population":{
@@ -254,7 +263,8 @@ const VariablePanel = (props) => {
       dProperty: 'population',
       dRange:null,
       dIndex:null,
-      scale:100000
+      scale:100000,
+      scale3D: 15000
 
     },
     "Death Count / Confirmed Count":{
@@ -279,7 +289,8 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
-      colorScale: 'uninsured'
+      colorScale: 'uninsured',
+      scale3D: 15000
 
     },
     "Over 65 Years % (Community Health Context)":{
@@ -293,7 +304,8 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
-      colorScale: 'over65'
+      colorScale: 'over65',
+      scale3D: 15000
     },
     "Life expectancy (Length and Quality of Life)":{
       numerator: 'chr_life',
@@ -306,7 +318,8 @@ const VariablePanel = (props) => {
       dRange:null,
       dIndex:null,
       scale:1,
-      colorScale: 'lifeExp'
+      colorScale: 'lifeExp',
+      scale3D: 1000
     }
   }
 
@@ -325,6 +338,7 @@ const VariablePanel = (props) => {
       scale:1,
       colorScale: 'forecasting',
       fixedScale: 'forecasting',
+      scale3D: 50000
     }
   }
 
@@ -342,7 +356,8 @@ const VariablePanel = (props) => {
       dIndex:null,
       scale:1,
       fixedScale: 'testing',
-      colorScale: 'testing'
+      colorScale: 'testing',
+      scale3D: 10000000
     },
     "7 Day Testing Capacity": {
       numerator: 'testing_tcap',
@@ -356,7 +371,8 @@ const VariablePanel = (props) => {
       dIndex:null,
       scale:1,
       fixedScale: 'testingCap',
-      colorScale: 'testingCap'
+      colorScale: 'testingCap',
+      scale3D: 3000
     }, 
     "7 Day Confirmed Cases per Testing %":{
       numerator: 'testing_ccpt',
@@ -370,7 +386,8 @@ const VariablePanel = (props) => {
       dIndex:null,
       scale:1,
       fixedScale: 'testing',
-      colorScale: 'testing'
+      colorScale: 'testing',
+      scale3D: 10000000
     }
   }
 
@@ -615,6 +632,7 @@ const VariablePanel = (props) => {
             </Select>
           </StyledDropDown>
         </TwoUp>
+        <button onClick={() => console.log(getGzipData('https://github.com/COVIDExposureIndices/COVIDExposureIndices/blob/master/lex_data/county_lex_2020-11-28.csv.gz'))}>test lex data</button>
       </ControlsContainer>
       <p className="note">
         Data is updated with freshest available data at 3pm CST daily, at minimum. 

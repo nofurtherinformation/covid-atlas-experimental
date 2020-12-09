@@ -148,6 +148,9 @@ const DataPanelContainer = styled.div`
       text-decoration:none;
     }
   }
+  .extraPadding {
+    padding-bottom:20vh;
+  }
 `
 
 const BigNumber = styled.h2`
@@ -285,6 +288,8 @@ const DataPanel = () => {
             <p>Predicted Deaths by {parsePredictedDate(cols[currentData].predictions[14].split('_'))}: {predictions[14]}<Tooltip id="PredictedDeaths"/></p><br/>
           </div>
         }
+        
+        <div className="extraPadding"></div>
         
         {cases && <button onClick={handleOpenClose} id="showHideRight" className={panelState.info ? 'active' : 'hidden'}>
           {/* <svg version="1.1" x="0px" y="0px" viewBox="0 0 100 100">

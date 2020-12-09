@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 import {fromJS} from 'immutable';
@@ -17,7 +17,7 @@ import Geocoder from 'react-map-gl-geocoder'
 import { MapTooltipContent } from '../components';
 import { colorScales } from '../config';
 import { setDataSidebar, setMapParams, setMapLoaded, setPanelState, setChartData } from '../actions';
-import { mapFn, dataFn, getVarId, getCSV, getCartogramCenter, addSelectedChartData, getDataForCharts } from '../utils';
+import { mapFn, dataFn, getVarId, getCSV, getCartogramCenter, getDataForCharts } from '../utils';
 import MAP_STYLE from '../config/style.json';
 
 // const cartoGeom = new IcoSphereGeometry({
@@ -121,7 +121,7 @@ const Map = () => {
     
     const { storedData, storedGeojson, currentData, storedLisaData,
         storedCartogramData, panelState, dates, dataParams, mapParams,
-        startDateIndex, chartData, urlParams } = useSelector(state => state);
+        startDateIndex, urlParams } = useSelector(state => state);
 
     const [hoverInfo, setHoverInfo] = useState(false);
     const [highlightGeog, setHighlightGeog] = useState(false);
@@ -213,6 +213,11 @@ const Map = () => {
             tempLayers = defaultLayers.map(layer => {
                 return layer.setIn(['layout', 'visibility'], 'none');
             });
+        } else if (mapParams.vizType === '3D') {
+            tempLayers = defaultLayers.map(layer => {
+                if (layer.get('id').includes('label')) return layer;
+                return layer.setIn(['layout', 'visibility'], 'none');
+            });
         } else {
             tempLayers = defaultLayers.map(layer => {
                 if (mapParams.resource.includes(layer.get('id')) || mapParams.overlay.includes(layer.get('id'))) {
@@ -268,7 +273,7 @@ const Map = () => {
         }
     }
     
-    const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f[dataParams.numerator], f[dataParams.denominator], dataParams)*1000 : 0
+    const GetHeight = (f, bins) => bins.hasOwnProperty("bins") ? dataFn(f[dataParams.numerator], f[dataParams.denominator], dataParams)*(dataParams.scale3D/((dataParams.nType === "time-series" && dataParams.nRange === null) ? (dataParams.nIndex-startDateIndex)/10 : 1)) : 0
     
     const handle3dButton = (using3d) => {
         if (using3d) {

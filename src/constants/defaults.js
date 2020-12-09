@@ -30,6 +30,7 @@ export const INITIAL_STATE = {
     dIndex:null,
     scale:100000,
     binIndex: '',
+    scale3D: 1000
   },
   mapParams: {
     mapType: 'natural_breaks',
