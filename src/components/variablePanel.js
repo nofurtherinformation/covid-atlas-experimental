@@ -11,11 +11,13 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 
-import {ungzip} from 'node-gzip';
+import {inflate} from 'pako';
+import * as d3 from 'd3-dsv';
+import { merge } from 'lodash';
 
 import styled from 'styled-components';
 
-import { colLookup } from '../utils';
+import { colLookup, getParseCSV } from '../utils';
 import Tooltip from './tooltip';
 import { fixedScales, colorScales, dataPresets, legacyVariableOrder } from '../config';
 import { StyledDropDown } from '../styled_components';
@@ -195,8 +197,67 @@ const ListSubheader = styled(MenuItem)`
 
 const VariablePanel = (props) => {
 
-  const getGzipData = async (url) => fetch(url).then(data => ungzip(data).then(data => data))
+  const getGzipData = async (url) => {
+    const tempData = await fetch(url)
+      .then(response => {
+        return response.ok ? response.arrayBuffer() : Promise.reject(response.status);
+      }).then(compressed => {
+        
+        // convert to binary
+        const binData = new Uint8Array(compressed);
 
+        // inflate
+        return inflate(binData, { to: 'string' })
+      }).then(data => {
+        let parsed =  d3.csvParse(data, d3.autoType)
+        let keys = Object.keys(parsed[0]);
+        let n = parsed.length;
+        let rtn = {};
+        while (n>0){
+          n--;
+          rtn[keys[n]] = Object.values(parsed[n])
+        }
+        return rtn;
+      })
+
+    return tempData;
+  };
+
+  const mergeLineData = (selectedGeoid, weightData, centroids) => {
+    let keys = Object.keys(centroids);
+    let n = 0;
+    let len = keys.length;
+    let centroidWeights = {};
+    while (n<len) {
+      centroidWeights[keys[n]] = weightData[n]
+    }
+    centroidWeights = merge(centroids, centroidWeights)
+
+    console.log(centroidWeights)
+
+    return centroidWeights
+
+  }
+
+  const getMergeLineData = async () => {
+    const tempData = Promise.all([
+      getGzipData(`${process.env.PUBLIC_URL}/gz/county_lex_2020-11-28.csv.gz`),
+      getParseCSV(`${process.env.PUBLIC_URL}/csv/county_centroids.csv`, ['GEOID'], false)
+    ]).then(values => {
+      let merged = mergeLineData(
+        12117,
+        values[0][12117],
+        values[1][0]
+      )
+      console.log(merged)
+      return merged
+    }).then(data => {
+      console.log(data)
+      return data
+    })
+
+    return tempData;
+  }
   const dispatch = useDispatch();    
 
   const { cols, currentData, currentVariable,
@@ -632,7 +693,11 @@ const VariablePanel = (props) => {
             </Select>
           </StyledDropDown>
         </TwoUp>
-        <button onClick={() => console.log(getGzipData('https://github.com/COVIDExposureIndices/COVIDExposureIndices/blob/master/lex_data/county_lex_2020-11-28.csv.gz'))}>test lex data</button>
+        {/* <button onClick={() => console.log(getGzipData(`${process.env.PUBLIC_URL}/gz/county_lex_2020-11-28.csv.gz`))}>test lex data</button>
+        <button onClick={() => console.log(getParseCSV(`${process.env.PUBLIC_URL}/csv/county_centroids.csv`, ['GEOID'], false))}>path test</button> */}
+        <button onClick={() => getMergeLineData()}>join test</button>
+
+        
       </ControlsContainer>
       <p className="note">
         Data is updated with freshest available data at 3pm CST daily, at minimum. 
