@@ -6,7 +6,7 @@ import {find} from 'lodash';
 
 import DeckGL from '@deck.gl/react';
 import {MapView, _GlobeView as GlobeView, FlyToInterpolator} from '@deck.gl/core';
-import { GeoJsonLayer, PolygonLayer, ScatterplotLayer,  IconLayer, TextLayer } from '@deck.gl/layers';
+import { GeoJsonLayer, PolygonLayer, ScatterplotLayer,  IconLayer, TextLayer, LineLayer } from '@deck.gl/layers';
 import {fitBounds} from '@math.gl/web-mercator';
 // import {SimpleMeshLayer} from '@deck.gl/mesh-layers';
 // import {IcoSphereGeometry} from '@luma.gl/engine';
@@ -17,7 +17,7 @@ import Geocoder from 'react-map-gl-geocoder'
 import { MapTooltipContent } from '../components';
 import { colorScales } from '../config';
 import { setDataSidebar, setMapParams, setMapLoaded, setPanelState, setChartData } from '../actions';
-import { mapFn, dataFn, getVarId, getCSV, getCartogramCenter, getDataForCharts } from '../utils';
+import { mapFn, dataFn, getVarId, getCSV, getCartogramCenter, getDataForCharts, parseMobilityData, getURLParams } from '../utils';
 import MAP_STYLE from '../config/style.json';
 
 // const cartoGeom = new IcoSphereGeometry({
@@ -70,7 +70,7 @@ const NavInlineButton = styled.button`
     padding:5px;
     margin-bottom:10px;
     display:block;
-    background-color: ${props => props.isActive ? 'yellow' : '#f5f5f5'};
+    background-color: ${props => props.isActive ? '#C1EBEB' : '#f5f5f5'};
     -moz-box-shadow: 0 0 2px rgba(0,0,0,.1);
     -webkit-box-shadow: 0 0 2px rgba(0,0,0,.1);
     box-shadow: 0 0 0 2px rgba(0,0,0,.1);
@@ -79,6 +79,25 @@ const NavInlineButton = styled.button`
     border:none;
     transition:250ms all;
     cursor:pointer;
+    &:last-of-type {
+        margin-top:10px;
+    }
+    :after {
+        opacity: ${props => props.shareNotification ? 1 : 0};
+        content:'Map Link Copied to Clipboard!';
+        background:#f5f5f5;
+        -moz-box-shadow: 0 0 2px rgba(0,0,0,.1);
+        -webkit-box-shadow: 0 0 2px rgba(0,0,0,.1);
+        box-shadow: 0 0 0 2px rgba(0,0,0,.1);
+        border-radius: 4px;
+        position: absolute;
+        transform:translate(-120%, -25%);
+        padding:5px;
+        width:150px;
+        pointer-events:none;
+        max-width:50vw;
+        transition:250ms all;
+    }
 `
 
 const NavBarBacking = styled.div`
@@ -113,15 +132,19 @@ const MapButtonContainer = styled.div`
     }
 `
 
+const ShareURL = styled.input`
+    position:fixed;
+    left:110%;
+`
+
 const viewGlobe = new GlobeView({id: 'globe', controller: false, resolution:1});
 const view = new MapView({repeat: true});
 
-
 const Map = () => { 
-    
+
     const { storedData, storedGeojson, currentData, storedLisaData,
-        storedCartogramData, panelState, dates, dataParams, mapParams,
-        startDateIndex, urlParams } = useSelector(state => state);
+        storedCartogramData, storedMobilityData, panelState, dates, dataParams, mapParams,
+        currentVariable, startDateIndex, urlParams } = useSelector(state => state);
 
     const [hoverInfo, setHoverInfo] = useState(false);
     const [highlightGeog, setHighlightGeog] = useState(false);
@@ -129,17 +152,19 @@ const Map = () => {
     const [mapStyle, setMapStyle] = useState(defaultMapStyle);
     const [currLisaData, setCurrLisaData] = useState({})
     const [viewState, setViewState] = useState({
-        latitude: bounds.latitude,
-        longitude: bounds.longitude,
-        zoom: bounds.zoom,
-        pitch:0,
-        bearing:0
+        latitude: +urlParams.lat || bounds.latitude,
+        longitude: +urlParams.lon || bounds.longitude,
+        zoom: +urlParams.z || bounds.zoom,
+        bearing:0,
+        pitch:0
     })
     const [cartogramData, setCartogramData] = useState([]);
     const [currVarId, setCurrVarId] = useState(null);
     const [hospitalData, setHospitalData] = useState(null);
     const [clinicData, setClinicData] = useState(null);
     const [storedCenter, setStoredCenter] = useState(null);
+    const [shared, setShared] = useState(false);
+    // const [mobilityData, setMobilityData] = useState([]);
     
     const dispatch = useDispatch();
 
@@ -163,9 +188,9 @@ const Map = () => {
             case '2D': 
                 setViewState(view => ({
                     ...view,
-                    latitude: bounds.latitude,
-                    longitude: bounds.longitude,
-                    zoom: bounds.zoom,
+                    latitude: +urlParams.lat || bounds.latitude,
+                    longitude: +urlParams.lon || bounds.longitude,
+                    zoom: +urlParams.z || bounds.zoom,
                     bearing:0,
                     pitch:0
                 }));
@@ -174,9 +199,9 @@ const Map = () => {
             case '3D':
                 setViewState(view => ({
                     ...view,
-                    latitude: bounds.latitude,
-                    longitude: bounds.longitude,
-                    zoom: bounds.zoom,
+                    latitude: +urlParams.lat || bounds.latitude,
+                    longitude: +urlParams.lon || bounds.longitude,
+                    zoom: +urlParams.z || bounds.zoom,
                     bearing:-30,
                     pitch:30
                 }));
@@ -260,6 +285,17 @@ const Map = () => {
             }
         }
     }, [storedCartogramData])
+
+    useEffect(() => {
+        setViewState(view => ({
+            ...view,
+            latitude: +urlParams.lat || bounds.latitude,
+            longitude: +urlParams.lon || bounds.longitude,
+            zoom: +urlParams.z || bounds.zoom,
+            bearing:0,
+            pitch:0
+        }));
+    }, [urlParams])
 
     const mapRef = useRef();
     
@@ -361,6 +397,9 @@ const Map = () => {
                     dispatch(setDataSidebar(info.object));
                     setHighlightGeog(info.object.properties.GEOID);
                     dispatch(setChartData(getDataForCharts({data: info.object}, 'cases', startDateIndex, dates[currentData], info.object?.properties?.population/100000||1)));
+                    // if (mapParams.overlay === "mobility-county") {
+                    //     setMobilityData(parseMobilityData(info.object.properties.GEOID, storedMobilityData.flows[info.object.properties.GEOID], storedMobilityData.centroids));
+                    // }
                 } catch {}
 
             },
@@ -388,6 +427,21 @@ const Map = () => {
                 getLineColor: highlightGeog,
             },
         }),
+        // new LineLayer({
+        //     id: 'mobility flows',
+        //     data: mobilityData,
+        //     pickable: false,
+        //     visible: mapParams.overlay === "mobility-county",
+        //     widthUnits: 'meters',
+        //     widthScale: 10000,
+        //     getSourcePosition: d => [d[1],d[2]],
+        //     getTargetPosition: d => [d[3],d[4]],
+        //     getWidth: d => d[5] < 10 ? d[5] : 0,
+        //     updateTriggers: {
+        //         data: [mobilityData],
+        //         visible: [mapParams.overlay]
+        //     }
+        // }),
         new IconLayer({
             id: 'hospital-layer',
             data: hospitalData,
@@ -571,6 +625,30 @@ const Map = () => {
         //   })
     ]
 
+    const handlePanelButton = (panel) => panelState[panel] ? dispatch(setPanelState({[panel]: false})) : dispatch(setPanelState({[panel]: true}))
+
+    const handleShare = async (params) => {
+        const shareData = {
+            title: 'The US Covid Atlas',
+            text: 'Near Real-Time Exploration of the COVID-19 Pandemic.',
+            url: `${window.location.href}${getURLParams(params)}`,
+        }
+
+        try {
+            await navigator.share(shareData)
+          } catch(err) {
+            let copyText = document.querySelector("#share-url");
+            copyText.value = `${shareData.url}`;
+            copyText.style.display = 'block'
+            copyText.select();
+            copyText.setSelectionRange(0, 99999);
+            document.execCommand("copy");
+            copyText.style.display = 'none';
+            setShared(true)
+            setTimeout(() => setShared(false), 5000);
+        }
+    }
+
     return (
         <MapContainer>
             <DeckGL
@@ -585,16 +663,9 @@ const Map = () => {
                     mapStyle={mapStyle} //{globalMap || mapParams.vizType === 'cartogram' ? 'mapbox://styles/lixun910/ckhtcdx4b0xyc19qzlt4b5c0d' : 'mapbox://styles/lixun910/ckhkoo8ix29s119ruodgwfxec'}
                     preventStyleDiffing={true}
                     mapboxApiAccessToken={MAPBOX_ACCESS_TOKEN}
+                    // onViewportChange={viewState  => console.log(mapRef.current.props.viewState)} 
                     onLoad={() => {
                         dispatch(setMapLoaded(true))
-                        if (urlParams.lat !== undefined) {
-                            setViewState(view => ({
-                                ...view,
-                                latitude: urlParams.lat,
-                                longitude: urlParams.lon, 
-                                zoom: urlParams.z
-                            }))
-                        }
                     }}
                     >
                         
@@ -645,7 +716,24 @@ const Map = () => {
                             </svg>
                         </NavInlineButton> */}
                         <NavInlineButton
-                            onClick={() => dispatch(setPanelState({tutorial: true}))}
+                            title="Show Line Chart"
+                            isActive={panelState.lineChart}
+                            onClick={() => handlePanelButton('lineChart')}
+                        >
+                            <svg x="0px" y="0px" viewBox="0 0 100 100">
+                                <g>
+                                    <path d="M52.5,21.4c-1.9,0-3.6,1.3-4.1,3.1L37.9,63.7l-6.4-11.1c-1.2-2-3.7-2.7-5.7-1.5c-0.3,0.2-0.6,0.4-0.9,0.7
+                                        L10.1,66.6c-1.7,1.6-1.7,4.2-0.2,5.9c1.6,1.7,4.2,1.7,5.9,0.2c0.1,0,0.1-0.1,0.1-0.1L27,61.5l8.7,15.1c1.2,2,3.7,2.7,5.7,1.5
+                                        c0.9-0.6,1.6-1.5,1.9-2.5l9.1-33.9l4.6,17.2c0.6,2.2,2.9,3.5,5.1,2.9c1.1-0.3,2-1,2.5-1.9l10.4-18l8.9,9.4c1.6,1.7,4.2,1.8,5.9,0.3
+                                        s1.8-4.2,0.3-5.9c0,0-0.1-0.1-0.1-0.1L77.3,32.1c-1.6-1.7-4.2-1.8-5.9-0.2c-0.3,0.3-0.6,0.6-0.8,1L62.5,47l-6-22.5
+                                        C56,22.7,54.4,21.4,52.5,21.4L52.5,21.4z"/>
+                                </g>
+                            </svg>
+                        </NavInlineButton>
+                        <NavInlineButton
+                            title="Show Tutorial"
+                            isActive={panelState.tutorial}
+                            onClick={() => handlePanelButton('tutorial')}
                         >
                             <svg viewBox="0 0 100 100" x="0px" y="0px">
                                 <g>
@@ -663,6 +751,19 @@ const Map = () => {
                         <NavigationControl
                             onViewportChange={viewState  => setViewState(viewState)} 
                         />
+                        
+                        <NavInlineButton
+                            title="Share this Map"
+                            shareNotification={shared}
+                            onClick={() => handleShare({URLmapParams:mapParams, URLcurrentData:currentData, URLcurrentVariable:currentVariable, URLviewState: mapRef.current.props.viewState})}
+                        >
+                            <svg x="0px" y="0px" viewBox="0 0 100 100">
+                                <path d="M22.5,65c4.043,0,7.706-1.607,10.403-4.208l29.722,14.861C62.551,76.259,62.5,76.873,62.5,77.5c0,8.284,6.716,15,15,15   s15-6.716,15-15c0-8.284-6.716-15-15-15c-4.043,0-7.706,1.608-10.403,4.209L37.375,51.847C37.449,51.241,37.5,50.627,37.5,50   c0-0.627-0.051-1.241-0.125-1.847l29.722-14.861c2.698,2.601,6.36,4.209,10.403,4.209c8.284,0,15-6.716,15-15   c0-8.284-6.716-15-15-15s-15,6.716-15,15c0,0.627,0.051,1.241,0.125,1.848L32.903,39.208C30.206,36.607,26.543,35,22.5,35   c-8.284,0-15,6.716-15,15C7.5,58.284,14.216,65,22.5,65z">
+                                </path>
+                            </svg>
+
+                        </NavInlineButton>
+                        <ShareURL type="text" value="" id="share-url" />
                     </MapButtonContainer>
                     <div></div>
                 </ReactMapGL >

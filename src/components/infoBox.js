@@ -4,13 +4,6 @@ import styled from 'styled-components';
 import { setPanelState } from '../actions';
 
 const InfoContainer = styled.div`
-    width: 300px;
-    height: 300px;
-    max-width: 90vw;
-    position: fixed;
-    right: 50px;
-    bottom: 30px;
-    z-index: 5;
     background: #2b2b2b;
     color: #fff;
     padding: 0;
@@ -215,7 +208,6 @@ const InfoBox = () => {
             </DotsContainer>
             <Arrow viewBox="0 0 100 100" id="right-arrow" onClick={() => setPanelPosition(prev => (prev+1) % panels.length)}><g transform="translate(0,-952.36218)"><path d="m 71.20311,1002.3622 -2.84375,-3.28121 -31.99997,-37 -7.5625,6.5624 29.15622,33.71881 -29.15622,33.7188 7.5625,6.5624 31.99997,-37 2.84375,-3.2812 z"></path></g></Arrow>
             <Arrow viewBox="0 0 100 100" id="left-arrow" onClick={() => setPanelPosition(prev => (prev-1) >= 0 ? prev-1 : panels.length-1)}><g transform="translate(0,-952.36218)"><path d="m 71.20311,1002.3622 -2.84375,-3.28121 -31.99997,-37 -7.5625,6.5624 29.15622,33.71881 -29.15622,33.7188 7.5625,6.5624 31.99997,-37 2.84375,-3.2812 z"></path></g></Arrow>
-            <CloseTutorial onClick={() => dispatch(setPanelState({tutorial:false}))}>×</CloseTutorial>
         </InfoContainer>
     )
 }

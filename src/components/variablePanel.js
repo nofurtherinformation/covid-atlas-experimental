@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 import InputLabel from '@material-ui/core/InputLabel';
@@ -11,17 +11,13 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 
-import {inflate} from 'pako';
-import * as d3 from 'd3-dsv';
-import { merge } from 'lodash';
-
 import styled from 'styled-components';
 
-import { colLookup, getParseCSV } from '../utils';
+import { colLookup, getArrayCSV, getGzipData } from '../utils';
 import Tooltip from './tooltip';
 import { fixedScales, colorScales, dataPresets, legacyVariableOrder } from '../config';
 import { StyledDropDown } from '../styled_components';
-import { setVariableParams, setVariableName, setMapParams, setCurrentData, setPanelState, setNotification } from '../actions';
+import { setVariableParams, setVariableName, setMapParams, setCurrentData, setPanelState, setNotification, storeMobilityData } from '../actions';
 
 const VariablePanelContainer = styled.div`
   position:fixed;
@@ -197,71 +193,19 @@ const ListSubheader = styled(MenuItem)`
 
 const VariablePanel = (props) => {
 
-  const getGzipData = async (url) => {
-    const tempData = await fetch(url)
-      .then(response => {
-        return response.ok ? response.arrayBuffer() : Promise.reject(response.status);
-      }).then(compressed => {
-        
-        // convert to binary
-        const binData = new Uint8Array(compressed);
+  const getGzipAndCentroids = async (gzipUrl, centroidsUrl) => {
+    Promise.all([
+        getGzipData(gzipUrl),
+        getArrayCSV(centroidsUrl)
+      ]).then(
+        values => dispatch(storeMobilityData({centroids: values[1], flows: values[0]}))
+    )
+  } 
 
-        // inflate
-        return inflate(binData, { to: 'string' })
-      }).then(data => {
-        let parsed =  d3.csvParse(data, d3.autoType)
-        let keys = Object.keys(parsed[0]);
-        let n = parsed.length;
-        let rtn = {};
-        while (n>0){
-          n--;
-          rtn[keys[n]] = Object.values(parsed[n])
-        }
-        return rtn;
-      })
-
-    return tempData;
-  };
-
-  const mergeLineData = (selectedGeoid, weightData, centroids) => {
-    let keys = Object.keys(centroids);
-    let n = 0;
-    let len = keys.length;
-    let centroidWeights = {};
-    while (n<len) {
-      centroidWeights[keys[n]] = weightData[n]
-    }
-    centroidWeights = merge(centroids, centroidWeights)
-
-    console.log(centroidWeights)
-
-    return centroidWeights
-
-  }
-
-  const getMergeLineData = async () => {
-    const tempData = Promise.all([
-      getGzipData(`${process.env.PUBLIC_URL}/gz/county_lex_2020-11-28.csv.gz`),
-      getParseCSV(`${process.env.PUBLIC_URL}/csv/county_centroids.csv`, ['GEOID'], false)
-    ]).then(values => {
-      let merged = mergeLineData(
-        12117,
-        values[0][12117],
-        values[1][0]
-      )
-      console.log(merged)
-      return merged
-    }).then(data => {
-      console.log(data)
-      return data
-    })
-
-    return tempData;
-  }
   const dispatch = useDispatch();    
 
   const { cols, currentData, currentVariable,
-    mapParams, panelState, urlParams } = useSelector(state => state);
+    mapParams, panelState, urlParams, storedMobilityData } = useSelector(state => state);
 
   const PresetVariables = {
     "HEADER:cases":{},
@@ -457,6 +401,16 @@ const VariablePanel = (props) => {
       value: legacyVariableOrder[urlParams.src||'county_usfacts.geojson'][urlParams.var]
       }}})
   },[])
+
+  // useEffect(() => {
+  //   if (mapParams.overlay === "mobility-county" && storedMobilityData === {}) {
+  //     getGzipAndCentroids(
+  //       `${process.env.PUBLIC_URL}/gz/county_lex_2020-11-28.csv.gz`,
+  //       `${process.env.PUBLIC_URL}/csv/county_centroids.csv`
+  //     )
+  //     console.log('loaded mobility data')
+  //   }
+  // },[mapParams.overlay])
 
   const handleVariable = (event) => {
     let variable = event.target.value;
@@ -677,6 +631,7 @@ const VariablePanel = (props) => {
               <MenuItem value={'segregated_cities'} key={'segregated_cities'}>Hypersegregated Cities<Tooltip id="Hypersegregated"/></MenuItem>
               <MenuItem value={'blackbelt'} key={'blackbelt'}>Black Belt Counties<Tooltip id="BlackBelt" /></MenuItem>
               <MenuItem value={'uscongress-districts'} key={'uscongress-districts'}>US Congressional Districts <Tooltip id="USCongress" /></MenuItem>
+              {/* <MenuItem value={'mobility-county'} key={'mobility-county'}>Mobility Flows (County) WARNING BIG DATA</MenuItem> */}
             </Select>
           </StyledDropDown>
           <StyledDropDown>
@@ -692,12 +647,7 @@ const VariablePanel = (props) => {
               <MenuItem value={'hospitals'} key={'variable3'}>Hospitals</MenuItem>
             </Select>
           </StyledDropDown>
-        </TwoUp>
-        {/* <button onClick={() => console.log(getGzipData(`${process.env.PUBLIC_URL}/gz/county_lex_2020-11-28.csv.gz`))}>test lex data</button>
-        <button onClick={() => console.log(getParseCSV(`${process.env.PUBLIC_URL}/csv/county_centroids.csv`, ['GEOID'], false))}>path test</button> */}
-        <button onClick={() => getMergeLineData()}>join test</button>
-
-        
+        </TwoUp>        
       </ControlsContainer>
       <p className="note">
         Data is updated with freshest available data at 3pm CST daily, at minimum. 

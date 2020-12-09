@@ -61,6 +61,15 @@ export const storeGeojson = (data, name) => {
     }
 }
 
+export const storeMobilityData = (data) => {
+    return {
+        type: 'SET_STORED_MOBILITY_DATA',
+        payload: {
+            data
+        }
+    }
+}
+
 // store lisa values with specific variable combination
 export const storeLisaValues = (data, name) => {
     return {

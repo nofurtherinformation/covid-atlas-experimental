@@ -5,6 +5,7 @@ import colLookup from './colLookup.js';
 import dataFn from './dataFunction.js';
 import findDates from './findDates';
 import geojsonArrayBuffer from './geojsonArrayBuffer';
+import getArrayCSV from './getArrayCSV';
 import getCartogramValues from './getCartogramValues';
 import getCartogramCenter from './getCartogramCenter';
 import getColumns from './getCols';
@@ -15,15 +16,18 @@ import getDataForCharts from './getDataForCharts.js';
 import getDataForLisa from './getDataForLisa.js';
 import getGeoidIndex from './getGeoidIndex';
 import getGeoids from './getGeoids';
+import getGzipData from './getGzipData';
 import getJson from './getJson.js';
 import getJsonPure from './getJsonPure.js';
 import getLisaValues from './getLisaValues';
 import getParseCSV from './getParseCSV.js';
+import getURLParams from './getURLParams';
 import getVarId from './getVarId';
 import loadGeojsonToGeoda from './loadGeojsonToGeoda';
 import loadJson from './loadJson';
 import mapFn from './mapFunction.js';
 import mergeData from './mergeData.js';
+import parseMobilityData from './parseMobilityData';
 
 export {
     addSelectedChartData,
@@ -32,6 +36,7 @@ export {
     dataFn,
     findDates,
     geojsonArrayBuffer,
+    getArrayCSV,
     getCartogramValues,
     getCartogramCenter,
     getColumns,
@@ -46,9 +51,12 @@ export {
     getJsonPure,
     getLisaValues,
     getParseCSV,
+    getURLParams,
     getVarId,
+    getGzipData,
     loadGeojsonToGeoda,
     loadJson,
     mapFn,
-    mergeData
+    mergeData,
+    parseMobilityData
 }

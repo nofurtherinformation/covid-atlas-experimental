@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {useSelector} from 'react-redux'
 import styled from 'styled-components'
 
 const ResizeButton = styled.button`
-    float:right;
+    position:absolute;
+    right:5px;
+    bottom:10px;
     background:none;
     outline:none;
     border:none;
     transform: rotate(90deg);
+    cursor:nw-resize;
+    display:${props => props.notScaleable ? 'none' : 'initial'};
 `
 
 const Scaleable = (props) => {
+    
     const [width, setWidth] = useState(props.defaultWidth);
     const [height, setHeight] = useState(props.defaultHeight);
     const [currXYPos, setCurrXYPos] = useState(false);
@@ -44,13 +50,20 @@ const Scaleable = (props) => {
         window.addEventListener('touchmove', touchListener)
         window.addEventListener('touchend', removeTouchListener)
     }
+    
+    const open = useSelector(state => state.panelState[props.title]);
 
+    useEffect(() => {
+        setWidth(props.defaultWidth)
+        setHeight(props.defaultHeight)
+    }, [open, props.defaultHeight, props.defaultWidth])
 
     return (
         <div style={{width: width, height: height, minHeight: props.minHeight, minWidth: props.minWidth}}>
             {props.content}
             <ResizeButton 
                 id="resize"
+                notScaleable={props.notScaleable}
                 onMouseDown={handleDown}
                 onTouchStart={handleTouch}
                 style={{zIndex:10}}

@@ -132,6 +132,11 @@ var reducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 storedCartogramData: cartoObj
             };
+        case 'SET_STORED_MOBILITY_DATA':
+            return {
+                ...state,
+                storedMobilityData: action.payload.data
+            }
         case 'SET_CENTROIDS':
             let centroidsObj = {
                 ...state.centroids,

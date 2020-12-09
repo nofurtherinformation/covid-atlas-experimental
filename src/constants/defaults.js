@@ -5,6 +5,7 @@ export const INITIAL_STATE = {
   storedLisaData: {},
   storedCartogramData: {},
   storedCSV: {},
+  storedMobilityData: {},
   cols: {},
   currentData: 'county_usfacts.geojson',
   chartData: [{}],
@@ -60,8 +61,8 @@ export const INITIAL_STATE = {
   panelState: {
     variables:true,
     info:false,
-    chart:true,
     tutorial:false,
+    lineChart:true,
   },
   storedRange: null,
   currentGeoid: '',

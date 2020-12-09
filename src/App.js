@@ -39,6 +39,13 @@ import { colorScales, fixedScales, dataPresets,
 
 
 function App() {
+  // static variables for floating panel sizing
+  let [ defaultX, defaultY, defaultWidth, defaultHeight,
+    minHeight, minWidth] = window.innerWidth <= 1024 ? 
+    [window.innerWidth*.05, window.innerHeight*.35, window.innerWidth*.8, window.innerHeight*.4, window.innerHeight*.2, window.innerWidth*.5] : 
+    [window.innerWidth-400, window.innerHeight-400, 300, 300, 300, 300]
+
+
   // These selectors access different pieces of the store. While App mainly
   // dispatches to the store, we need checks to make sure side effects
   // are OK to trigger. Issues arise with missing data, columns, etc.
@@ -187,6 +194,7 @@ function App() {
         variables:false,
         info:false,
         tutorial:false,
+        lineChart: false
       }))
     }
 
@@ -311,38 +319,63 @@ function App() {
 
   }, [dataParams.nIndex, dataParams.dIndex, mapParams.binMode])
   
+
+  // default width handlers on resize
+  useEffect(() => {
+    [ defaultX, defaultY, defaultWidth, defaultHeight,
+      minHeight, minWidth] = window.innerWidth <= 1024 ? 
+      [window.innerWidth*.05, window.innerHeight*.35, window.innerWidth*.8, window.innerHeight*.4, window.innerHeight*.2, window.innerWidth*.5] : 
+      [window.innerWidth-400, window.innerHeight-400, 300, 300, 300, 300]
+  }, [window.innerHeight, window.innerWidth])
   // const dragHandlers = {onStart: this.onStart, onStop: this.onStop};
 
   return (
     <div className="App">
       <Preloader loaded={mapLoaded} />
       <NavBar />
-      <header className="App-header" style={{position:'fixed', left: '20vw', top:'100px', zIndex:10}}>
-        {/* <button onClick={() => console.log(gda_proxy.wasm.GetNeighbors('county_usfacts.geojson','w_queencounty_usfacts.geojson100',100))}>LOG NEIGHBORS</button> */}
-        {/* <button onClick={() => total(5)}>test wasm</button> */}
-      </header>
+      {/* <header className="App-header" style={{position:'fixed', left: '20vw', top:'100px', zIndex:10}}>
+        <button onClick={() => console.log(gda_proxy.wasm.GetNeighbors('county_usfacts.geojson','w_queencounty_usfacts.geojson100',100))}>LOG NEIGHBORS</button>
+        <button onClick={() => total(5)}>test wasm</button>
+      </header> */}
       <div id="mainContainer">
         <Map />
         <TopPanel />
         <BottomPanel />
         <VariablePanel />
         <DataPanel />
-        <InfoBox />
         <Popover />
         <NotificationBox />
+        
         <Draggable 
-          defaultX={window.innerWidth-400} 
-          defaultY={window.innerHeight-400}
-          title="Line Chart"
+          defaultX={defaultX}
+          defaultY={defaultY}
+          title="tutorial"
+          content={
+          <Scaleable 
+            notScaleable={true}
+            content={
+              <InfoBox />
+            } 
+            title="tutorial"
+            defaultWidth={defaultWidth}
+            defaultHeight={defaultHeight}
+            minHeight={minHeight}
+            minWidth={minWidth} />
+        }/>
+        <Draggable 
+          defaultX={defaultX}
+          defaultY={defaultY}
+          title="lineChart"
           content={
           <Scaleable 
             content={
               <MainLineChart />
             } 
-            defaultWidth={300} 
-            defaultHeight={300}
-            minHeight={300}
-            minWidth={300} />
+            title="lineChart"
+            defaultWidth={defaultWidth}
+            defaultHeight={defaultHeight}
+            minHeight={minHeight}
+            minWidth={minWidth} />
         }/>
       </div>
     </div>
